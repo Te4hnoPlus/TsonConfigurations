@@ -1,0 +1,39 @@
+package plus.tson;
+
+
+class TsonDouble extends TsonPrimitive{
+    private final double value;
+
+
+    public TsonDouble(double value) {
+        this.value = value;
+    }
+
+
+    @Override
+    public String getStr() {
+        return Double.toString(value);
+    }
+
+
+    @Override
+    public int getInt() {
+        return (int) value;
+    }
+
+
+    @Override
+    public Double getField(){
+        return value;
+    }
+
+
+    @Override
+    public double getDouble() {
+        return value;
+    }
+
+
+    @Override
+    public boolean isNumber(){return true;}
+}
