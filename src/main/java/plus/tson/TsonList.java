@@ -1,6 +1,8 @@
 package plus.tson;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import static plus.tson.TsonMap.gen;
 
 
@@ -10,8 +12,13 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
 
     public TsonList(String data) {
+        init(data);
+    }
+
+
+    public TsonList init(String data){
         data = data.trim();
-        if(data.equals(""))return;
+        if(data.equals(""))return this;
 
         switch (TsonObjType.scanType(data.charAt(0))) {
             case NUMBER:
@@ -25,7 +32,11 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
                 }
                 break;
             case LIST:
-                for (String s : TsonMap.split(data, '[', ']', ',')) {
+                List<String> items = TsonMap.split(data, '[', ']', ',');
+                if(items.size()==1){
+                    return init(items.get(0));
+                }
+                for (String s : items) {
                     add(new TsonList(s.substring(1, s.length()-1)));
                 }
                 break;
@@ -41,6 +52,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
                 }
                 break;
         }
+        return this;
     }
 
 
