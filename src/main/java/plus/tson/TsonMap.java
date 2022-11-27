@@ -349,7 +349,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
             }
         }
         if(openned != closed){
-            throw new RuntimeException("Json syntax error!");
+            throw new RuntimeException("Tson syntax error!");
         }
         String result = buffer.toString().trim();
         if(!result.equals("")){
