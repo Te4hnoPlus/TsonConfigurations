@@ -44,6 +44,36 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     }
 
 
+    public int getInt(int i){
+        return get(i).getInt();
+    }
+
+
+    public String getStr(int i){
+        return get(i).getStr();
+    }
+
+
+    public double getDouble(int i){
+        return get(i).getDouble();
+    }
+
+
+    public boolean getBool(int i) {
+        return get(i).getBool();
+    }
+
+
+    public TsonList getList(int i){
+        return get(i).getList();
+    }
+
+
+    public TsonMap getMap(int i){
+        return get(i).getMap();
+    }
+
+
     public boolean add(double n) {
         return add(new TsonDouble(n));
     }
@@ -65,7 +95,9 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
 
     @Override
-    public boolean isList(){return true;}
+    public boolean isList(){
+        return true;
+    }
 
 
     @Override
