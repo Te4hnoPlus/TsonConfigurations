@@ -34,7 +34,9 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
             case LIST:
                 List<String> items = TsonMap.split(data, '[', ']', ',');
                 if(items.size()==1){
-                    return init(items.get(0));
+                    data = items.get(0);
+                    data = data.substring(1, data.length()-1);
+                    return init(data);
                 }
                 for (String s : items) {
                     add(new TsonList(s.substring(1, s.length()-1)));
