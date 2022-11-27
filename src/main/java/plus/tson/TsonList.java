@@ -79,6 +79,48 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     }
 
 
+    public boolean contains(String s){
+        return indexOf(s)>-1;
+    }
+
+
+    public boolean contains(int n){
+        return indexOf(n)>-1;
+    }
+
+
+    public boolean contains(double n){
+        return indexOf(n)>-1;
+    }
+
+
+    public int indexOf(int n){
+        if(!get(0).isNumber())return -1;
+        for(int i=0;i<size();i++){
+            if(getInt(i)==n)return i;
+        }
+        return -1;
+    }
+
+
+    public int indexOf(double n){
+        if(!get(0).isNumber())return -1;
+        for(int i=0;i<size();i++){
+            if(getDouble(i)==n)return i;
+        }
+        return -1;
+    }
+
+
+    public int indexOf(String s){
+        if(!get(0).isString())return -1;
+        for(int i=0;i<size();i++){
+            if(getStr(i).equals(s))return i;
+        }
+        return -1;
+    }
+
+
     public boolean add(int n){
         return add(new TsonInt(n));
     }
