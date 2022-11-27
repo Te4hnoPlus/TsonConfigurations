@@ -111,7 +111,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    public List<TsonObj> getList(String key) {
+    public TsonList getList(String key) {
         return get(key).getList();
     }
 

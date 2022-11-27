@@ -32,7 +32,7 @@ public interface TsonObj {
     }
 
 
-    default List<TsonObj> getList() {
+    default TsonList getList() {
         throw new WrongTypeException();
     }
 
