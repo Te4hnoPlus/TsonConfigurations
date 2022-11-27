@@ -22,6 +22,11 @@ public interface TsonObj {
     }
 
 
+    default float getFloat(){
+        throw new WrongTypeException();
+    }
+
+
     default boolean getBool(){
         throw new WrongTypeException();
     }

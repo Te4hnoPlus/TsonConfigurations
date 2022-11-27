@@ -63,6 +63,11 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     }
 
 
+    public float getFloat(int i) {
+        return get(i).getFloat();
+    }
+
+
     public String getStr(int i){
         return get(i).getStr();
     }
@@ -85,11 +90,6 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     public TsonMap getMap(int i){
         return get(i).getMap();
-    }
-
-
-    public boolean add(double n) {
-        return add(new TsonDouble(n));
     }
 
 
@@ -135,8 +135,23 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     }
 
 
+    public boolean add(boolean n){
+        return add(new TsonBool(n));
+    }
+
+
     public boolean add(int n){
         return add(new TsonInt(n));
+    }
+
+
+    public boolean add(float n){
+        return add(new TsonFloat(n));
+    }
+
+
+    public boolean add(double n) {
+        return add(new TsonDouble(n));
     }
 
 

@@ -35,5 +35,11 @@ class TsonDouble extends TsonPrimitive{
 
 
     @Override
+    public float getFloat() {
+        return (float) value;
+    }
+
+
+    @Override
     public boolean isNumber(){return true;}
 }

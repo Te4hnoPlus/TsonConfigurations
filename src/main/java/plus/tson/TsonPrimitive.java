@@ -3,6 +3,7 @@ package plus.tson;
 public abstract class TsonPrimitive implements TsonObj{
 
     public static TsonPrimitive build(String value) {
+        value = value.trim();
         if(value.equalsIgnoreCase("true")){
             return new TsonBool(true);
         } else if(value.equalsIgnoreCase("false")){
@@ -10,8 +11,12 @@ public abstract class TsonPrimitive implements TsonObj{
         }
         try {
             if (value.contains(".")) {
-                return new TsonDouble(Double.parseDouble(value.trim()));
-            } else return new TsonInt(Integer.parseInt(value.trim()));
+                if(value.length()>7){
+                    return new TsonDouble(Double.parseDouble(value));
+                } else {
+                    return new TsonFloat(Float.parseFloat(value));
+                }
+            } else return new TsonInt(Integer.parseInt(value));
         } catch (NumberFormatException e){
             return new TsonClass(value);
         }

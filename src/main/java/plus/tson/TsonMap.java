@@ -58,8 +58,18 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    public TsonStr put(String key, String v) {
-        return (TsonStr) super.put(key, new TsonStr(v));
+    public TsonBool put(String key, boolean v) {
+        return (TsonBool) super.put(key, new TsonBool(v));
+    }
+
+
+    public TsonInt put(String key, int v) {
+        return (TsonInt) super.put(key, new TsonInt(v));
+    }
+
+
+    public TsonFloat put(String key, float v) {
+        return (TsonFloat) super.put(key, new TsonFloat(v));
     }
 
 
@@ -68,13 +78,13 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    public <T extends TsonSerelizable> TsonField put(String key, T v){
-        return (TsonField<T>) super.put(key, new TsonField<>(v));
+    public TsonStr put(String key, String v) {
+        return (TsonStr) super.put(key, new TsonStr(v));
     }
 
 
-    public TsonInt put(String key, int v) {
-        return (TsonInt) super.put(key, new TsonInt(v));
+    public <T extends TsonSerelizable> TsonField put(String key, T v){
+        return (TsonField<T>) super.put(key, new TsonField<>(v));
     }
 
 
@@ -108,6 +118,11 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
     public int getInt(String key) {
         return get(key).getInt();
+    }
+
+
+    public float getFloat(String key) {
+        return get(key).getFloat();
     }
 
 
