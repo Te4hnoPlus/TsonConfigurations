@@ -41,5 +41,7 @@ class TsonDouble extends TsonPrimitive{
 
 
     @Override
-    public boolean isNumber(){return true;}
+    public boolean isNumber(){
+        return true;
+    }
 }
