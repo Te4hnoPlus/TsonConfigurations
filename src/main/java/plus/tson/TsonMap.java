@@ -137,7 +137,9 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
 
     public TsonMap addMap(String key){
-        return (TsonMap) put(key, new TsonMap());
+        TsonMap map = new TsonMap();
+        put(key, map);
+        return map;
     }
 
 
