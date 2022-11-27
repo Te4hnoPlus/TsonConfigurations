@@ -112,7 +112,7 @@ public class TsonFile extends TsonMap {
     }
 
 
-    protected static String read(File file, String def){
+    public static String read(File file, String def){
         if(!file.exists()){
             try {
                 file.createNewFile();
