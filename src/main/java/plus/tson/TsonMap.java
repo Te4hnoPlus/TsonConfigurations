@@ -250,6 +250,11 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
             char c = data.charAt(i);
 
             if (c == '"') {
+                if(waitEndStr){
+                    if(openned == closed){
+                        waitSep = true;
+                    }
+                }
                 waitEndStr = !waitEndStr;
                 buffer.append(c);
                 continue;
