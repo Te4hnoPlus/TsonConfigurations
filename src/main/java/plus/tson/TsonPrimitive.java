@@ -4,6 +4,9 @@ public abstract class TsonPrimitive implements TsonObj{
 
     public static TsonPrimitive build(String value) {
         value = value.trim();
+        if(value.startsWith("(") && value.endsWith(")")){
+            value = value.substring(1, value.length()-1);
+        }
         if(value.equalsIgnoreCase("true")){
             return new TsonBool(true);
         } else if(value.equalsIgnoreCase("false")){

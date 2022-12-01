@@ -6,7 +6,7 @@ import static plus.tson.TsonMap.getSubStrAfter;
 
 
 enum TsonObjType {
-    NUMBER, STR, LIST, MAP, FIELD;
+    BASIC, STR, LIST, MAP, FIELD;
 
     static TsonObjType scanType(String s) {
         s = getSubStrAfter(s, "=").trim();
@@ -19,7 +19,7 @@ enum TsonObjType {
             default:
                 throw new NoSearchException(c);
             case '(':
-                return TsonObjType.NUMBER;
+                return TsonObjType.BASIC;
             case '"':
                 return TsonObjType.STR;
             case '{':

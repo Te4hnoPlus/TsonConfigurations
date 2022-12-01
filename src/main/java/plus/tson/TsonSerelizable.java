@@ -1,5 +1,5 @@
 package plus.tson;
 
 public interface TsonSerelizable {
-    TsonMap toMap();
+    TsonObj toTson();
 }

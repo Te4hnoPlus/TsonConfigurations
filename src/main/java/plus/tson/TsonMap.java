@@ -42,13 +42,11 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
                                 getSubData(raw, '[', ']')
                         ));
                         break;
-                    case NUMBER:
+                    case BASIC:
                         put(key, TsonPrimitive.build(getSubData(raw, '(', ')')));
                         break;
                     case FIELD:
-                        put(key, new TsonField<>(
-                                gen(getSubData(raw, '<', '>'))
-                        ));
+                        put(key, new TsonField<>(gen(getSubData(raw, '<', '>'))));
                 }
             } catch (NoSearchException e) {
                 System.out.println(e.getStackTrace()[1].getLineNumber()+ " "+ e.getMessage());
@@ -102,37 +100,37 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
 
     public boolean getBool(String key){
-        return get(key).getBool();
+        return super.get(key).getBool();
     }
 
 
     public double getDouble(String key) {
-        return get(key).getDouble();
+        return super.get(key).getDouble();
     }
 
 
     public String getStr(String key){
-        return get(key).getStr();
+        return super.get(key).getStr();
     }
 
 
     public int getInt(String key) {
-        return get(key).getInt();
+        return super.get(key).getInt();
     }
 
 
     public float getFloat(String key) {
-        return get(key).getFloat();
+        return super.get(key).getFloat();
     }
 
 
     public TsonList getList(String key) {
-        return get(key).getList();
+        return super.get(key).getList();
     }
 
 
     public TsonMap getMap(String key) {
-        return get(key).getMap();
+        return super.get(key).getMap();
     }
 
 
@@ -165,14 +163,14 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
         String[] strings = new String[this.size()];
         int i = 0;
         for (String key : this.keySet()) {
-            strings[i] = key + "=" + get(key).toString();
+            strings[i] = key + "=" + super.get(key).toString();
             ++i;
         }
         return '{' + String.join(", ", strings) + '}';
     }
 
 
-    protected static TsonSerelizable gen(String data){
+    protected static Object gen(String data){
         data = data.trim();
         if (data.equals("")) return null;
 
@@ -183,10 +181,32 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
         TsonClass cl = new TsonClass(getSubData(values.get(0), '(', ')'));
 
         if(values.size()==1){
-            return (TsonSerelizable) cl.createInst();
+            return cl.createInst();
         }
-        TsonMap map = new TsonMap(values.get(1));
-        return (TsonSerelizable) cl.createInst(map);
+
+        Object[] objects = new Object[Math.min(values.size()-1, 6)];
+
+        for(int i=1;i< values.size() && i<7;i++){
+            String raw = values.get(i).trim();
+            switch (TsonObjType.scanType(raw.charAt(0))){
+                case STR:
+                    objects[i-1] = getSubData(raw, '"');
+                    break;
+                case LIST:
+                    objects[i-1] = new TsonList(raw);
+                    break;
+                case BASIC:
+                    objects[i-1] = TsonPrimitive.build(raw).getField();
+                    break;
+                case MAP:
+                    objects[i-1] = new TsonMap(raw);
+                    break;
+                case FIELD:
+                    objects[i-1] = TsonField.build(raw).getField();
+                    break;
+            }
+        }
+        return cl.createInst(objects);
     }
 
 
@@ -359,7 +379,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    protected static String getSubData(String from, String search, char m1, char m2){
+    public static String getSubData(String from, String search, char m1, char m2){
         int index = from.indexOf(search+" ");
         if(index==-1){
             index = from.indexOf(search+"=");
@@ -377,12 +397,12 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    protected static String getSubData(String data, int start, char m1, char m2){
+    public static String getSubData(String data, int start, char m1, char m2){
         return getSubData(data.substring(start), m1, m2);
     }
 
 
-    protected static String getSubData(String data, char m){
+    public static String getSubData(String data, char m){
         StringBuilder buffer = new StringBuilder();
         boolean scaning = false;
         for(int i=0;i<data.length();i++){
@@ -401,7 +421,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    protected static String getSubData(String data, char m1, char m2){
+    public static String getSubData(String data, char m1, char m2){
         if(m1==m2)return getSubData(data, m1);
         data = data.trim();
 

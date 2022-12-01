@@ -20,7 +20,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
         if(data.equals(""))return this;
 
         switch (TsonObjType.scanType(data.charAt(0))) {
-            case NUMBER:
+            case BASIC:
                 for (String s : data.split(",")) {
                     add(TsonInt.build(TsonMap.getSubData(s, '(', ')')));
                 }
@@ -48,8 +48,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
                 break;
             case FIELD:
                 for (String s : TsonMap.split(data, '<', '>', ',')) {
-
-                    add(new TsonField<>(gen(s.substring(1, s.length()-1))));
+                    add(TsonField.build(s));
                 }
                 break;
         }

@@ -35,7 +35,10 @@ public class TsonClass extends TsonPrimitive {
         } catch (NoSuchMethodException | InvocationTargetException |
                  InstantiationException | IllegalAccessException e) {
             String[] strings = new String[args.length];
-            Arrays.fill(strings, args.getClass().getName());
+            for(int i=0;i<strings.length;i++){
+                strings[i] = args[i].getClass().getName();
+            }
+            //Arrays.fill(strings, args.getClass().getName());
             throw new NoSearchException(
                     String.format("constructor not exist for (%s)", String.join(", ",strings))
             );
