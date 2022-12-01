@@ -44,7 +44,7 @@ public class TsonFile extends TsonMap {
         static Object[] scan(String data0, Boolean ro, Boolean mb){
             String data = data0;
             data = data.trim();
-            if(data.equals("") || data.charAt(0) != '@'){
+            if(data.isEmpty() || data.charAt(0) != '@'){
                 return new Object[]{
                         new Annotation(ro != null && ro, mb != null && mb),data};
             }
@@ -150,5 +150,4 @@ public class TsonFile extends TsonMap {
             e.printStackTrace();
         }
     }
-
 }

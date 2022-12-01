@@ -3,7 +3,6 @@ package plus.tson;
 import plus.tson.exception.NoSearchException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 
 
 public class TsonClass extends TsonPrimitive {

@@ -16,7 +16,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     public TsonList init(String data){
         data = data.trim();
-        if(data.equals(""))return this;
+        if(data.isEmpty())return this;
 
         switch (TsonObjType.scanType(data.charAt(0))) {
             case BASIC:
