@@ -2,7 +2,6 @@ package plus.tson;
 
 import java.util.ArrayList;
 import java.util.List;
-import static plus.tson.TsonMap.gen;
 
 
 public class TsonList extends ArrayList<TsonObj> implements TsonObj {

@@ -46,7 +46,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
                         put(key, TsonPrimitive.build(getSubData(raw, '(', ')')));
                         break;
                     case FIELD:
-                        put(key, new TsonField<>(gen(getSubData(raw, '<', '>'))));
+                        put(key, TsonField.build(getSubData(raw, '<', '>')));
                 }
             } catch (NoSearchException e) {
                 System.out.println(e.getStackTrace()[1].getLineNumber()+ " "+ e.getMessage());
@@ -167,46 +167,6 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
             ++i;
         }
         return '{' + String.join(", ", strings) + '}';
-    }
-
-
-    protected static Object gen(String data){
-        data = data.trim();
-        if (data.equals("")) return null;
-
-        List<String> values = split(data,startSeparators, endSeparators, objectSeparator);
-
-        if(values.size()>2)throw new NoSearchException("generator syntax: <(CLASS), {data=\"example\"}>");
-
-        TsonClass cl = new TsonClass(getSubData(values.get(0), '(', ')'));
-
-        if(values.size()==1){
-            return cl.createInst();
-        }
-
-        Object[] objects = new Object[Math.min(values.size()-1, 6)];
-
-        for(int i=1;i< values.size() && i<7;i++){
-            String raw = values.get(i).trim();
-            switch (TsonObjType.scanType(raw.charAt(0))){
-                case STR:
-                    objects[i-1] = getSubData(raw, '"');
-                    break;
-                case LIST:
-                    objects[i-1] = new TsonList(raw);
-                    break;
-                case BASIC:
-                    objects[i-1] = TsonPrimitive.build(raw).getField();
-                    break;
-                case MAP:
-                    objects[i-1] = new TsonMap(raw);
-                    break;
-                case FIELD:
-                    objects[i-1] = TsonField.build(raw).getField();
-                    break;
-            }
-        }
-        return cl.createInst(objects);
     }
 
 
