@@ -38,7 +38,6 @@ public class TsonClass extends TsonPrimitive {
             for(int i=0;i<strings.length;i++){
                 strings[i] = args[i].getClass().getName();
             }
-            //Arrays.fill(strings, args.getClass().getName());
             throw new NoSearchException(
                     String.format("constructor not exist for (%s)", String.join(", ",strings))
             );
@@ -60,7 +59,8 @@ public class TsonClass extends TsonPrimitive {
         Constructor<?> cons;
         switch (args.length){
             default:
-                return clazz.newInstance();
+                cons = clazz.getDeclaredConstructor();
+                break;
             case 1:
                 cons = clazz.getDeclaredConstructor(args[0].getClass());
                 break;
@@ -94,6 +94,7 @@ public class TsonClass extends TsonPrimitive {
                 );
                 break;
         }
+        cons.setAccessible(true);
         return cons.newInstance(args);
     }
 }
