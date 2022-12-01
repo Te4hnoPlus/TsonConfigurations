@@ -38,8 +38,10 @@ public class TsonClass extends TsonPrimitive {
             for(int i=0;i<strings.length;i++){
                 strings[i] = args[i].getClass().getName();
             }
+
             throw new NoSearchException(
-                    String.format("constructor not exist for (%s)", String.join(", ",strings))
+                    String.format("constructor not exist! %s(%s)",
+                            clazz.getName(), String.join(", ",strings))
             );
         }
     }
