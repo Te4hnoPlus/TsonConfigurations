@@ -84,7 +84,7 @@ public class TsonField<T> implements TsonObj{
     private static Object genObj(String data){
         List<String> values = split(data,startSeparators, endSeparators, objectSeparator);
 
-        if(values.size()>2)throw new NoSearchException("generator syntax: <(CLASS), {data=\"example\"}>");
+        if(values.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
 
         TsonClass cl = new TsonClass(getSubData(values.get(0), '(', ')'));
 

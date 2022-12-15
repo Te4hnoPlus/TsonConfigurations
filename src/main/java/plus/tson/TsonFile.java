@@ -1,5 +1,6 @@
 package plus.tson;
 
+import plus.tson.utl.Tuple;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -109,6 +110,12 @@ public class TsonFile extends TsonMap {
         if(annotation.isReadOnly)return this;
         write(file, annotation+this.toString());
         return this;
+    }
+
+
+    public static Tuple<File, String> read(File dir, String path, String def){
+        File file = new File(dir, path+".tson");
+        return new Tuple<>(file, read(file, def));
     }
 
 
