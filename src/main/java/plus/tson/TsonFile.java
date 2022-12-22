@@ -94,7 +94,12 @@ public class TsonFile extends TsonMap {
 
 
     public TsonFile load(){
-        String data = read(file, "");
+        return load("");
+    }
+
+
+    public TsonFile load(String def){
+        String data = read(file, def);
         Object[] data0 = Annotation.scan(data);
         annotation = (Annotation) data0[0];
         data = (String) data0[1];

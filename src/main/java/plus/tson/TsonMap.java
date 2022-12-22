@@ -4,6 +4,8 @@ import plus.tson.exception.NoSearchException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
@@ -83,6 +85,40 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
     public <T extends TsonSerelizable> TsonField put(String key, T v){
         return (TsonField<T>) super.put(key, new TsonField<>(v));
+    }
+
+
+    public boolean ifContainsMap(String s, Consumer<TsonMap> c){
+        return ifContains(s, c, this::getMap);
+    }
+
+
+    public boolean ifContainsList(String s, Consumer<TsonList> c){
+        return ifContains(s, c, this::getList);
+    }
+
+
+    public boolean ifContainsDouble(String s, Consumer<Double> c){
+        return ifContains(s, c, this::getDouble);
+    }
+
+
+    public boolean ifContainsFloat(String s, Consumer<Float> c){
+        return ifContains(s, c, this::getFloat);
+    }
+
+
+    public boolean ifContainsInt(String s, Consumer<Integer> c){
+        return ifContains(s, c, this::getInt);
+    }
+
+
+    public<T> boolean ifContains(String s, Consumer<T> c, Function<String, T> f){
+        if(containsKey(s)){
+            c.accept(f.apply(s));
+            return true;
+        }
+        return false;
     }
 
 
