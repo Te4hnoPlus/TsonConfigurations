@@ -28,6 +28,22 @@ public class TsonClass extends TsonPrimitive {
     }
 
 
+    public Object createInstBy(String constructor, Object... args){
+        try {
+            String[] items = constructor.replace("\n","").split(",");
+            Class<?>[] classes = new Class[items.length];
+            for (int i = 0; i < classes.length; i++) {
+                classes[i] = Class.forName(items[i].trim());
+            }
+            Constructor<?> cons = clazz.getDeclaredConstructor(classes);
+            return createInst(cons, args);
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     public Object createInst(Object... args){
         try {
             return createInst(clazz, args);
@@ -95,6 +111,12 @@ public class TsonClass extends TsonPrimitive {
                 );
                 break;
         }
+        return createInst(cons, args);
+    }
+
+
+    public static Object createInst(Constructor<?> cons, Object... args)
+            throws InvocationTargetException, InstantiationException, IllegalAccessException {
         cons.setAccessible(true);
         return cons.newInstance(args);
     }

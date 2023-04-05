@@ -113,6 +113,11 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    public boolean ifContainsBool(String s, Consumer<Boolean> c){
+        return ifContains(s, c, this::getBool);
+    }
+
+
     public<T> boolean ifContains(String s, Consumer<T> c, Function<String, T> f){
         if(containsKey(s)){
             c.accept(f.apply(s));

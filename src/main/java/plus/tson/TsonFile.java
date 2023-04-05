@@ -124,9 +124,15 @@ public class TsonFile extends TsonMap {
     }
 
 
+    public static String read(String file){
+        return read(new File(file), "");
+    }
+
+
     public static String read(File file, String def){
         if(!file.exists()){
             try {
+                file.getParentFile().mkdirs();
                 file.createNewFile();
                 if(def!=null){
                     write(file, def);
