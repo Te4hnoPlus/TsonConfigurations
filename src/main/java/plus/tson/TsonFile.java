@@ -132,7 +132,10 @@ public class TsonFile extends TsonMap {
     public static String read(File file, String def){
         if(!file.exists()){
             try {
-                file.getParentFile().mkdirs();
+                File parent = file.getParentFile();
+                if(parent != null){
+                    parent.mkdirs();
+                }
                 file.createNewFile();
                 if(def!=null){
                     write(file, def);
