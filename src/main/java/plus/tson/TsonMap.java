@@ -28,33 +28,29 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
         } catch (NoSearchException ignored) {}
 
         for (String raw : split(data, startSeparators, endSeparators, objectSeparator)) {
-            try {
-                String key = getSubStrBefore(raw, "=").trim();
-                switch (TsonObjType.scanType(raw)) {
-                    case STR:
-                        put(key, getSubData(raw, '"'));
-                        break;
-                    case MAP:
-                        put(key, new TsonMap(
-                                getSubData(raw, '{', '}')
-                        ));
-                        break;
-                    case LIST:
-                        put(key, new TsonList(
-                                getSubData(raw, '[', ']')
-                        ));
-                        break;
-                    case BASIC:
-                        put(key, TsonPrimitive.build(getSubData(raw, '(', ')')));
-                        break;
-                    case FIELD:
-                        put(key, TsonField.build(getSubData(raw, '<', '>')));
-                }
-            } catch (NoSearchException e) {
-                System.out.println(e.getStackTrace()[1].getLineNumber()+ " "+ e.getMessage());
-            }
+            processItem(raw);
         }
         return this;
+    }
+
+
+    protected void processItem(String raw){
+        try {
+            String key = getSubStrBefore(raw, "=").trim();
+            switch (TsonObjType.scanType(raw)) {
+                case STR -> put(key, getSubData(raw, '"'));
+                case MAP -> put(key, new TsonMap(
+                        getSubData(raw, '{', '}')
+                ));
+                case LIST -> put(key, new TsonList(
+                        getSubData(raw, '[', ']')
+                ));
+                case BASIC -> put(key, TsonPrimitive.build(getSubData(raw, '(', ')')));
+                case FIELD -> put(key, TsonField.build(getSubData(raw, '<', '>')));
+            }
+        } catch (NoSearchException e) {
+            System.out.println(e.getStackTrace()[1].getLineNumber()+ " "+ e.getMessage());
+        }
     }
 
 
@@ -115,6 +111,11 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
     public boolean ifContainsBool(String s, Consumer<Boolean> c){
         return ifContains(s, c, this::getBool);
+    }
+
+
+    public boolean ifContainsStr(String s, Consumer<String> c){
+        return ifContains(s, c, this::getStr);
     }
 
 

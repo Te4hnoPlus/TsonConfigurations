@@ -11,7 +11,7 @@ public class TsonFloat extends TsonPrimitive{
 
     @Override
     public String getStr() {
-        return Double.toString(value);
+        return Float.toString(value);
     }
 
 
