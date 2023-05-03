@@ -38,15 +38,21 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
         try {
             String key = getSubStrBefore(raw, "=").trim();
             switch (TsonObjType.scanType(raw)) {
-                case STR -> put(key, getSubData(raw, '"'));
-                case MAP -> put(key, new TsonMap(
-                        getSubData(raw, '{', '}')
-                ));
-                case LIST -> put(key, new TsonList(
-                        getSubData(raw, '[', ']')
-                ));
-                case BASIC -> put(key, TsonPrimitive.build(getSubData(raw, '(', ')')));
-                case FIELD -> put(key, TsonField.build(getSubData(raw, '<', '>')));
+                case STR:
+                    put(key, getSubData(raw, '"'));
+                    break;
+                case MAP:
+                    put(key, new TsonMap(getSubData(raw, '{', '}')));
+                    break;
+                case LIST:
+                    put(key, new TsonList(getSubData(raw, '[', ']')));
+                    break;
+                case BASIC:
+                    put(key, TsonPrimitive.build(getSubData(raw, '(', ')')));
+                    break;
+                case FIELD:
+                    put(key, TsonField.build(getSubData(raw, '<', '>')));
+                    break;
             }
         } catch (NoSearchException e) {
             System.out.println(e.getStackTrace()[1].getLineNumber()+ " "+ e.getMessage());

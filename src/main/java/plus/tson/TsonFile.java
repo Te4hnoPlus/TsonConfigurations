@@ -4,6 +4,7 @@ import plus.tson.utl.Tuple;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 
@@ -151,7 +152,7 @@ public class TsonFile extends TsonMap {
             return def;
         } else {
             try {
-                String data = new String(Files.readAllBytes(file.toPath())).trim();
+                String data = Files.readString(file.toPath(), StandardCharsets.UTF_8);
                 if(data.equals("")){
                     if(def!=null && !"".equals(def)){
                         System.out.println(".tson is empty! write default.");
