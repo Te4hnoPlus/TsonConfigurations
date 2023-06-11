@@ -2,8 +2,6 @@ package plus.tson;
 
 import plus.tson.exception.WrongTypeException;
 
-import java.util.List;
-
 
 public interface TsonObj {
 
@@ -63,4 +61,7 @@ public interface TsonObj {
 
 
     default boolean isBool(){return false;}
+
+
+    default String toJsonStr(){return toString();}
 }

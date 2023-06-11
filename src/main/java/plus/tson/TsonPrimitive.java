@@ -1,5 +1,6 @@
 package plus.tson;
 
+
 public abstract class TsonPrimitive implements TsonObj{
 
     public static TsonPrimitive build(String value) {
@@ -29,5 +30,11 @@ public abstract class TsonPrimitive implements TsonObj{
     @Override
     public String toString() {
         return '(' + getStr() + ')';
+    }
+
+
+    @Override
+    public String toJsonStr() {
+        return getStr();
     }
 }

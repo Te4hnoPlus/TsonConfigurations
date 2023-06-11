@@ -1,9 +1,7 @@
 package plus.tson;
 
 import plus.tson.exception.NoSearchException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -20,14 +18,12 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     protected TsonMap init(String data){
         data = data.trim();
         if (data.isEmpty()) return this;
-
         try {
             getSubStrBefore(getSubStrBefore(data, "="), "{");
             data = data.substring(1, data.length() - 1).trim();
             if (data.isEmpty()) return this;
         } catch (NoSearchException ignored) {}
-
-        for (String raw : split(data, startSeparators, endSeparators, objectSeparator)) {
+        for (String raw : splitStr(data)) {
             processItem(raw);
         }
         return this;
@@ -54,9 +50,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
                     put(key, TsonField.build(getSubData(raw, '<', '>')));
                     break;
             }
-        } catch (NoSearchException e) {
-            System.out.println(e.getStackTrace()[1].getLineNumber()+ " "+ e.getMessage());
-        }
+        } catch (NoSearchException ignored) {}
     }
 
 
@@ -208,75 +202,55 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public String toString() {
-        String[] strings = new String[this.size()];
-        int i = 0;
-        for (String key : this.keySet()) {
-            strings[i] = key + "=" + super.get(key).toString();
-            ++i;
+        StringJoiner joiner = new StringJoiner(",");
+        for(String key : this.keySet()){
+            joiner.add(key + "=" + super.get(key).toString());
         }
-        return '{' + String.join(", ", strings) + '}';
+        return '{'+joiner.toString()+'}';
     }
 
 
-    protected static final char[] startSeparators = new char[]{'[', '{', '(', '<'};
-    protected static final char[] endSeparators = new char[]{']', '}', ')', '>'};
-    protected static final char objectSeparator = ',';
-
-    protected static List<String> split(String data, char m, char sep){
-        List<String> list = new ArrayList<>();
-        StringBuilder buffer = new StringBuilder();
-        boolean waitStart = true;
-        boolean waitEnd = false;
-
-        for(int i=0;i<data.length();i++){
-            char c = data.charAt(i);
-            if(waitStart){
-                if(c==m){
-                    waitStart = false;
-                    waitEnd = true;
-                }
-            } else if(waitEnd){
-                if(c==m){
-                    waitEnd = false;
-                    list.add(buffer.toString());
-                    buffer = new StringBuilder();
-                } else {
-                    buffer.append(c);
-                }
-            } else {
-                if(c==sep){
-                    waitStart = true;
-                }
-            }
+    @Override
+    public String toJsonStr() {
+        StringJoiner joiner = new StringJoiner(",");
+        for(String key : this.keySet()){
+            joiner.add(key + ":" + super.get(key).toString());
         }
-
-        return list;
+        return '{'+joiner.toString()+'}';
     }
 
 
-    protected static boolean contains(char[] chars, char c){
+    private static final char[] startSeparators = new char[]{'[', '{', '(', '<'};
+    private static final char[] endSeparators = new char[]{']', '}', ')', '>'};
+    private static final char objectSeparator = ',';
+
+    static{
+        Arrays.sort(startSeparators);
+        Arrays.sort(endSeparators);
+    }
+
+
+    protected static boolean contains(char[] chars, char key){
         for(char check:chars){
-            if(check == c)return true;
+            if(check == key)return true;
         }
         return false;
     }
 
 
-    protected static List<String> split(String data, char[] m1, char[] m2, char sep){
+    protected static List<String> splitStr(String data){
         data = data.trim();
 
-        int openned = contains(m1, data.charAt(0))?1:0;
+        int openned = contains(startSeparators, data.charAt(0))?1:0;
         int closed = 0;
 
-        List<String> list = new ArrayList<>();
-        StringBuilder buffer = new StringBuilder();
+        List<String> list = new ArrayList<>(3);
+        StringBuilder buffer = new StringBuilder(10);
         boolean waitSep = false;
         boolean waitStart = true;
         boolean waitEndStr = false;
 
-        for(int i=0;i<data.length();i++){
-            char c = data.charAt(i);
-
+        for(char c:data.toCharArray()){
             if (c == '"') {
                 if(waitEndStr){
                     if(openned == closed){
@@ -293,9 +267,9 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
             }
 
             if(waitSep){
-                if(c==sep){
+                if(c==objectSeparator){
                     list.add(buffer.toString().trim());
-                    buffer = new StringBuilder();
+                    buffer = new StringBuilder(10);
                     waitSep = false;
                 } else {
                     buffer.append(c);
@@ -304,7 +278,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
                 buffer.append(c);
             }
 
-            boolean cM1 = contains(m1, c);
+            boolean cM1 = contains(startSeparators, c);
 
             if(waitStart && cM1){
                 continue;
@@ -312,75 +286,20 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
                 waitStart = false;
             }
             if(cM1){
-                openned+=1;
-            }else if(contains(m2, c)){
-                closed+=1;
+                ++openned;
+            }else if(contains(endSeparators, c)){
+                ++closed;
                 if(openned==closed){
                     waitStart = true;
                     waitSep = true;
                 }
             }
         }
-
         if(openned != closed){
             throw new RuntimeException("Json syntax error! --> "+data);
         }
         String result = buffer.toString().trim();
         if(!result.isEmpty()){
-            list.add(result);
-        }
-        return list;
-    }
-
-
-    protected static List<String> split(String data, char m1, char m2, char sep){
-        if(m1==m2){
-            return split(data, m1, sep);
-        }
-        data = data.trim();
-        int openned = 0;
-        int closed = 0;
-
-        List<String> list = new ArrayList<>();
-        StringBuilder buffer = new StringBuilder();
-        boolean waitSep = false;
-        boolean waitStart = true;
-
-        for(int i=0;i<data.length();i++){
-            char c = data.charAt(i);
-            if(waitSep){
-                if(c==sep){
-                    list.add(buffer.toString().trim());
-                    buffer = new StringBuilder();
-                    waitSep = false;
-                } else {
-                    buffer.append(c);
-                }
-                continue;
-            } else {
-                buffer.append(c);
-            }
-
-            if(waitStart && c != m1){
-                continue;
-            } else {
-                waitStart = false;
-            }
-            if(c==m1){
-                openned+=1;
-            }else if(c==m2){
-                closed+=1;
-                if(openned==closed){
-                    waitStart = true;
-                    waitSep = true;
-                }
-            }
-        }
-        if(openned != closed){
-            throw new RuntimeException("Tson syntax error!");
-        }
-        String result = buffer.toString().trim();
-        if(!result.equals("")){
             list.add(result);
         }
         return list;
@@ -430,7 +349,6 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
 
     public static String getSubData(String data, char m1, char m2){
-        if(m1==m2)return getSubData(data, m1);
         data = data.trim();
 
         int start = data.indexOf(m1);
@@ -438,16 +356,17 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
         int end = data.indexOf(m2, start);
         if(end==-1)throw new NoSearchException();
 
-        int opened = 0;
-        int closed = 0;
+        short opened = 0;
+        short closed = 0;
+        int ln = data.length();
 
-        for(int i=start;i<data.length();i++){
+        for(int i=start;i<ln;i++){
             char c = data.charAt(i);
             if(c==m1){
-                opened+=1;
+                ++opened;
             }
             if(c==m2){
-                closed+=1;
+                ++closed;
             }
             if(opened==closed){
                 end = i;

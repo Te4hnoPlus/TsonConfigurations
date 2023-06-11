@@ -1,6 +1,7 @@
 package plus.tson;
 
-public class TsonFloat extends TsonPrimitive{
+
+public final class TsonFloat extends TsonPrimitive{
     private final float value;
 
 

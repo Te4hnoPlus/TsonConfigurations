@@ -5,7 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 
-public class TsonClass extends TsonPrimitive {
+public final class TsonClass extends TsonPrimitive {
     private final Class<?> clazz;
 
     public TsonClass(String clazz){

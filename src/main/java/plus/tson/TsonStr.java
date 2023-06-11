@@ -1,7 +1,7 @@
 package plus.tson;
 
 
-class TsonStr implements TsonObj {
+public final class TsonStr implements TsonObj {
     private final String value;
 
     public TsonStr(String value) {

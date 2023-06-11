@@ -6,7 +6,7 @@ import java.util.List;
 import static plus.tson.TsonMap.*;
 
 
-public class TsonField<T> implements TsonObj{
+public final class TsonField<T> implements TsonObj{
     private final T field;
 
     public static TsonField<?> build(String data){
@@ -58,7 +58,7 @@ public class TsonField<T> implements TsonObj{
 
 
     private static Object getExistObj(String data){
-        List<String> values = split(data,startSeparators, endSeparators, objectSeparator);
+        List<String> values = splitStr(data);
 
         if(values.size()>2)throw new NoSearchException("generator syntax: <(CLASS), {data=\"example\"}>");
 
@@ -82,7 +82,7 @@ public class TsonField<T> implements TsonObj{
 
 
     private static Object genObj(String data){
-        List<String> values = split(data,startSeparators, endSeparators, objectSeparator);
+        List<String> values = splitStr(data);
 
         if(values.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
 

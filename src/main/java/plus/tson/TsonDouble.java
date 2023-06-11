@@ -1,7 +1,7 @@
 package plus.tson;
 
 
-class TsonDouble extends TsonPrimitive{
+public final class TsonDouble extends TsonPrimitive{
     private final double value;
 
 

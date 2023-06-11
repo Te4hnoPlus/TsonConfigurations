@@ -2,6 +2,7 @@ package plus.tson;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 
 public class TsonList extends ArrayList<TsonObj> implements TsonObj {
@@ -25,12 +26,10 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
                 }
                 break;
             case STR:
-                for (String s : TsonMap.split(data, '"', ',')) {
-                    add(s);
-                }
+                addStrList(data);
                 break;
             case LIST:
-                List<String> items = TsonMap.split(data, '[', ']', ',');
+                List<String> items = splitStr(data, '[', ']');
                 if(items.size()==1){
                     data = items.get(0);
                     data = data.substring(1, data.length()-1);
@@ -41,17 +40,94 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
                 }
                 break;
             case MAP:
-                for (String s : TsonMap.split(data, '{', '}', ',')) {
+                for (String s : splitStr(data, '{', '}')) {
                     add(new TsonMap(s));
                 }
                 break;
             case FIELD:
-                for (String s : TsonMap.split(data, '<', '>', ',')) {
+                for (String s : splitStr(data, '<', '>')) {
                     add(TsonField.build(s));
                 }
                 break;
         }
         return this;
+    }
+
+
+    private static List<String> splitStr(String data, char m1, char m2){
+        data = data.trim();
+        int openned = 0;
+        int closed = 0;
+
+        List<String> list = new ArrayList<>();
+        StringBuilder buffer = new StringBuilder();
+        boolean waitSep = false;
+        boolean waitStart = true;
+
+        for(char c:data.toCharArray()){
+            if(waitSep){
+                if(c== ','){
+                    list.add(buffer.toString().trim());
+                    buffer = new StringBuilder();
+                    waitSep = false;
+                } else {
+                    buffer.append(c);
+                }
+                continue;
+            } else {
+                buffer.append(c);
+            }
+
+            if(waitStart && c != m1){
+                continue;
+            } else {
+                waitStart = false;
+            }
+            if(c==m1){
+                ++openned;
+            }else if(c==m2){
+                if(openned==++closed){
+                    waitStart = true;
+                    waitSep = true;
+                }
+            }
+        }
+        if(openned != closed){
+            throw new RuntimeException("Tson syntax error!");
+        }
+        String result = buffer.toString().trim();
+        if(!result.equals("")){
+            list.add(result);
+        }
+        return list;
+    }
+
+
+    private void addStrList(String data){
+        StringBuilder buffer = new StringBuilder(10);
+        boolean waitStart = true;
+        boolean waitEnd = false;
+
+        for(char c:data.toCharArray()){
+            if(waitStart){
+                if(c== '"'){
+                    waitStart = false;
+                    waitEnd = true;
+                }
+            } else if(waitEnd){
+                if(c== '"'){
+                    waitEnd = false;
+                    add(buffer.toString());
+                    buffer = new StringBuilder(10);
+                } else {
+                    buffer.append(c);
+                }
+            } else {
+                if(c== ','){
+                    waitStart = true;
+                }
+            }
+        }
     }
 
 
@@ -182,10 +258,10 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     @Override
     public String toString() {
-        String[] strings = new String[this.size()];
-        for (int i = 0; i < strings.length; i++) {
-            strings[i] = get(i).toString();
+        StringJoiner joiner = new StringJoiner(",");
+        for (int i = 0; i < this.size(); i++) {
+            joiner.add(get(i).toString());
         }
-        return '[' + String.join(", ", strings) + ']';
+        return '[' + joiner.toString() + ']';
     }
 }

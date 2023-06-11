@@ -1,7 +1,7 @@
 package plus.tson;
 
 
-public class TsonInt extends TsonPrimitive{
+public final class TsonInt extends TsonPrimitive{
     private final int value;
 
 

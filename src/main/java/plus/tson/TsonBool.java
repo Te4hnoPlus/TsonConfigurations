@@ -1,7 +1,7 @@
 package plus.tson;
 
 
-public class TsonBool extends TsonPrimitive {
+public final class TsonBool extends TsonPrimitive {
     private final boolean value;
 
 
