@@ -55,7 +55,7 @@ public final class TsonClass extends TsonPrimitive {
             for(int i=0;i<strings.length;i++){
                 strings[i] = args[i].getClass().getName();
             }
-
+            e.printStackTrace();
             throw new NoSearchException(
                     String.format("constructor not exist! %s(%s)",
                             clazz.getName(), String.join(", ",strings))

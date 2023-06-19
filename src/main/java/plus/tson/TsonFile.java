@@ -96,11 +96,21 @@ public class TsonFile extends TsonMap {
 
 
     public TsonFile load(){
-        return load("");
+        return load(new ClassManager.Def());
+    }
+
+
+    public TsonFile load(ClassManager manager){
+        return load(manager, "");
     }
 
 
     public TsonFile load(String def){
+        return this.load(new ClassManager.Def(), def);
+    }
+
+
+    public TsonFile load(ClassManager manager, String def){
         String data = read(file, def);
         Object[] data0 = Annotation.scan(data);
         annotation = (Annotation) data0[0];
@@ -109,7 +119,7 @@ public class TsonFile extends TsonMap {
             if(data.equals(""))return this;
             write(new File(file.getName()+"_backup"),annotation+data);
         }
-        return (TsonFile) init(new ClassManager.Def(), data);
+        return (TsonFile) init(manager, data);
     }
 
 

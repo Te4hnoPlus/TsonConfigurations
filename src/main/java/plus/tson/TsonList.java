@@ -70,8 +70,24 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
         StringBuilder buffer = new StringBuilder();
         boolean waitSep = false;
         boolean waitStart = true;
+        boolean waitEndStr = false;
 
         for(char c:data.toCharArray()){
+            if (c == '"') {
+                if(waitEndStr){
+                    if(openned == closed){
+                        waitSep = true;
+                    }
+                }
+                waitEndStr = !waitEndStr;
+                buffer.append(c);
+                continue;
+            }
+            if(waitEndStr){
+                buffer.append(c);
+                continue;
+            }
+
             if(waitSep){
                 if(c== ','){
                     list.add(buffer.toString().trim());

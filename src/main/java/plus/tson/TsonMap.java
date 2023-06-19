@@ -38,8 +38,13 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
 
     private void processItem(ClassManager manager, String raw){
+        String key;
         try {
-            String key = getSubStrBefore(raw, "=").trim();
+            key = getSubStrBefore(raw, "=").trim();
+        } catch (NoSearchException e){
+            return;
+        }
+        try {
             switch (TsonObjType.scanType(raw)) {
                 case STR:
                     put(key, getSubData(raw, '"'));
@@ -57,7 +62,9 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
                     put(key, TsonField.build(manager, getSubData(raw, '<', '>')));
                     break;
             }
-        } catch (NoSearchException ignored) {}
+        } catch (NoSearchException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -163,6 +170,13 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    public String getStrSafe(String key){
+        TsonObj obj = super.get(key);
+        if(obj==null)return null;
+        return obj.getStr();
+    }
+
+
     public int getInt(String key) {
         return super.get(key).getInt();
     }
@@ -229,7 +243,6 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
     private static final char[] startSeparators = new char[]{'[', '{', '(', '<'};
     private static final char[] endSeparators = new char[]{']', '}', ')', '>'};
-    private static final char objectSeparator = ',';
 
     static{
         Arrays.sort(startSeparators);
@@ -274,7 +287,7 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
             }
 
             if(waitSep){
-                if(c==objectSeparator){
+                if(c==','){
                     list.add(buffer.toString().trim());
                     buffer = new StringBuilder(10);
                     waitSep = false;
