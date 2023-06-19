@@ -1,6 +1,8 @@
 package plus.tson;
 
 import plus.tson.exception.NoSearchException;
+import plus.tson.security.ClassManager;
+
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -11,11 +13,16 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
 
     public TsonMap(String data) {
-        init(data);
+        this(new ClassManager.Def(), data);
     }
 
 
-    protected TsonMap init(String data){
+    public TsonMap(ClassManager manager, String data) {
+        init(manager, data);
+    }
+
+
+    protected final TsonMap init(ClassManager manager, String data){
         data = data.trim();
         if (data.isEmpty()) return this;
         try {
@@ -24,13 +31,13 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
             if (data.isEmpty()) return this;
         } catch (NoSearchException ignored) {}
         for (String raw : splitStr(data)) {
-            processItem(raw);
+            processItem(manager, raw);
         }
         return this;
     }
 
 
-    protected void processItem(String raw){
+    private void processItem(ClassManager manager, String raw){
         try {
             String key = getSubStrBefore(raw, "=").trim();
             switch (TsonObjType.scanType(raw)) {
@@ -38,16 +45,16 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
                     put(key, getSubData(raw, '"'));
                     break;
                 case MAP:
-                    put(key, new TsonMap(getSubData(raw, '{', '}')));
+                    put(key, new TsonMap(manager, getSubData(raw, '{', '}')));
                     break;
                 case LIST:
-                    put(key, new TsonList(getSubData(raw, '[', ']')));
+                    put(key, new TsonList(manager, getSubData(raw, '[', ']')));
                     break;
                 case BASIC:
-                    put(key, TsonPrimitive.build(getSubData(raw, '(', ')')));
+                    put(key, TsonPrimitive.build(manager, getSubData(raw, '(', ')')));
                     break;
                 case FIELD:
-                    put(key, TsonField.build(getSubData(raw, '<', '>')));
+                    put(key, TsonField.build(manager, getSubData(raw, '<', '>')));
                     break;
             }
         } catch (NoSearchException ignored) {}

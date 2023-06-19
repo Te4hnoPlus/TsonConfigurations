@@ -1,5 +1,7 @@
 package plus.tson;
 
+import plus.tson.security.ClassManager;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -11,11 +13,16 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
 
     public TsonList(String data) {
-        init(data);
+        this(new ClassManager.Def(), data);
     }
 
 
-    public TsonList init(String data){
+    public TsonList(ClassManager manager, String data) {
+        init(manager, data);
+    }
+
+
+    private TsonList init(ClassManager manager, String data){
         data = data.trim();
         if(data.isEmpty())return this;
 
@@ -33,10 +40,10 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
                 if(items.size()==1){
                     data = items.get(0);
                     data = data.substring(1, data.length()-1);
-                    return init(data);
+                    return init(manager, data);
                 }
                 for (String s : items) {
-                    add(new TsonList(s.substring(1, s.length()-1)));
+                    add(new TsonList(manager, s.substring(1, s.length()-1)));
                 }
                 break;
             case MAP:
@@ -46,7 +53,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
                 break;
             case FIELD:
                 for (String s : splitStr(data, '<', '>')) {
-                    add(TsonField.build(s));
+                    add(TsonField.build(manager, s));
                 }
                 break;
         }

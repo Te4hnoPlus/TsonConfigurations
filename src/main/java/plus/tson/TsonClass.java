@@ -1,6 +1,7 @@
 package plus.tson;
 
 import plus.tson.exception.NoSearchException;
+import plus.tson.security.ClassManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -9,11 +10,12 @@ public final class TsonClass extends TsonPrimitive {
     private final Class<?> clazz;
 
     public TsonClass(String clazz){
-        try {
-            this.clazz = Class.forName(clazz);
-        } catch (ClassNotFoundException e) {
-            throw new NoSearchException(clazz+" not class");
-        }
+        this(new ClassManager.Def(), clazz);
+    }
+
+
+    public TsonClass(ClassManager manager, String clazz){
+        this.clazz = manager.forName(clazz);
     }
 
 

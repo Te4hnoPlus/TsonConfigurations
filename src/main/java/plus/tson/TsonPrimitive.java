@@ -1,9 +1,15 @@
 package plus.tson;
 
+import plus.tson.security.ClassManager;
+
 
 public abstract class TsonPrimitive implements TsonObj{
-
     public static TsonPrimitive build(String value) {
+        return build(new ClassManager.Def(), value);
+    }
+
+
+    public static TsonPrimitive build(ClassManager manager, String value) {
         value = value.trim();
         if(value.startsWith("(") && value.endsWith(")")){
             value = value.substring(1, value.length()-1);
@@ -22,7 +28,7 @@ public abstract class TsonPrimitive implements TsonObj{
                 }
             } else return new TsonInt(Integer.parseInt(value));
         } catch (NumberFormatException e){
-            return new TsonClass(value);
+            return new TsonClass(manager, value);
         }
     }
 

@@ -1,5 +1,6 @@
 package plus.tson;
 
+import plus.tson.security.ClassManager;
 import plus.tson.utl.Tuple;
 import java.io.File;
 import java.io.FileWriter;
@@ -108,7 +109,7 @@ public class TsonFile extends TsonMap {
             if(data.equals(""))return this;
             write(new File(file.getName()+"_backup"),annotation+data);
         }
-        return (TsonFile) init(data);
+        return (TsonFile) init(new ClassManager.Def(), data);
     }
 
 

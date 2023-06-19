@@ -1,6 +1,7 @@
 package plus.tson;
 
 import plus.tson.exception.NoSearchException;
+import plus.tson.security.ClassManager;
 import java.lang.reflect.Field;
 import java.util.List;
 import static plus.tson.TsonMap.*;
@@ -9,7 +10,7 @@ import static plus.tson.TsonMap.*;
 public final class TsonField<T> implements TsonObj{
     private final T field;
 
-    public static TsonField<?> build(String data){
+    public static TsonField<?> build(ClassManager manager, String data){
         data = data.trim();
         if(data.startsWith("<") && data.endsWith(">")){
             data = data.substring(1, data.length()-1).trim();
@@ -17,9 +18,9 @@ public final class TsonField<T> implements TsonObj{
         if(data.isEmpty()) return null;
 
         if(data.charAt(0)=='&'){
-            return new TsonField<>(getExistObj(data));
+            return new TsonField<>(getExistObj(manager, data));
         }
-        return new TsonField<>(genObj(data));
+        return new TsonField<>(genObj(manager, data));
     }
 
 
@@ -57,14 +58,13 @@ public final class TsonField<T> implements TsonObj{
     }
 
 
-    private static Object getExistObj(String data){
+    private static Object getExistObj(ClassManager manager, String data){
         List<String> values = splitStr(data);
-
         if(values.size()>2)throw new NoSearchException("generator syntax: <(CLASS), {data=\"example\"}>");
 
-        TsonClass cl = new TsonClass(getSubData(values.get(0), '(', ')'));
+        TsonClass cl = new TsonClass(manager, getSubData(values.get(0), '(', ')'));
 
-        Field f = null;
+        Field f;
         String field = getSubData(values.get(1), '"');
         try {
             f = cl.getField().getDeclaredField(field);
@@ -81,12 +81,12 @@ public final class TsonField<T> implements TsonObj{
     }
 
 
-    private static Object genObj(String data){
+    private static Object genObj(ClassManager manager, String data){
         List<String> values = splitStr(data);
 
         if(values.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
 
-        TsonClass cl = new TsonClass(getSubData(values.get(0), '(', ')'));
+        TsonClass cl = new TsonClass(manager, getSubData(values.get(0), '(', ')'));
 
         if(values.size()==1){
             return cl.createInst();
@@ -101,16 +101,16 @@ public final class TsonField<T> implements TsonObj{
                     objects[i-1] = getSubData(raw, '"');
                     break;
                 case LIST:
-                    objects[i-1] = new TsonList(raw);
+                    objects[i-1] = new TsonList(manager, raw);
                     break;
                 case BASIC:
-                    objects[i-1] = TsonPrimitive.build(raw).getField();
+                    objects[i-1] = TsonPrimitive.build(manager, raw).getField();
                     break;
                 case MAP:
-                    objects[i-1] = new TsonMap(raw);
+                    objects[i-1] = new TsonMap(manager, raw);
                     break;
                 case FIELD:
-                    objects[i-1] = TsonField.build(raw).getField();
+                    objects[i-1] = TsonField.build(manager, raw).getField();
                     break;
             }
         }
