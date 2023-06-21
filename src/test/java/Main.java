@@ -1,12 +1,10 @@
-import plus.tson.TsonList;
-import plus.tson.TsonMap;
-import plus.tson.TsonObj;
-import plus.tson.TsonSerelizable;
+import plus.tson.*;
 
 
 public class Main {
     public static void main(String[] args) {
         try{
+            System.out.println();
             test2();
         }catch (Exception e){
             e.printStackTrace();
@@ -16,22 +14,22 @@ public class Main {
     
     public static void test2(){
         TsonMap mp = new TsonMap();
-        mp.put("k", (TsonSerelizable)new Ts2("av","ab"));
+        mp.put("k", (TsonSerelizable)new Example("av","ab"));
 
         System.out.println(mp);
         System.out.println(new TsonMap(mp.toString()));
     }
     
     
-    public static class Ts2 implements TsonSerelizable{
+    public static class Example implements TsonSerelizable{
         private final String k;
         private final String v;
-        public Ts2(String k, String v){
+        public Example(String k, String v){
             this.k = k;this.v = v;
 
         }
-        
-        public Ts2(TsonMap mp){
+
+        public Example(TsonMap mp){
             k = mp.getStr("k");
             v = mp.getStr("v");
             System.out.println("NEN!");

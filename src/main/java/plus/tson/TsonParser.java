@@ -46,7 +46,9 @@ class TsonParser {
         switch (data[cursor++]){
             case '(': return getBasic();
             case '"':
-                return getStr();
+                return getStr('"');
+            case '\'':
+                return getStr('\'');
             case '{':
                 return getMap();
             case '[':
@@ -128,13 +130,13 @@ class TsonParser {
     }
 
 
-    protected TsonStr getStr(){
+    private TsonStr getStr(char end){
         int cur = cursor;
         boolean prevEcran = false;
         StringBuilder b = new StringBuilder();
         for(;cur<data.length;++cur){
             char c = data[cur];
-            if(c=='"' && !prevEcran)break;
+            if(c==end && !prevEcran)break;
             if(c=='\\'){
                 prevEcran = true;
                 continue;
