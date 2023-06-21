@@ -1,13 +1,13 @@
 package plus.tson;
 
 import plus.tson.security.ClassManager;
-
+import plus.tson.utl.Te4HashMap;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 
-public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
+public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     public TsonMap(){}
 
 
@@ -176,11 +176,13 @@ public class TsonMap extends HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(",");
-        for(String key : this.keySet()){
-            joiner.add(key + "=" + super.get(key).toString());
+        StringBuilder builder = new StringBuilder("{");
+        for(Node<String, TsonObj> node : super.table){
+            if(node==null)continue;
+            builder.append(node.getKey()).append('=').append(node.getValue()).append(',');
         }
-        return '{'+joiner.toString()+'}';
+        builder.setCharAt(builder.length()-1, '}');
+        return builder.toString();
     }
 
 

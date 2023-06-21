@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
         try{
             System.out.println();
-            test2();
+            test();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -15,7 +15,6 @@ public class Main {
     public static void test2(){
         TsonMap mp = new TsonMap();
         mp.put("k", (TsonSerelizable)new Example("av","ab"));
-
         System.out.println(mp);
         System.out.println(new TsonMap(mp.toString()));
     }

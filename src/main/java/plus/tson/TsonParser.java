@@ -44,17 +44,12 @@ class TsonParser {
 
     protected TsonObj getItem(){
         switch (data[cursor++]){
+            case '"': return getStr('"');
+            case '\'': return getStr('\'');
             case '(': return getBasic();
-            case '"':
-                return getStr('"');
-            case '\'':
-                return getStr('\'');
-            case '{':
-                return getMap();
-            case '[':
-                return getList();
-            case '<':
-                return getField();
+            case '{': return getMap();
+            case '[': return getList();
+            case '<': return getField();
         }
         throw new NoSearchException("Char ["+data[cursor]+"] not supported");
     }
