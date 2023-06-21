@@ -79,6 +79,11 @@ public class TsonFile extends TsonMap {
     }
 
 
+    public File getFile(){
+        return file;
+    }
+
+
     public TsonFile(String fileName){
         file = new File(fileName);
         load();
@@ -163,7 +168,7 @@ public class TsonFile extends TsonMap {
             return def;
         } else {
             try {
-                String data = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+                String data = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
                 if(data.equals("")){
                     if(def!=null && !"".equals(def)){
                         System.out.println(".tson is empty! write default.");
