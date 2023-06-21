@@ -90,6 +90,12 @@ public class TsonFile extends TsonMap {
     }
 
 
+    public TsonFile(ClassManager manager, String fileName){
+        file = new File(fileName);
+        load(manager);
+    }
+
+
     public TsonFile(File file){
         this.file = file;
     }
@@ -124,7 +130,10 @@ public class TsonFile extends TsonMap {
             if(data.equals(""))return this;
             write(new File(file.getName()+"_backup"),annotation+data);
         }
-        return (TsonFile) init(manager, data);
+        new TsonParser(manager,
+                data.replace("\r","").replace("\t","    ")
+        ).goTo('{').fillMap(this);
+        return this;
     }
 
 

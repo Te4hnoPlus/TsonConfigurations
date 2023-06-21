@@ -1,42 +1,43 @@
-package plus.tson.experemental;
+package plus.tson;
 
-import plus.tson.*;
 import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 
 
-public class FastParser {
+class TsonParser {
     private final ClassManager manager;
     private final char[] data;
     private int cursor = 0;
 
-    public FastParser(String data) {
+    public TsonParser(String data) {
         this.manager = new ClassManager.Def();
         this.data = data.toCharArray();
     }
 
 
-    public FastParser(ClassManager manager, String data) {
+    public TsonParser(ClassManager manager, String data) {
         this.manager = manager;
         this.data = data.toCharArray();
     }
 
 
-    public static void main(String... args){
-        System.out.println("NEN");
-        System.out.println(new FastParser(
-                null, "  'a' , { key = 'val ' , key2 = ' val2' }, 'a2' ".replace("'","\"")
-                ).goToFirst().getList() );
-    }
-
-
-    protected FastParser goToFirst(){
+    protected TsonParser goToFirst(){
         int cur = cursor;
         for(;cur<data.length;++cur){
             char c = data[cur];
             if(!(c==' ' || c == '\n'))break;
         }
         cursor = cur;
+        return this;
+    }
+
+
+    protected TsonParser goTo(char chr){
+        int cur = cursor;
+        for(;cur<data.length;++cur){
+            if(data[cur]==chr)break;
+        }
+        cursor = cur+1;
         return this;
     }
 
@@ -57,13 +58,18 @@ public class FastParser {
     }
 
 
-    protected TsonMap getMap(){
+    private TsonMap getMap(){
         TsonMap map = new TsonMap();
+        fillMap(map);
+        return map;
+    }
+
+
+    protected void fillMap(TsonMap map){
         int cur = cursor;
         boolean waitSep = false;
         boolean waitKey = true;
         String key = null;
-
         for(;cur<data.length;++cur){
             char c = data[cur];
             if(c=='}')break;
@@ -84,12 +90,17 @@ public class FastParser {
             cur = cursor;
         }
         cursor = cur;
-        return map;
     }
 
 
     protected TsonList getList(){
         TsonList list = new TsonList();
+        fillList(list);
+        return list;
+    }
+
+
+    protected void fillList(TsonList list){
         int cur = cursor;
         boolean first = true;
         boolean waitSep = true;
@@ -114,7 +125,6 @@ public class FastParser {
                 waitSep = true;
             }
         }
-        return list;
     }
 
 
@@ -170,6 +180,7 @@ public class FastParser {
             waitSep = true;
         }
         if(list.size()>0) {
+            if(list.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
             return new TsonField<>(tsonClass.createInst(list.toArray()));
         } else {
             return new TsonField<>(tsonClass.createInst());
@@ -193,9 +204,14 @@ public class FastParser {
 
     private TsonClass getTsonClass(){
         int cur = cursor;
+        boolean ignore = true;
         StringBuilder b = new StringBuilder();
         for(;cur<data.length;++cur){
             char c = data[cur];
+            if(ignore){
+                ignore = c=='(';
+                if(ignore)continue;
+            }
             if(c==' ' || c == '\n')continue;
             if(c==')')break;
             b.append(c);
