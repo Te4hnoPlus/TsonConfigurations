@@ -44,4 +44,10 @@ public final class TsonDouble extends TsonPrimitive{
     public boolean isNumber(){
         return true;
     }
+
+
+    @Override
+    public void code(StringBuilder sb) {
+        sb.append('(').append(value).append(')');
+    }
 }

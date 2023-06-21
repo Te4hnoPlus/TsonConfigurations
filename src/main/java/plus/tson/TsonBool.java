@@ -38,4 +38,10 @@ public final class TsonBool extends TsonPrimitive {
     public boolean isBool() {
         return true;
     }
+
+
+    @Override
+    public void code(StringBuilder sb) {
+        sb.append('(').append(value).append(')');
+    }
 }

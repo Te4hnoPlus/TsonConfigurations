@@ -64,4 +64,9 @@ public interface TsonObj {
 
 
     default String toJsonStr(){return toString();}
+
+
+    default void code(StringBuilder sb){
+        sb.append(this);
+    }
 }

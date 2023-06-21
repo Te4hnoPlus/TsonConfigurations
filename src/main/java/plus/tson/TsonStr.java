@@ -23,4 +23,10 @@ public final class TsonStr implements TsonObj {
     public String toString() {
         return '"' + value + '"';
     }
+
+
+    @Override
+    public void code(StringBuilder sb) {
+        sb.append('"').append(value).append('"');
+    }
 }

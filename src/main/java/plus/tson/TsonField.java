@@ -42,10 +42,22 @@ public final class TsonField<T> implements TsonObj{
     @Override
     public String toString() {
         if(field instanceof TsonSerelizable) {
-            return "<(" + field.getClass().getName() + "), " +
+            return "<(" + field.getClass().getName() + ")," +
                     ((TsonSerelizable) field).toTson().toString() + '>';
         } else {
-            return "<(" + field.getClass().getName() +">) TSON NOT SUPPORTED>";
+            return "<(" + field.getClass().getName() +">),\""+ field +"\">";
+        }
+    }
+
+
+    @Override
+    public void code(StringBuilder sb) {
+        if(field instanceof TsonSerelizable) {
+            sb.append("<(").append(field.getClass().getName()).append("),")
+                    .append(((TsonSerelizable) field).toTson().toString()).append('>');
+        } else {
+            sb.append("<(").append(field.getClass().getName()).append("),\"")
+                    .append(field.toString()).append("\">");
         }
     }
 }
