@@ -3,6 +3,7 @@ package plus.tson;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.Tuple;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -164,6 +165,19 @@ public class TsonFile extends TsonMap {
     }
 
 
+    public static byte[] readFile(File file){
+        try {
+            FileInputStream is = new FileInputStream(file);
+            byte[] result = is.readAllBytes();
+            is.close();
+            return result;
+        } catch (Exception e){
+            e.printStackTrace();
+            return new byte[0];
+        }
+    }
+
+
     public static String read(File file, String def){
         if(!file.exists()){
             try {
@@ -177,7 +191,7 @@ public class TsonFile extends TsonMap {
             return def;
         } else {
             try {
-                String data = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+                String data = new String(readFile(file), StandardCharsets.UTF_8);
                 if(data.equals("")){
                     if(def!=null && !"".equals(def)){
                         System.out.println(".tson is empty! write default.");

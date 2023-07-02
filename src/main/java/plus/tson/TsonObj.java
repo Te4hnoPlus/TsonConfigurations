@@ -6,42 +6,42 @@ import plus.tson.exception.WrongTypeException;
 public interface TsonObj {
 
     default String getStr() {
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getStr()");
     }
 
 
     default int getInt() {
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getInt()");
     }
 
 
     default double getDouble() {
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getDouble()");
     }
 
 
     default float getFloat(){
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getFloat()");
     }
 
 
     default boolean getBool(){
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getBool()");
     }
 
 
     default TsonMap getMap() {
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getMap()");
     }
 
 
     default TsonList getList() {
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getList()");
     }
 
 
     default Object getField(){
-        throw new WrongTypeException();
+        throw new WrongTypeException(this.getClass(),"getField()");
     }
 
 

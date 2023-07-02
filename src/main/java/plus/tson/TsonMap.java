@@ -2,7 +2,6 @@ package plus.tson;
 
 import plus.tson.security.ClassManager;
 import plus.tson.utl.Te4HashMap;
-import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -176,6 +175,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public String toString() {
+        if(super.size()==0)return "{}";
         StringBuilder builder = new StringBuilder("{");
         for(Node<String, TsonObj> node : super.table){
             if(node==null)continue;

@@ -55,8 +55,16 @@ public class TextFormatter<T> implements IVarGetter<T>{
             } else {
                 if(cur==ed && i>1 && stc[i-1] != '\\'){
                     text = true;
-                    IVarGetter<T> getter = provider.get(format.substring(sCursor, i).trim());
-                    if(IVarGetter.isConst(getter)){
+                    String fmGetterName = format.substring(sCursor, i).trim();
+                    IVarGetter<T> getter = provider.getFmGetter(fmGetterName);
+                    boolean isConst = true;
+                    if(getter==null){
+                        System.out.println("VarGetter ["+fmGetterName+"] not valid. Ignored.");
+                        getter = new ConstVarGetter<>(fmGetterName);
+                    } else {
+                        isConst = IVarGetter.isConst(getter);
+                    }
+                    if(isConst){
                         items.add(items.remove(items.size()-1)+getter.get(null));
                         flag = true;
                     } else {
@@ -159,7 +167,7 @@ class ProxyProvider<T> implements IVarProvider<T>{
 
 
     @Override
-    public IVarGetter<T> get(String name){
+    public IVarGetter<T> getFmGetter(String name){
         name = name.trim();
         boolean flag = false;
         int split = -1;
@@ -194,11 +202,21 @@ class ProxyProvider<T> implements IVarProvider<T>{
 
         if(split>0){
             return new VarDefGetter<>(
-                    get0(name.substring(0, split)),
-                    get(name.substring(split+1))
+                    get1(name.substring(0, split)),
+                    getFmGetter(name.substring(split+1))
             );
         }
-        return get0(name);
+        return get1(name);
+    }
+
+
+    private IVarGetter<T> get1(String name){
+        IVarGetter<T> result = get0(name);
+        if(result==null){
+            System.out.println("VarGetter ["+name+"] not valid. Ignored.");
+            return new ConstVarGetter<>(name);
+        }
+        return result;
     }
 
 
@@ -207,6 +225,6 @@ class ProxyProvider<T> implements IVarProvider<T>{
         if(name.charAt(0)=='"' && name.charAt(name.length()-1)=='"'){
             return new ConstVarGetter<>(name.substring(1, name.length()-1));
         }
-        return parent.get(name);
+        return parent.getFmGetter(name);
     }
 }

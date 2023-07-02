@@ -11,10 +11,7 @@ import java.util.function.Function;
 
 
 public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
-//    private static final long serialVersionUID = 362498820763181265L;
-
-
-    static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
+    static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
     static final int MAXIMUM_CAPACITY = 1 << 30;
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
     static final int TREEIFY_THRESHOLD = 8;
@@ -64,14 +61,14 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
     protected static int hash(Object key) {
         int h;
-        return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+        return (h = key.hashCode()) ^ (h >>> 16);
     }
 
 
     static Class<?> comparableClassFor(Object x) {
         if (x instanceof Comparable) {
             Class<?> c; Type[] ts, as; ParameterizedType p;
-            if ((c = x.getClass()) == String.class) // bypass checks
+            if ((c = x.getClass()) == String.class)
                 return c;
             if ((ts = c.getGenericInterfaces()) != null) {
                 for (Type t : ts) {
@@ -101,7 +98,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
     }
 
 
-    protected Node<K,V>[] table;
+    protected Node<K,V>[] table = new Node[0];
     private Set<Map.Entry<K,V>> entrySet;
     private int size;
     protected int modCount;
@@ -112,12 +109,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
 
     public Te4HashMap(int initialCapacity, float loadFactor) {
-        if (initialCapacity < 0)
-            throw new IllegalArgumentException("Illegal initial capacity: " +
-                    initialCapacity);
-        if (initialCapacity > MAXIMUM_CAPACITY)
-            initialCapacity = MAXIMUM_CAPACITY;
-        if (loadFactor <= 0 || Float.isNaN(loadFactor))
+        if (loadFactor <= 0)
             throw new IllegalArgumentException("Illegal load factor: " +
                     loadFactor);
         this.loadFactor = loadFactor;
@@ -175,15 +167,27 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
 
     public V get(Object key) {
-        Node<K,V> e;
-        return (e = getNode(key)) == null ? null : e.value;
+        Node<K,V>[] tab = table; Node<K,V> first, e; int n, hash; K k;
+        if ((n = tab.length) > 0 && (first = tab[(n - 1) & (hash = hash(key))]) != null) {
+            if (first.hash == hash && // always check first node
+                    ((k = first.key) == key || (k.equals(key))))
+                return first.value;
+            if ((e = first.next) != null) {
+                if (first instanceof TreeNode)
+                    return ((TreeNode<K,V>)first).getTreeNode(hash, key).value;
+                do {
+                    if (e.hash == hash && ((k = e.key) == key || key.equals(k)))
+                        return e.value;
+                } while ((e = e.next) != null);
+            }
+        }
+        return null;
     }
 
 
     public final Node<K,V> getNode(Object key) {
-        Node<K,V>[] tab; Node<K,V> first, e; int n, hash; K k;
-        if ((tab = table) != null && (n = tab.length) > 0 &&
-                (first = tab[(n - 1) & (hash = hash(key))]) != null) {
+        Node<K,V>[] tab = table; Node<K,V> first, e; int n, hash; K k;
+        if ((n = tab.length) > 0 && (first = tab[(n - 1) & (hash = hash(key))]) != null) {
             if (first.hash == hash && // always check first node
                     ((k = first.key) == key || (k.equals(key))))
                 return first;
@@ -191,8 +195,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                 if (first instanceof TreeNode)
                     return ((TreeNode<K,V>)first).getTreeNode(hash, key);
                 do {
-                    if (e.hash == hash &&
-                            ((k = e.key) == key || (key != null && key.equals(k))))
+                    if (e.hash == hash && ((k = e.key) == key || key.equals(k)))
                         return e;
                 } while ((e = e.next) != null);
             }

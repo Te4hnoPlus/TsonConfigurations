@@ -64,7 +64,7 @@ public final class TsonClass extends TsonPrimitive {
     }
 
 
-    public static Object createInst(String clazz, Object... args)
+    public static Object createInstOf(String clazz, Object... args)
             throws ClassNotFoundException, InvocationTargetException,
             NoSuchMethodException, InstantiationException, IllegalAccessException {
         return createInst(Class.forName(clazz), args);

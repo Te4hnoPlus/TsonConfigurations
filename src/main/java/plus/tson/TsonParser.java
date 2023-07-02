@@ -4,7 +4,7 @@ import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 
 
-class TsonParser {
+final class TsonParser {
     private final ClassManager manager;
     private final char[] data;
     private int cursor = 0;
@@ -21,9 +21,9 @@ class TsonParser {
     }
 
 
-    protected TsonParser goToFirst(){
-        int cur = cursor;
-        for(;cur<data.length;++cur){
+    TsonParser goToFirst(){
+        int cur;
+        for(cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(!(c==' ' || c == '\n'))break;
         }
@@ -32,17 +32,17 @@ class TsonParser {
     }
 
 
-    protected TsonParser goTo(char chr){
-        int cur = cursor;
-        for(;cur<data.length;++cur){
+    TsonParser goTo(char chr){
+        int cur;
+        for(cur=cursor;cur<data.length;++cur){
             if(data[cur]==chr)break;
         }
-        cursor = cur+1;
+        cursor = ++cur;
         return this;
     }
 
 
-    protected TsonObj getItem(){
+    private TsonObj getItem(){
         switch (data[cursor++]){
             case '"': return getStr('"');
             case '\'': return getStr('\'');
@@ -62,12 +62,12 @@ class TsonParser {
     }
 
 
-    protected void fillMap(TsonMap map){
-        int cur = cursor;
+    void fillMap(TsonMap map){
+        int cur;
         boolean waitSep = false;
         boolean waitKey = true;
         String key = null;
-        for(;cur<data.length;++cur){
+        for(cur = cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c=='}')break;
             if(waitSep){
@@ -90,18 +90,17 @@ class TsonParser {
     }
 
 
-    protected TsonList getList(){
+    TsonList getList(){
         TsonList list = new TsonList();
         fillList(list);
         return list;
     }
 
 
-    protected void fillList(TsonList list){
-        int cur = cursor;
+    void fillList(TsonList list){
         boolean first = true;
         boolean waitSep = true;
-        for(;cur<data.length;++cur){
+        for(int cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c == ']') break;
             if(first){
@@ -126,10 +125,10 @@ class TsonParser {
 
 
     private TsonStr getStr(char end){
-        int cur = cursor;
+        int cur;
         boolean prevEcran = false;
         StringBuilder b = new StringBuilder();
-        for(;cur<data.length;++cur){
+        for(cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c==end && !prevEcran)break;
             if(c=='\\'){
@@ -144,10 +143,10 @@ class TsonParser {
     }
 
 
-    protected TsonPrimitive getBasic(){
-        int cur = cursor;
+    TsonPrimitive getBasic(){
+        int cur;
         StringBuilder b = new StringBuilder();
-        for(;cur<data.length;++cur){
+        for(cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c==' ' || c == '\n')continue;
             if(c==')')break;
@@ -158,12 +157,11 @@ class TsonParser {
     }
 
 
-    protected TsonField<?> getField(){
+    TsonField<?> getField(){
         TsonClass tsonClass = getTsonClass();
         TsonList list = new TsonList();
-        int cur = cursor;
         boolean waitSep = true;
-        for(;cur<data.length;++cur){
+        for(int cur = cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c == '>') break;
             if(waitSep){
@@ -190,8 +188,8 @@ class TsonParser {
         StringBuilder b = new StringBuilder();
         for(;cur<data.length;++cur){
             char c = data[cur];
-            if(c==' ' || c == '\n')continue;
             if(c=='=')break;
+            if(c==' ' || c == '\n')continue;
             b.append(c);
         }
         cursor = cur;
