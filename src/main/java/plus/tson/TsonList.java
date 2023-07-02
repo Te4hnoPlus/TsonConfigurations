@@ -159,10 +159,23 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     @Override
     public void code(StringBuilder builder) {
+        builder.append('[');
         for (int i = 0; i < this.size(); i++) {
             get(i).code(builder);
             builder.append(',');
         }
         builder.setCharAt(builder.length()-1, ']');
+    }
+
+
+    @Override
+    public String toJsonStr() {
+        StringBuilder builder = new StringBuilder("[");
+        for (int i = 0; i < this.size(); i++) {
+            builder.append(get(i).toJsonStr());
+            builder.append(',');
+        }
+        builder.setCharAt(builder.length()-1, ']');
+        return builder.toString();
     }
 }
