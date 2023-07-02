@@ -66,12 +66,12 @@ public class Main {
 
     public static void test0(TsonMap map){
         long time = System.currentTimeMillis();
-        for(int i=0;i<1000_000;i++){
+        for(int i=0;i<10_000_000;i++){
             String s = map.toString();
             map = new TsonMap(s);
         }
         System.out.println(
-                1000_000/((System.currentTimeMillis()-time)/1000f)
+                10_000_000/((System.currentTimeMillis()-time)/1000f)
         );
     }
 }
