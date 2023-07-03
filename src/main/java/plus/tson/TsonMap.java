@@ -212,7 +212,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
             StringBuilder builder = new StringBuilder("{");
             for (Node<String, TsonObj> node : super.table) {
                 if (node == null) continue;
-                builder.append(node.getKey()).append(':').append(node.getValue()).append(',');
+                builder.append('"').append(node.getKey()).append("\":").append(node.getValue().toJsonStr()).append(',');
             }
             builder.setCharAt(builder.length() - 1, '}');
             return builder.toString();
