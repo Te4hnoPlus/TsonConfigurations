@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
         try{
             System.out.println();
-            test();
+            test2();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -14,9 +14,18 @@ public class Main {
     
     public static void test2(){
         TsonMap mp = new TsonMap();
-        mp.put("k", (TsonSerelizable)new Example("av","ab"));
-        System.out.println(mp);
-        System.out.println(new TsonMap(mp.toString()));
+        TsonMap mpt = new TsonMap();
+        mp.put("a","v");
+        mp.put("f","d");
+        mp.put("g","d");
+        mpt.put("aaa",mp);
+
+
+        System.out.println(mpt);
+//        TsonMap mp = new TsonMap();
+//        mp.put("k", (TsonSerelizable)new Example("av","ab"));
+//        System.out.println(mp);
+//        System.out.println(new TsonMap(mp.toString()));
     }
     
     

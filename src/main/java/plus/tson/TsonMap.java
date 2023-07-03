@@ -193,6 +193,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
         if(super.size()==0){
             builder.append("{}");
         } else {
+            builder.append('{');
             for (Node<String, TsonObj> node : super.table) {
                 if (node == null) continue;
                 builder.append(node.getKey()).append('=');
