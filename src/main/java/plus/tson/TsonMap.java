@@ -207,7 +207,8 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public String toJsonStr() {
-        if(super.size()==0) {
+        if(super.size()==0) return "{}";
+        else {
             StringBuilder builder = new StringBuilder("{");
             for (Node<String, TsonObj> node : super.table) {
                 if (node == null) continue;
@@ -215,6 +216,6 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
             }
             builder.setCharAt(builder.length() - 1, '}');
             return builder.toString();
-        } else return "{}";
+        }
     }
 }
