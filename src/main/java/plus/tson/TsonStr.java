@@ -20,6 +20,12 @@ public final class TsonStr implements TsonObj {
 
 
     @Override
+    public String getField(){
+        return value;
+    }
+
+
+    @Override
     public String toString() {
         return '"' + value + '"';
     }

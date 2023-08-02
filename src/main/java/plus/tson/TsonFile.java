@@ -167,10 +167,11 @@ public class TsonFile extends TsonMap {
 
     public static byte[] readFile(File file){
         try {
-            FileInputStream is = new FileInputStream(file);
-            byte[] result = is.readAllBytes();
-            is.close();
-            return result;
+            return Files.readAllBytes(file.toPath());
+//            FileInputStream is = new FileInputStream(file);
+//            byte[] result = is.readAllBytes();
+//            is.close();
+//            return result;
         } catch (Exception e){
             e.printStackTrace();
             return new byte[0];

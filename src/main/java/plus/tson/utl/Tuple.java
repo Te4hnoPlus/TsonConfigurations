@@ -25,4 +25,10 @@ public class Tuple<A, B> {
     public int hashCode() {
         return 31 * A.hashCode() + B.hashCode();
     }
+
+
+    @Override
+    public String toString() {
+        return "("+A+", "+B+")";
+    }
 }

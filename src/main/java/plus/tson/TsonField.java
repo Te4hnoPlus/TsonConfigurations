@@ -27,6 +27,11 @@ public final class TsonField<T> implements TsonObj{
     }
 
 
+    public <E> E getField(Class<E> type){
+        return (E) field;
+    }
+
+
     @Override
     public boolean isCustom(){
         return true;

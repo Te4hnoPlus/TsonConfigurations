@@ -3,6 +3,8 @@ package plus.tson;
 import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 
+import java.util.ArrayList;
+
 
 final class TsonParser {
     private final ClassManager manager;
@@ -159,7 +161,7 @@ final class TsonParser {
 
     TsonField<?> getField(){
         TsonClass tsonClass = getTsonClass();
-        TsonList list = new TsonList();
+        ArrayList<Object> list = new ArrayList<>();
         boolean waitSep = true;
         for(int cur = cursor;cur<data.length;++cur){
             char c = data[cur];
@@ -170,7 +172,7 @@ final class TsonParser {
             }
             if(c==' ' || c == '\n')continue;
             cursor = cur;
-            list.add(getItem());
+            list.add(getItem().getField());
             cur = cursor;
             waitSep = true;
         }
