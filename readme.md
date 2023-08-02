@@ -70,12 +70,13 @@ Tson считает за примимитивы:
 ```java
 TsonPrimitive primitive = TsonPrimitive.build("(10)");
 ```
-### Преобразование в JSON
+### Преобразования
 ```java
 String strMap = "{key='value'}";
 TsonMap map = new TsonMap(strMap);
+//преобразование в строку, из которой можно восстановить объект
 strMap = map.toString();
-
+//преобразование в JSON строку. Использование TsonField не возможно.
 String jsonString = map.toJsonStr();
 //{"key": "value"}
 ```
