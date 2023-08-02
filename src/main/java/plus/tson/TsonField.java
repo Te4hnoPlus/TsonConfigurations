@@ -16,6 +16,11 @@ public final class TsonField<T> implements TsonObj{
     }
 
 
+    public TsonField(ClassManager manager, String data){
+        field = (T) new TsonParser(manager, data).getFieldObj();
+    }
+
+
     public TsonField(T field) {
         this.field = field;
     }

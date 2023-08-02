@@ -159,7 +159,7 @@ final class TsonParser {
     }
 
 
-    TsonField<?> getField(){
+    Object getFieldObj(){
         TsonClass tsonClass = getTsonClass();
         ArrayList<Object> list = new ArrayList<>();
         boolean waitSep = true;
@@ -178,10 +178,15 @@ final class TsonParser {
         }
         if(list.size()>0) {
             if(list.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
-            return new TsonField<>(tsonClass.createInst(list.toArray()));
+            return tsonClass.createInst(list.toArray());
         } else {
-            return new TsonField<>(tsonClass.createInst());
+            return tsonClass.createInst();
         }
+    }
+
+
+    TsonField<?> getField(){
+        return new TsonField<>(getFieldObj());
     }
 
 

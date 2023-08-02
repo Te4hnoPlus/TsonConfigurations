@@ -1,6 +1,6 @@
 ## TsonConfigurations
 
-### Преобразования типов, TsonObj
+### Преобразования типов и TsonObj
 TsonObj - базовый элемент TsonConfigurations
 Поддерживаемые типы данных:
 - TsonString `"data"` или `'data'`
@@ -70,12 +70,30 @@ Tson считает за примимитивы:
 ```java
 TsonPrimitive primitive = TsonPrimitive.build("(10)");
 ```
-### Преобразования
+### Преобразование в JSON
 ```java
 String strMap = "{key='value'}";
 TsonMap map = new TsonMap(strMap);
 strMap = map.toString();
 
 String jsonString = map.toJsonStr();
-//{key: "value"}
+//{"key": "value"}
+```
+### Безопасность, ClassManager
+При необходимости ограничить список классов, объекты которых
+могут быть порождены TsonField, необходимо передать собственный `ClassManager`
+в конструктор Tson компонента. Все дочерние объекты так же будут пораждены с использованием данного `ClassManager` 
+```java
+ClassManager manager = new ClassManager(){
+    @Override
+    public Class<?> forName(String clazz) {
+        switch (clazz){
+            case "#": return Example.class;
+            case ...
+        }
+        throw new NoSearchException(clazz);
+    }
+};
+
+Example example = new TsonField<Example>(manager, "<(#), 'k1', 'v1'>").getField();
 ```
