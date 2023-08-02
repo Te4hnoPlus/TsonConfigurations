@@ -81,8 +81,8 @@ String jsonString = map.toJsonStr();
 ```
 ### Безопасность, ClassManager
 При необходимости ограничить список классов, объекты которых
-могут быть порождены TsonField, необходимо передать собственный `ClassManager`
-в конструктор Tson компонента. Все дочерние объекты так же будут пораждены с использованием данного `ClassManager` 
+могут быть порождены `TsonField`, необходимо передать собственный `ClassManager`
+в конструктор Tson компонента. Все дочерние объекты так же будут пораждены с использованием данного `ClassManager`. 
 ```java
 ClassManager manager = new ClassManager(){
     @Override
@@ -96,4 +96,13 @@ ClassManager manager = new ClassManager(){
 };
 
 Example example = new TsonField<Example>(manager, "<(#), 'k1', 'v1'>").getField();
+```
+### TsonFile и TsonParser
+`TsonParser` - обработчик синтаксиса Tson. Он же и отвечает за декодирование обьектов.
+`TsonParser` допускает наличие произвольных символов, включая `\t`, `\r`.
+По этой причине рекомендуется использовать `TsonFile` для считывания Tson из файла, который удаляет нежелательные символы:
+```java
+new TsonFile("file.tson")
+//или
+new TsonFile(new File("file.tson")).load()
 ```

@@ -2,7 +2,6 @@ package plus.tson;
 
 import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
-
 import java.util.ArrayList;
 
 
