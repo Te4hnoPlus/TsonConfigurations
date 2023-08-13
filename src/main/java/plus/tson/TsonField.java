@@ -1,6 +1,7 @@
 package plus.tson;
 
 import plus.tson.security.ClassManager;
+import java.lang.reflect.Method;
 
 
 public final class TsonField<T> implements TsonObj{
@@ -69,5 +70,38 @@ public final class TsonField<T> implements TsonObj{
             sb.append("<(").append(field.getClass().getName()).append("),\"")
                     .append(field.toString()).append("\">");
         }
+    }
+
+
+    private T cloneField() {
+        try {
+            Method mtd = field.getClass().getDeclaredMethod("clone");
+            mtd.setAccessible(true);
+            return (T) mtd.invoke(field);
+        } catch (Exception e){
+            e.printStackTrace();
+            return field;
+        }
+    }
+
+
+    @Override
+    public TsonField<T> clone() {
+        return new TsonField<>(cloneField());
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+        TsonField<?> tsonField = (TsonField<?>) o;
+        return field.equals(tsonField.field);
+    }
+
+
+    @Override
+    public int hashCode() {
+        return field.hashCode();
     }
 }

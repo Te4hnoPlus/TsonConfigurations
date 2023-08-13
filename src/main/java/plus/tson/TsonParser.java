@@ -1,6 +1,7 @@
 package plus.tson;
 
 import plus.tson.exception.NoSearchException;
+import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
 import java.util.ArrayList;
 
@@ -52,7 +53,16 @@ final class TsonParser {
             case '[': return getList();
             case '<': return getField();
         }
-        throw new NoSearchException("Char ["+data[cursor]+"] not supported");
+        throw new TsonSyntaxException(getErrorString(), cursor, data[cursor]);
+    }
+
+
+    private String getErrorString(){
+        int min = Math.max(0, cursor-50);
+        int max = Math.min(cursor+50,data.length-1);
+        char[] chars = new char[max-min];
+        System.arraycopy(data, min, chars, 0, chars.length);
+        return new String(chars);
     }
 
 
@@ -224,9 +234,9 @@ final class TsonParser {
 
     private TsonPrimitive getBasicOfStr(String value) {
         if(value.equalsIgnoreCase("true")){
-            return new TsonBool(true);
+            return TsonBool.TRUE;
         } else if(value.equalsIgnoreCase("false")){
-            return new TsonBool(false);
+            return TsonBool.FALSE;
         }
         try {
             if (value.contains(".")) {

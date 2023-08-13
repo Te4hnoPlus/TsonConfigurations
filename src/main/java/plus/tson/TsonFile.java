@@ -102,6 +102,17 @@ public class TsonFile extends TsonMap {
     }
 
 
+    @Override
+    public TsonFile clone() {
+        TsonFile map = new TsonFile(file);
+        for (Node<String, TsonObj> node : super.table) {
+            if (node == null) continue;
+            map.put(node.getKey(), node.getValue().clone());
+        }
+        return map;
+    }
+
+
     public Annotation getAnnotation(){
         return annotation;
     }

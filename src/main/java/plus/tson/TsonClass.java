@@ -4,6 +4,7 @@ import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 
 
 public final class TsonClass extends TsonPrimitive {
@@ -121,5 +122,26 @@ public final class TsonClass extends TsonPrimitive {
             throws InvocationTargetException, InstantiationException, IllegalAccessException {
         cons.setAccessible(true);
         return cons.newInstance(args);
+    }
+
+
+    @Override
+    public TsonClass clone() {
+        return this;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+        TsonClass tsonClass = (TsonClass) o;
+        return Objects.equals(clazz, tsonClass.clazz);
+    }
+
+
+    @Override
+    public int hashCode() {
+        return clazz != null ? clazz.hashCode() : 0;
     }
 }

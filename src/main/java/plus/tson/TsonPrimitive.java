@@ -4,6 +4,7 @@ import plus.tson.security.ClassManager;
 
 
 public abstract class TsonPrimitive implements TsonObj{
+    TsonPrimitive(){}
     public static TsonPrimitive build(ClassManager manager, String value) {
         return new TsonParser(manager, value).goTo('(').getBasic();
     }
@@ -23,5 +24,11 @@ public abstract class TsonPrimitive implements TsonObj{
     @Override
     public String toJsonStr() {
         return getStr();
+    }
+
+
+    @Override
+    public TsonPrimitive clone() {
+        return this;
     }
 }

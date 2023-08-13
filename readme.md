@@ -98,8 +98,11 @@ ClassManager manager = new ClassManager(){
 
 Example example = new TsonField<Example>(manager, "<(#), 'k1', 'v1'>").getField();
 ```
-### TsonFile и TsonParser
+### TsonFile, TsonParser и TsonOptimizer
 `TsonParser` - обработчик синтаксиса Tson. Он же и отвечает за декодирование обьектов.
+
+`TsonOptimazer` - инструмент, который уменьшает размер Tson коллекций, путем замещения дублирующихся неизменчивых обьектов на эквивалентные ссылки.
+
 `TsonParser` допускает наличие произвольных символов, включая `\t`, `\r`.
 По этой причине рекомендуется использовать `TsonFile` для считывания Tson из файла, который удаляет нежелательные символы:
 ```java

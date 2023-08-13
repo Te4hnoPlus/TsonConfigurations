@@ -50,4 +50,26 @@ public final class TsonDouble extends TsonPrimitive{
     public void code(StringBuilder sb) {
         sb.append('(').append(value).append(')');
     }
+
+
+    @Override
+    public TsonDouble clone() {
+        return this;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+        TsonDouble that = (TsonDouble) o;
+        return Double.compare(that.value, value) == 0;
+    }
+
+
+    @Override
+    public int hashCode() {
+        long temp = Double.doubleToLongBits(value);
+        return (int) (temp ^ (temp >>> 32));
+    }
 }

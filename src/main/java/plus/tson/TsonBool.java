@@ -2,6 +2,8 @@ package plus.tson;
 
 
 public final class TsonBool extends TsonPrimitive {
+    public static final TsonBool TRUE = new TsonBool(true);
+    public static final TsonBool FALSE = new TsonBool(false);
     private final boolean value;
 
 
@@ -43,5 +45,26 @@ public final class TsonBool extends TsonPrimitive {
     @Override
     public void code(StringBuilder sb) {
         sb.append('(').append(value).append(')');
+    }
+
+
+    @Override
+    public TsonBool clone() {
+        return this;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+        TsonBool tsonBool = (TsonBool) o;
+        return value == tsonBool.value;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return (value ? 1 : 0);
     }
 }

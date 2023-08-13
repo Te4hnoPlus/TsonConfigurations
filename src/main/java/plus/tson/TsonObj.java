@@ -3,7 +3,7 @@ package plus.tson;
 import plus.tson.exception.WrongTypeException;
 
 
-public interface TsonObj {
+public interface TsonObj extends Cloneable{
 
     default String getStr() {
         throw new WrongTypeException(this.getClass(),"getStr()");
@@ -68,5 +68,10 @@ public interface TsonObj {
 
     default void code(StringBuilder sb){
         sb.append(this);
+    }
+
+
+    default TsonObj clone(){
+        return this;
     }
 }

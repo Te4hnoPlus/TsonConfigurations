@@ -21,7 +21,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
 
     public TsonBool put(String key, boolean v) {
-        return (TsonBool) super.put(key, new TsonBool(v));
+        return (TsonBool) super.put(key, v?TsonBool.TRUE:TsonBool.FALSE);
     }
 
 
@@ -51,46 +51,51 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
 
     public boolean ifContainsMap(String s, Consumer<TsonMap> c){
-        return ifContains(s, c, this::getMap);
+        return ifContains0(s, c, this::getMap);
     }
 
 
     public boolean ifContainsList(String s, Consumer<TsonList> c){
-        return ifContains(s, c, this::getList);
+        return ifContains0(s, c, this::getList);
     }
 
 
     public boolean ifContainsDouble(String s, Consumer<Double> c){
-        return ifContains(s, c, this::getDouble);
+        return ifContains0(s, c, this::getDouble);
     }
 
 
     public boolean ifContainsFloat(String s, Consumer<Float> c){
-        return ifContains(s, c, this::getFloat);
+        return ifContains0(s, c, this::getFloat);
     }
 
 
     public boolean ifContainsInt(String s, Consumer<Integer> c){
-        return ifContains(s, c, this::getInt);
+        return ifContains0(s, c, this::getInt);
     }
 
 
     public boolean ifContainsBool(String s, Consumer<Boolean> c){
-        return ifContains(s, c, this::getBool);
+        return ifContains0(s, c, this::getBool);
     }
 
 
     public boolean ifContainsStr(String s, Consumer<String> c){
-        return ifContains(s, c, this::getStr);
+        return ifContains0(s, c, this::getStr);
     }
 
 
-    public<T> boolean ifContains(String s, Consumer<T> c, Function<String, T> f){
+    protected <T> boolean ifContains0(String s, Consumer<T> c, Function<String, T> f){
         if(containsKey(s)){
             c.accept(f.apply(s));
             return true;
         }
         return false;
+    }
+
+
+    public boolean ifContains(String s, Consumer<TsonObj> c){
+        return ifContains0(s, c, this::get);
     }
 
 
@@ -129,6 +134,41 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    public String getOrDefaultStr(String key, String def) {
+        TsonObj str = super.get(key);
+        if(str != null && str.isString())return str.getStr();
+        return def;
+    }
+
+
+    public boolean getOrDefaultBool(String key, boolean def) {
+        TsonObj bool = super.get(key);
+        if(bool != null && bool.isBool())return bool.getBool();
+        return def;
+    }
+
+
+    public int getOrDefaultInt(String key, int def) {
+        TsonObj num = super.get(key);
+        if(num != null && num.isNumber())return num.getInt();
+        return def;
+    }
+
+
+    public float getOrDefaultFloat(String key, float def) {
+        TsonObj num = super.get(key);
+        if(num != null && num.isNumber())return num.getFloat();
+        return def;
+    }
+
+
+    public double getOrDefaultDouble(String key, double def) {
+        TsonObj num = super.get(key);
+        if(num != null && num.isNumber())return num.getDouble();
+        return def;
+    }
+
+
     public int getInt(String key) {
         return super.get(key).getInt();
     }
@@ -146,6 +186,13 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     public TsonMap getMap(String key) {
         return super.get(key).getMap();
+    }
+
+
+    public TsonMap getOrCreateMap(String key){
+        TsonObj result = super.get(key);
+        if(result != null)return result.getMap();
+        return addMap(key);
     }
 
 
@@ -217,5 +264,22 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
             builder.setCharAt(builder.length() - 1, '}');
             return builder.toString();
         }
+    }
+
+
+    @Override
+    public TsonMap clone() {
+        TsonMap map = new TsonMap();
+        for (Node<String, TsonObj> node : super.table) {
+            if (node == null) continue;
+            map.put(node.getKey(), node.getValue().clone());
+        }
+        return map;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
     }
 }

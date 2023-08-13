@@ -50,4 +50,25 @@ public final class TsonInt extends TsonPrimitive{
     public void code(StringBuilder sb) {
         sb.append('(').append(value).append(')');
     }
+
+
+    @Override
+    public TsonInt clone() {
+        return this;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+        TsonInt tsonInt = (TsonInt) o;
+        return value == tsonInt.value;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return value;
+    }
 }

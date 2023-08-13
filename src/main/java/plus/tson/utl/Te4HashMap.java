@@ -628,7 +628,6 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
     }
 
-    // Overrides of JDK8 Map extension methods
 
     @Override
     public V getOrDefault(Object key, V defaultValue) {
@@ -901,7 +900,6 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
 
     @SuppressWarnings("unchecked")
-    @Override
     public Object clone() {
         Te4HashMap<K,V> result;
         try {

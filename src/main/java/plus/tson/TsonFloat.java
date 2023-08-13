@@ -50,4 +50,25 @@ public final class TsonFloat extends TsonPrimitive{
     public void code(StringBuilder sb) {
         sb.append('(').append(value).append(')');
     }
+
+
+    @Override
+    public TsonFloat clone() {
+        return this;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+        TsonFloat tsonFloat = (TsonFloat) o;
+        return Float.compare(tsonFloat.value, value) == 0;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return (value != +0.0f ? Float.floatToIntBits(value) : 0);
+    }
 }

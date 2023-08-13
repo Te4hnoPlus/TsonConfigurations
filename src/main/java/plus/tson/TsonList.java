@@ -2,10 +2,15 @@ package plus.tson;
 
 import plus.tson.security.ClassManager;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringJoiner;
 
 
 public class TsonList extends ArrayList<TsonObj> implements TsonObj {
+    public TsonList(int size){
+        super(size);
+    }
+
 
     public TsonList(){}
 
@@ -17,6 +22,11 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     public TsonList(String data) {
         new TsonParser(data).goTo('[').fillList(this);
+    }
+
+
+    public TsonList(TsonObj... objects){
+        this.addAll(Arrays.asList(objects));
     }
 
 
@@ -97,8 +107,8 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     }
 
 
-    public boolean add(boolean n){
-        return add(new TsonBool(n));
+    public boolean add(boolean b){
+        return add(b?TsonBool.TRUE:TsonBool.FALSE);
     }
 
 
@@ -186,5 +196,22 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
         }
         builder.setCharAt(builder.length()-1, ']');
         return builder.toString();
+    }
+
+
+    @Override
+    public TsonList clone() {
+        int size;
+        TsonList list = new TsonList(size = size());
+        for(int i=0;i<size;i++){
+            list.add(this.get(i).clone());
+        }
+        return list;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this;
     }
 }
