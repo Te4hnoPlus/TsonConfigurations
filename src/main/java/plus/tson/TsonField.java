@@ -95,8 +95,7 @@ public final class TsonField<T> implements TsonObj{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (getClass() != o.getClass()) return false;
-        TsonField<?> tsonField = (TsonField<?>) o;
-        return field.equals(tsonField.field);
+        return field.equals(((TsonField<?>) o).field);
     }
 
 

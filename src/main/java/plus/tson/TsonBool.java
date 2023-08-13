@@ -57,7 +57,7 @@ public final class TsonBool extends TsonPrimitive {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (getClass() != o.getClass()) return false;
+        if (TsonBool.class != o.getClass()) return false;
         TsonBool tsonBool = (TsonBool) o;
         return value == tsonBool.value;
     }
