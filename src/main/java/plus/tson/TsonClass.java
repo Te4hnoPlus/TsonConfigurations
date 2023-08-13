@@ -135,8 +135,7 @@ public final class TsonClass extends TsonPrimitive {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (TsonClass.class != o.getClass()) return false;
-        TsonClass tsonClass = (TsonClass) o;
-        return clazz == tsonClass.clazz;
+        return clazz == ((TsonClass) o).clazz;
     }
 
 

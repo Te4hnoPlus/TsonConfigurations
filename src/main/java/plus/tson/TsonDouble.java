@@ -62,8 +62,7 @@ public final class TsonDouble extends TsonPrimitive{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (TsonDouble.class != o.getClass()) return false;
-        TsonDouble that = (TsonDouble) o;
-        return Double.compare(that.value, value) == 0;
+        return Double.compare(((TsonDouble) o).value, value) == 0;
     }
 
 

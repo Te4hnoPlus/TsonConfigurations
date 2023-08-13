@@ -58,8 +58,7 @@ public final class TsonBool extends TsonPrimitive {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (TsonBool.class != o.getClass()) return false;
-        TsonBool tsonBool = (TsonBool) o;
-        return value == tsonBool.value;
+        return value == ((TsonBool) o).value;
     }
 
 

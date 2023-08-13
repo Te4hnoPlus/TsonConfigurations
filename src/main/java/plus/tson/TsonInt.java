@@ -62,8 +62,7 @@ public final class TsonInt extends TsonPrimitive{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (TsonInt.class != o.getClass()) return false;
-        TsonInt tsonInt = (TsonInt) o;
-        return value == tsonInt.value;
+        return value == ((TsonInt) o).value;
     }
 
 

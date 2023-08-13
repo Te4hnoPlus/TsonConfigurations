@@ -62,8 +62,7 @@ public final class TsonFloat extends TsonPrimitive{
     public boolean equals(Object o) {
         if (this == o) return true;
         if (TsonFloat.class != o.getClass()) return false;
-        TsonFloat tsonFloat = (TsonFloat) o;
-        return Float.compare(tsonFloat.value, value) == 0;
+        return Float.compare(((TsonFloat) o).value, value) == 0;
     }
 
 

@@ -47,8 +47,7 @@ public final class TsonStr implements TsonObj {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (TsonStr.class != o.getClass()) return false;
-        TsonStr tsonStr = (TsonStr) o;
-        return value.equals(tsonStr.value);
+        return value.equals(((TsonStr) o).value);
     }
 
 
