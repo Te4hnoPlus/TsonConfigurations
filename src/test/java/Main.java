@@ -1,4 +1,8 @@
 import plus.tson.*;
+import plus.tson.exception.NoSearchException;
+import plus.tson.security.ClassManager;
+
+import java.io.File;
 
 
 public class Main {
@@ -22,10 +26,8 @@ public class Main {
 
 
         System.out.println(mpt);
-//        TsonMap mp = new TsonMap();
-//        mp.put("k", (TsonSerelizable)new Example("av","ab"));
-//        System.out.println(mp);
-//        System.out.println(new TsonMap(mp.toString()));
+
+
     }
     
     

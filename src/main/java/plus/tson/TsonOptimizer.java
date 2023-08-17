@@ -75,21 +75,34 @@ public class TsonOptimizer {
 
 
     public TsonMap optimize(TsonMap src){
-        TsonMap result = new TsonMap();
-        for(Map.Entry<String, TsonObj> entry:src.entrySet()){
+        TsonMap map = new TsonMap();
+        optimize(src, map);
+        return map;
+    }
+
+
+    public TsonFile optimize(TsonFile src){
+        TsonFile file = new TsonFile(src.getFile());
+        optimize(src, file);
+        return file;
+    }
+
+
+    public void optimize(TsonMap from, TsonMap to){
+        if(from==to)throw new IllegalArgumentException();
+        for(Map.Entry<String, TsonObj> entry:from.entrySet()){
             TsonObj val = entry.getValue();
             if(val.isList()){
-                result.put(
+                to.put(
                         (String) getOptimalObj(entry.getKey()), optimize(val.getList())
                 );
             } else if(val.isMap()){
-                result.put(
+                to.put(
                         (String) getOptimalObj(entry.getKey()), optimize(val.getMap())
                 );
             } else {
-                result.put((String) getOptimalObj(entry.getKey()), (TsonObj) getOptimalObj(val));
+                to.put((String) getOptimalObj(entry.getKey()), (TsonObj) getOptimalObj(val));
             }
         }
-        return result;
     }
 }

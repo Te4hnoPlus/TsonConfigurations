@@ -2,6 +2,8 @@ package plus.tson;
 
 import plus.tson.security.ClassManager;
 import plus.tson.utl.Te4HashMap;
+
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -241,11 +243,12 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
             builder.append("{}");
         } else {
             builder.append('{');
-            for (Node<String, TsonObj> node : super.table) {
+            for (Map.Entry<String, TsonObj> node : super.entrySet()) {
                 if (node == null) continue;
                 builder.append(node.getKey()).append('=');
                 node.getValue().code(builder);
                 builder.append(',');
+
             }
             builder.setCharAt(builder.length() - 1, '}');
         }
