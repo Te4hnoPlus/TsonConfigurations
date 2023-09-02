@@ -156,15 +156,82 @@ final class TsonParser {
 
     TsonPrimitive getBasic(){
         int cur;
-        StringBuilder b = new StringBuilder();
         for(cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c==' ' || c == '\n')continue;
+            if(c > 47 && c < 58 || c == '-'){
+                cursor = cur;
+                return readNum();
+            }
+            if(c==')')break;
+            else {
+                cursor = cur;
+                return readClassOrBool();
+            }
+        }
+        throw new TsonSyntaxException(getErrorString(), cur, data[cur]);
+    }
+
+
+    private TsonPrimitive readClassOrBool(){
+        int cur;
+        StringBuilder b = new StringBuilder();
+        for(cur=cursor;cur<data.length;++cur){
+            char c = data[cur];
             if(c==')')break;
             b.append(c);
         }
         cursor = cur;
-        return getBasicOfStr(b.toString());
+        String s = b.toString();
+        if(s.equalsIgnoreCase("true"))return TsonBool.TRUE;
+        if(s.equalsIgnoreCase("false"))return TsonBool.FALSE;
+        return new TsonClass(manager, s);
+    }
+
+
+    private TsonPrimitive readNum(){
+        int cur, num, size = 0;
+        boolean invert;
+        if(invert = (data[cursor] == '-')) ++cursor;
+        num = data[cursor]-48;
+
+        boolean dec = false;
+
+        for(cur=cursor+1;cur<data.length;++cur){
+            char c = data[cur];
+            if(c>47 && c < 58) {
+                num = num * 10 + (c-48);
+                ++size;
+            } else if(c=='.'){
+                dec = true;
+                ++cur;
+                break;
+            }
+            else if(c == ')') break;
+            else if(c!='_') throw new TsonSyntaxException(getErrorString(), cursor = cur, c);
+        }
+        if(dec){
+            double num2 = num;
+            int dec1 = invert?-1:1;
+            for(;cur<data.length;++cur){
+                char c = data[cur];
+                if(c>47 && c < 58) {
+                    num2 = num2 * 10 + (c-48);
+                    dec1 *= 10;
+                    ++size;
+                }
+                else if(c == ')') break;
+                else if(c!='_') throw new TsonSyntaxException(getErrorString(), cursor = cur, c);
+            }
+            if(size>6){
+                return new TsonDouble(num2/dec1);
+            } else {
+                return new TsonFloat((float) (num2/dec1));
+            }
+        } else {
+            cursor = cur;
+            return invert?new TsonInt(-num):new TsonInt(num);
+        }
     }
 
 
@@ -229,25 +296,5 @@ final class TsonParser {
         }
         cursor = cur;
         return new TsonClass(manager, b.toString());
-    }
-
-
-    private TsonPrimitive getBasicOfStr(String value) {
-        if(value.equalsIgnoreCase("true")){
-            return TsonBool.TRUE;
-        } else if(value.equalsIgnoreCase("false")){
-            return TsonBool.FALSE;
-        }
-        try {
-            if (value.contains(".")) {
-                if(value.length()>7){
-                    return new TsonDouble(Double.parseDouble(value));
-                } else {
-                    return new TsonFloat(Float.parseFloat(value));
-                }
-            } else return new TsonInt(Integer.parseInt(value));
-        } catch (NumberFormatException e){
-            return new TsonClass(manager, value);
-        }
     }
 }

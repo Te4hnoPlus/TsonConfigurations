@@ -143,4 +143,10 @@ public final class TsonClass extends TsonPrimitive {
     public int hashCode() {
         return clazz != null ? clazz.hashCode() : 0;
     }
+
+
+    @Override
+    public String getStr() {
+        return clazz.toString();
+    }
 }
