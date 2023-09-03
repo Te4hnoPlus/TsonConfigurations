@@ -113,8 +113,10 @@ final class TsonParser {
         boolean waitSep = true;
         for(int cur=cursor;cur<data.length;++cur){
             char c = data[cur];
-            if(c == ']') break;
-            if(first){
+            if(c == ']') {
+                cursor = cur;
+                break;
+            } if(first){
                 if(c==' ' || c == '\n')continue;
                 cursor = cur;
                 list.add(getItem());
@@ -208,7 +210,14 @@ final class TsonParser {
                 break;
             }
             else if(c == ')') break;
-            else if(c!='_') throw new TsonSyntaxException(getErrorString(), cursor = cur, c);
+            else if(c == ' '){
+                do {
+                    ++cur;
+                    c = data[cur];
+                } while (c == ' ');
+                if(c==')') break;
+                throw new TsonSyntaxException(getErrorString(), cur, c);
+            } else if(c!='_') throw new TsonSyntaxException(getErrorString(), cur, c);
         }
         if(dec){
             double num2 = num;
@@ -221,7 +230,14 @@ final class TsonParser {
                     ++size;
                 }
                 else if(c == ')') break;
-                else if(c!='_') throw new TsonSyntaxException(getErrorString(), cursor = cur, c);
+                else if(c == ' '){
+                    do {
+                        ++cur;
+                        c = data[cur];
+                    } while (c == ' ');
+                    if(c==')') break;
+                    throw new TsonSyntaxException(getErrorString(), cur, c);
+                } else if(c!='_') throw new TsonSyntaxException(getErrorString(), cursor = cur, c);
             }
             cursor = cur;
             if(size>6){
