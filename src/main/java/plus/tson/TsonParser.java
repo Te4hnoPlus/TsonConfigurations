@@ -223,6 +223,7 @@ final class TsonParser {
                 else if(c == ')') break;
                 else if(c!='_') throw new TsonSyntaxException(getErrorString(), cursor = cur, c);
             }
+            cursor = cur;
             if(size>6){
                 return new TsonDouble(num2/dec1);
             } else {
