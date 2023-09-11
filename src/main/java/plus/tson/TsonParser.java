@@ -187,7 +187,33 @@ final class TsonParser {
         String s = b.toString();
         if(s.equalsIgnoreCase("true"))return TsonBool.TRUE;
         if(s.equalsIgnoreCase("false"))return TsonBool.FALSE;
-        return new TsonClass(manager, s);
+        try {
+            return new TsonClass(manager, s);
+        } catch (NoSearchException e){
+            throw new TsonSyntaxException(getErrorString(), cur, e.getMessage());
+        }
+    }
+
+
+    private TsonPrimitive readLongNum(){
+        int cur;
+        StringBuilder sb = new StringBuilder();
+        for(cur=cursor;cur<data.length;++cur){
+            char c = data[cur];
+            if(c == ')') break;
+            else if(c == ' '){
+                do {
+                    ++cur;
+                    c = data[cur];
+                } while (c == ' ');
+                if(c==')') break;
+                throw new TsonSyntaxException(getErrorString(), cur, c);
+            } else {
+                sb.append(c);
+            }
+        }
+        cursor = cur;
+        return new TsonDouble(Double.parseDouble(sb.toString()));
     }
 
 
@@ -217,7 +243,9 @@ final class TsonParser {
                 } while (c == ' ');
                 if(c==')') break;
                 throw new TsonSyntaxException(getErrorString(), cur, c);
-            } else if(c!='_') throw new TsonSyntaxException(getErrorString(), cur, c);
+            }
+            return readLongNum();
+            // else if(c!='_') throw new TsonSyntaxException(getErrorString(), cur, c);
         }
         if(dec){
             double num2 = num;
@@ -254,7 +282,13 @@ final class TsonParser {
 
     Object getFieldObj(){
         TsonClass tsonClass = getTsonClass();
-        ArrayList<Object> list = new ArrayList<>();
+        boolean isList = tsonClass.getField()==TsonObj.class;
+        ArrayList list;
+        if(isList){
+            list = new TsonList();
+        } else {
+            list = new ArrayList<>();
+        }
         boolean waitSep = true;
         for(int cur = cursor;cur<data.length;++cur){
             char c = data[cur];
@@ -265,14 +299,16 @@ final class TsonParser {
             }
             if(c==' ' || c == '\n')continue;
             cursor = cur;
-            list.add(getItem().getField());
+            list.add(isList?getItem():getItem().getField());
             cur = cursor;
             waitSep = true;
         }
         if(list.size()>0) {
+            if(isList) return list;
             if(list.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
             return tsonClass.createInst(list.toArray());
         } else {
+            if(isList)return tsonClass;
             return tsonClass.createInst();
         }
     }

@@ -211,6 +211,12 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
 
     @Override
+    public TsonObj[] toArray() {
+        return super.toArray(new TsonObj[size()]);
+    }
+
+
+    @Override
     public boolean equals(Object o) {
         return o == this;
     }
