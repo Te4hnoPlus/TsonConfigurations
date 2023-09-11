@@ -245,7 +245,6 @@ final class TsonParser {
                 throw new TsonSyntaxException(getErrorString(), cur, c);
             }
             return readLongNum();
-            // else if(c!='_') throw new TsonSyntaxException(getErrorString(), cur, c);
         }
         if(dec){
             double num2 = num;
@@ -265,7 +264,7 @@ final class TsonParser {
                     } while (c == ' ');
                     if(c==')') break;
                     throw new TsonSyntaxException(getErrorString(), cur, c);
-                } else if(c!='_') throw new TsonSyntaxException(getErrorString(), cursor = cur, c);
+                } else if(c!='_')return readLongNum();
             }
             cursor = cur;
             if(size>6){
