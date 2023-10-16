@@ -186,6 +186,22 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
 
     @Override
+    public void codeJson(StringBuilder builder) {
+        int size = this.size();
+        if(size==0){
+            builder.append("[]");
+        } else {
+            builder.append('[');
+            for (int i = 0; i < size; i++) {
+                get(i).codeJson(builder);
+                builder.append(',');
+            }
+            builder.setCharAt(builder.length() - 1, ']');
+        }
+    }
+
+
+    @Override
     public String toJsonStr() {
         int size = this.size();
         if(size==0)return "[]";

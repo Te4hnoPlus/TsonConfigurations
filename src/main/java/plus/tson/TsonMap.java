@@ -226,13 +226,13 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     public String toString() {
         if(super.size()==0)return "{}";
         StringBuilder builder = new StringBuilder("{");
-        for(Node<String, TsonObj> node : super.table){
-            if(node==null)continue;
+        for (Map.Entry<String, TsonObj> node : super.entrySet()) {
+            if (node == null) continue;
             builder.append(node.getKey()).append('=');
             node.getValue().code(builder);
             builder.append(',');
         }
-        builder.setCharAt(builder.length()-1, '}');
+        builder.setCharAt(builder.length() - 1, '}');
         return builder.toString();
     }
 
@@ -248,6 +248,23 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
                 builder.append(node.getKey()).append('=');
                 node.getValue().code(builder);
                 builder.append(',');
+            }
+            builder.setCharAt(builder.length() - 1, '}');
+        }
+    }
+
+
+    @Override
+    public void codeJson(StringBuilder builder) {
+        if(super.size()==0){
+            builder.append("{}");
+        } else {
+            builder.append('{');
+            for (Map.Entry<String, TsonObj> node : super.entrySet()) {
+                if (node == null) continue;
+                builder.append(node.getKey()).append(':');
+                node.getValue().codeJson(builder);
+                builder.append(',');
 
             }
             builder.setCharAt(builder.length() - 1, '}');
@@ -260,9 +277,11 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
         if(super.size()==0) return "{}";
         else {
             StringBuilder builder = new StringBuilder("{");
-            for (Node<String, TsonObj> node : super.table) {
+            for (Map.Entry<String, TsonObj> node : super.entrySet()) {
                 if (node == null) continue;
-                builder.append('"').append(node.getKey()).append("\":").append(node.getValue().toJsonStr()).append(',');
+                builder.append(node.getKey()).append(':');
+                node.getValue().codeJson(builder);
+                builder.append(',');
             }
             builder.setCharAt(builder.length() - 1, '}');
             return builder.toString();
@@ -272,12 +291,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public TsonMap clone() {
-        TsonMap map = new TsonMap();
-        for (Node<String, TsonObj> node : super.table) {
-            if (node == null) continue;
-            map.put(node.getKey(), node.getValue().clone());
-        }
-        return map;
+        return (TsonMap) super.clone();
     }
 
 

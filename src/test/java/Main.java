@@ -1,14 +1,10 @@
 import plus.tson.*;
-import plus.tson.exception.NoSearchException;
-import plus.tson.security.ClassManager;
-
-import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 
 public class Main {
     public static void main(String[] args) {
         try{
-            System.out.println();
             test2();
         }catch (Exception e){
             e.printStackTrace();
@@ -17,72 +13,38 @@ public class Main {
     
     
     public static void test2(){
-        TsonMap mp = new TsonMap();
-        TsonMap mpt = new TsonMap();
-        mp.put("a","v");
-        mp.put("f","d");
-        mp.put("g","d");
-        mpt.put("aaa",mp);
+        String data = "{a:true,b:false,c:20,d:50,e:'test',d:'gaga'}";
+        TsonMap map = new TJsonParser(data.getBytes(StandardCharsets.UTF_8)).getMap();
+        int count = 2000_000;
 
-
-        System.out.println(mpt);
-
-
-    }
-    
-    
-    public static class Example implements TsonSerelizable{
-        private final String k;
-        private final String v;
-        public Example(String k, String v){
-            this.k = k;this.v = v;
-
-        }
-
-        public Example(TsonMap mp){
-            k = mp.getStr("k");
-            v = mp.getStr("v");
-            System.out.println("NEN!");
-        }
-        
-        @Override
-        public TsonObj toTson() {
-            TsonMap mp = new TsonMap();
-            mp.put("k", k);
-            mp.put("v",v);
-            return mp;
+        for (int i=1;i<11;i++){
+            System.out.println("TEST "+i);
+            testTime(() -> testSpeedJS(map, count), count);
+            testTime(() -> testSpeedTS(map, count), count);
         }
     }
-    
 
-    public static void test() {
-        TsonMap map = new TsonMap();
-        map.put("key1", "val1");
-        map.put("key2", "val2");
-        map.put("key3", "val3");
-        map.put("key4", "val5");
-        TsonList list = map.addList("items");
-        list.add("item1");
-        list.add("item2");
-        list.add("item3");
-        list.add("item4");
-        list.add("item5");
 
-        for (int i=0;i<7;i++){
-            test0(map);
-        }
 
+    static void testTime(Runnable r, int count){
+        long start = System.currentTimeMillis();
+        r.run();
+        System.out.println("OPS/PS: "+ count*1000f/(System.currentTimeMillis()-start));
     }
 
 
-    public static void test0(TsonMap map){
-        long time = System.currentTimeMillis();
-        for(int i=0;i<10_000_000;i++){
-            String s = map.toString();
-            map = new TsonMap(s);
+    static void testSpeedTS(TsonMap map, int count){
+        String code = map.toString();
+        for(int i=0;i<count;i++){
+            code = new TsonMap(code).toString();
         }
-        System.out.println(
-                10_000_000/((System.currentTimeMillis()-time)/1000f)
-        );
+    }
+
+
+    static void testSpeedJS(TsonMap map, int count){
+        String code = map.toJsonStr();
+        for(int i=0;i<count;i++){
+            code = new TJsonParser(code.getBytes()).getMap().toJsonStr();
+        }
     }
 }

@@ -71,6 +71,11 @@ public interface TsonObj extends Cloneable{
     }
 
 
+    default void codeJson(StringBuilder sb){
+        code(sb);
+    }
+
+
     default TsonObj clone(){
         return this;
     }
