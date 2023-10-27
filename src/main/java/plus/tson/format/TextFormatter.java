@@ -42,9 +42,9 @@ public class TextFormatter<T> implements IVarGetter<T>{
     }
 
 
-    protected static<T> Tuple<String[], IVarGetter<T>[]> compileFormat(String format, IVarProvider<T> provider, String st, String ed){
-        provider = new ProxyProvider<>(provider);
+    public static<T> Tuple<String[], IVarGetter<T>[]> compileFormat(String format, IVarProvider<T> provider, String st, String ed){
         ArrayList<String> items = new ArrayList<>();
+        ArrayList<String> getters00 = new ArrayList<>();
         ArrayList<IVarGetter<T>> getters0 = new ArrayList<>();
         char[] stc = format.toCharArray();
         boolean text = true;
@@ -70,36 +70,44 @@ public class TextFormatter<T> implements IVarGetter<T>{
                 if(isAct(stc, i, end0)){
                     text = true;
                     String fmGetterName = format.substring(sCursor, i).trim();
-                    IVarGetter<T> getter = provider.getFmGetter(fmGetterName);
-                    boolean isConst = true;
-                    if(getter==null){
-                        System.out.println("VarGetter ["+fmGetterName+"] not valid. Ignored.");
-                        getter = new ConstVarGetter<>(fmGetterName);
-                    } else {
-                        isConst = IVarGetter.isConst(getter);
-                    }
-                    if(isConst){
-                        items.add(items.remove(items.size()-1)+getter.get(null));
-                        flag = true;
-                    } else {
-                        getters0.add(getter);
-                    }
+                    getters00.add(fmGetterName);
+
                     sCursor = i+stt0.length;
                 }
             }
         }
+
         if(text){
-            if(flag){
-                items.add(items.remove(items.size()-1)+format.substring(sCursor));
-            } else {
-                items.add(format.substring(sCursor));
-            }
+            items.add(format.substring(sCursor));
         } else {
             throw new RuntimeException("Syntax error!");
         }
 
+        return buildFormat(provider, items, getters00);
+    }
+
+
+    public static<T> Tuple<String[], IVarGetter<T>[]> buildFormat(IVarProvider<T> provider, ArrayList<String> items, ArrayList<String> vars){
+        provider = new ProxyProvider<>(provider);
+        ArrayList<IVarGetter<T>> getters0 = new ArrayList<>();
+        for (String fmGetterName:vars) {
+            IVarGetter<T> getter = provider.getFmGetter(fmGetterName);
+            boolean isConst = true;
+            if (getter == null) {
+                System.out.println("VarGetter [" + fmGetterName + "] not valid. Ignored.");
+                getter = new ConstVarGetter<>(fmGetterName);
+            } else {
+                isConst = IVarGetter.isConst(getter);
+            }
+            if (isConst) {
+                items.add(items.remove(items.size() - 1) + getter.get(null));
+            } else {
+                getters0.add(getter);
+            }
+        }
+
         IVarGetter<T>[] getters = getters0.toArray(new IVarGetter[0]);
-        sCursor = 3000;
+        int sCursor = 3000;
         for(int i=0;i<getters.length;i++){
             for(int j=i+1;j<getters.length;j++){
                 IVarGetter<T> g1 = getters[i];
@@ -171,74 +179,5 @@ public class TextFormatter<T> implements IVarGetter<T>{
 
     public int getCountArgs(){
         return getters.length;
-    }
-}
-class ProxyProvider<T> implements IVarProvider<T>{
-    private final IVarProvider<T> parent;
-    ProxyProvider(IVarProvider<T> parent) {
-        this.parent = parent;
-    }
-
-
-    @Override
-    public IVarGetter<T> getFmGetter(String name){
-        name = name.trim();
-        boolean flag = false;
-        int split = -1;
-        boolean nextIgnore = false;
-
-        char[] chars = name.toCharArray();
-
-        for(int i=0;i<chars.length;i++){
-            char c = chars[i];
-            if(nextIgnore){
-                nextIgnore = false;
-                continue;
-            } else {
-                if(c=='\\'){
-                    nextIgnore = true;
-                    continue;
-                }
-            }
-            if(flag){
-                if(c=='"')flag = false;
-                continue;
-            } else {
-                if(c=='"'){
-                    flag = true;
-                    continue;
-                }
-            }
-            if(c=='/'){
-                split = i;
-            }
-        }
-
-        if(split>0){
-            return new VarDefGetter<>(
-                    get1(name.substring(0, split)),
-                    getFmGetter(name.substring(split+1))
-            );
-        }
-        return get1(name);
-    }
-
-
-    private IVarGetter<T> get1(String name){
-        IVarGetter<T> result = get0(name);
-        if(result==null){
-            System.out.println("VarGetter ["+name+"] not valid. Ignored.");
-            return new ConstVarGetter<>(name);
-        }
-        return result;
-    }
-
-
-    private IVarGetter<T> get0(String name) {
-        name = name.trim().replace("\\","");
-        if(name.charAt(0)=='"' && name.charAt(name.length()-1)=='"'){
-            return new ConstVarGetter<>(name.substring(1, name.length()-1));
-        }
-        return parent.getFmGetter(name);
     }
 }
