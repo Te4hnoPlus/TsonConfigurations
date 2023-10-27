@@ -3,13 +3,14 @@ package plus.tson;
 import plus.tson.exception.NoSearchException;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
+import plus.tson.utl.CharStrBuilder;
 import java.util.ArrayList;
 
 
 final class TsonParser {
     private final ClassManager manager;
     private final char[] data;
-    private final StringBuilder b = new StringBuilder();
+    private final CharStrBuilder b = new CharStrBuilder(16);
     private int cursor = 0;
 
     public TsonParser(String data) {

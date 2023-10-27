@@ -1,10 +1,12 @@
 package plus.tson;
 
 import plus.tson.exception.TsonSyntaxException;
+import plus.tson.utl.ByteStrBuilder;
 
 
 public final class TJsonParser {
     private final byte[] data;
+    private final ByteStrBuilder b = new ByteStrBuilder(16);
     private int cursor = 0;
 
     public TJsonParser(byte[] data) {
@@ -131,7 +133,8 @@ public final class TJsonParser {
     private TsonStr getStr(char end){
         int cur;
         boolean prevEcran = false;
-        StringBuilder b = new StringBuilder();
+        b.setLength(0);
+        //StringBuilder b = new StringBuilder();
         for(cur=cursor;cur<data.length;++cur){
             byte c = data[cur];
             if(c==end && !prevEcran)break;
@@ -139,7 +142,7 @@ public final class TJsonParser {
                 prevEcran = true;
                 continue;
             }
-            b.append((char) c);
+            b.append(c);
             prevEcran = false;
         }
         cursor = cur;
@@ -211,7 +214,8 @@ public final class TJsonParser {
 
     private TsonPrimitive readLongNum(){
         int cur;
-        StringBuilder sb = new StringBuilder();
+        b.setLength(0);
+        //StringBuilder sb = new StringBuilder();
         for(cur=cursor;cur<data.length;++cur){
             byte c = data[cur];
             if(c == ')') break;
@@ -223,11 +227,11 @@ public final class TJsonParser {
                 if(c==')') break;
                 throw new TsonSyntaxException(getErrorString(), cur, c);
             } else {
-                sb.append(c);
+                b.append(c);
             }
         }
         cursor = cur;
-        return new TsonDouble(Double.parseDouble(sb.toString()));
+        return new TsonDouble(Double.parseDouble(b.toString()));
     }
 
 
@@ -291,12 +295,13 @@ public final class TJsonParser {
 
     private String getKey(){
         int cur = cursor;
-        StringBuilder b = new StringBuilder();
+        b.setLength(0);
+        //StringBuilder b = new StringBuilder();
         for(;cur<data.length;++cur){
             byte c = data[cur];
             if(c==':')break;
             if(c==' ' || c == '\n')continue;
-            b.append((char) c);
+            b.append(c);
         }
         cursor = cur;
         return b.toString();
