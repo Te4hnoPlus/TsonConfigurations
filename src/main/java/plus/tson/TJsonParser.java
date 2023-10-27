@@ -99,7 +99,7 @@ public final class TJsonParser {
     }
 
 
-    public void fillList(TsonList list){
+    private void fillList(TsonList list){
         boolean first = true;
         boolean waitSep = true;
         for(int cur=cursor;cur<data.length;++cur){

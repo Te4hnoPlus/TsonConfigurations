@@ -26,11 +26,23 @@ public class TextFormatter<T> implements IVarGetter<T>{
 
 
     protected static<T> Tuple<String[], IVarGetter<T>[]> compileFormat(String format, IVarProvider<T> provider){
-        return compileFormat(format, provider,'%','%');
+        return compileFormat(format, provider,"%","%");
     }
 
 
-    protected static<T> Tuple<String[], IVarGetter<T>[]> compileFormat(String format, IVarProvider<T> provider,char st,char ed){
+    private static boolean isAct(char[] src, int cursor, char[] check){
+        if(cursor > 0 && src[cursor-1] != '\\')return false;
+        int lim = Math.min(cursor+check.length, src.length);
+        int n = 0;
+        for (int i=cursor;i<lim;i++){
+            if(src[i]!=check[n])return false;
+            n++;
+        }
+        return true;
+    }
+
+
+    protected static<T> Tuple<String[], IVarGetter<T>[]> compileFormat(String format, IVarProvider<T> provider, String st, String ed){
         provider = new ProxyProvider<>(provider);
         ArrayList<String> items = new ArrayList<>();
         ArrayList<IVarGetter<T>> getters0 = new ArrayList<>();
@@ -39,10 +51,12 @@ public class TextFormatter<T> implements IVarGetter<T>{
         int sCursor = 0;
         boolean flag = false;
 
+        char[] stt0 = st.toCharArray();
+        char[] end0 = ed.toCharArray();
+
         for(int i=0;i<stc.length;i++){
-            char cur = stc[i];
             if(text){
-                if(cur==st && (i==0 || stc[i-1] != '\\')){
+                if(isAct(stc, i, stt0)){
                     if(flag){
                         items.add(items.remove(items.size()-1)+format.substring(sCursor, i));
                         flag = false;
@@ -50,10 +64,10 @@ public class TextFormatter<T> implements IVarGetter<T>{
                         items.add(format.substring(sCursor, i));
                     }
                     text = false;
-                    sCursor = i+1;
+                    sCursor = i+stt0.length;
                 }
             } else {
-                if(cur==ed && i>1 && stc[i-1] != '\\'){
+                if(isAct(stc, i, end0)){
                     text = true;
                     String fmGetterName = format.substring(sCursor, i).trim();
                     IVarGetter<T> getter = provider.getFmGetter(fmGetterName);
@@ -70,7 +84,7 @@ public class TextFormatter<T> implements IVarGetter<T>{
                     } else {
                         getters0.add(getter);
                     }
-                    sCursor = i+1;
+                    sCursor = i+stt0.length;
                 }
             }
         }

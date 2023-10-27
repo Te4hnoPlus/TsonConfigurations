@@ -9,6 +9,7 @@ import java.util.ArrayList;
 final class TsonParser {
     private final ClassManager manager;
     private final char[] data;
+    private final StringBuilder b = new StringBuilder();
     private int cursor = 0;
 
     public TsonParser(String data) {
@@ -140,7 +141,7 @@ final class TsonParser {
     private TsonStr getStr(char end){
         int cur;
         boolean prevEcran = false;
-        StringBuilder b = new StringBuilder();
+        b.setLength(0);
         for(cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c==end && !prevEcran)break;
@@ -177,7 +178,7 @@ final class TsonParser {
 
     private TsonPrimitive readClassOrBool(){
         int cur;
-        StringBuilder b = new StringBuilder();
+        b.setLength(0);
         for(cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c==')')break;
@@ -197,7 +198,7 @@ final class TsonParser {
 
     private TsonPrimitive readLongNum(){
         int cur;
-        StringBuilder sb = new StringBuilder();
+        b.setLength(0);
         for(cur=cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c == ')') break;
@@ -209,11 +210,11 @@ final class TsonParser {
                 if(c==')') break;
                 throw new TsonSyntaxException(getErrorString(), cur, c);
             } else {
-                sb.append(c);
+                b.append(c);
             }
         }
         cursor = cur;
-        return new TsonDouble(Double.parseDouble(sb.toString()));
+        return new TsonDouble(Double.parseDouble(b.toString()));
     }
 
 
@@ -320,7 +321,7 @@ final class TsonParser {
 
     private String getKey(){
         int cur = cursor;
-        StringBuilder b = new StringBuilder();
+        b.setLength(0);
         for(;cur<data.length;++cur){
             char c = data[cur];
             if(c=='=')break;
@@ -335,7 +336,7 @@ final class TsonParser {
     private TsonClass getTsonClass(){
         int cur = cursor;
         boolean ignore = true;
-        StringBuilder b = new StringBuilder();
+        b.setLength(0);
         for(;cur<data.length;++cur){
             char c = data[cur];
             if(ignore){
