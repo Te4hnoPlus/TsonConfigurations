@@ -53,6 +53,12 @@ public final class TsonFloat extends TsonPrimitive{
 
 
     @Override
+    public void codeJson(StringBuilder sb) {
+        sb.append(value);
+    }
+
+
+    @Override
     public TsonFloat clone() {
         return this;
     }

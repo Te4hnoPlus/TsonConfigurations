@@ -49,6 +49,12 @@ public final class TsonBool extends TsonPrimitive {
 
 
     @Override
+    public void codeJson(StringBuilder sb) {
+        sb.append(value);
+    }
+
+
+    @Override
     public TsonBool clone() {
         return this;
     }

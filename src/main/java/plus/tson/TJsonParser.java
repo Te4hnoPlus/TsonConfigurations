@@ -66,11 +66,10 @@ public final class TJsonParser {
         for(cur = cursor;cur<data.length;++cur){
             byte c = data[cur];
             if(c=='}')break;
-            if(waitSep){
+            if(waitSep || c==' ' || c == '\n'){
                 if(c==',')waitSep = false;
                 continue;
             }
-            if(c==' ' || c == '\n')continue;
             cursor = cur;
             if(waitKey) {
                 waitKey = false;
@@ -109,18 +108,18 @@ public final class TJsonParser {
             if(c == ']') {
                 cursor = cur;
                 break;
-            } if(first){
+            }
+            if(first){
                 if(c==' ' || c == '\n')continue;
                 cursor = cur;
                 list.add(getItem());
                 cur = cursor;
                 first = false;
             } else {
-                if(waitSep){
+                if(waitSep || c==' ' || c == '\n'){
                     if(c==',')waitSep = false;
                     continue;
                 }
-                if(c==' ' || c == '\n')continue;
                 cursor = cur;
                 list.add(getItem());
                 cur = cursor;
@@ -214,14 +213,12 @@ public final class TJsonParser {
         b.setLength(0);
         for(cur=cursor;cur<data.length;++cur){
             byte c = data[cur];
-            if(c == ')') break;
-            else if(c == ' '){
+            if(c == ' '){
                 do {
                     ++cur;
                     c = data[cur];
                 } while (c == ' ');
-                if(c==')') break;
-                throw new TsonSyntaxException(getErrorString(), cur, c);
+                break;
             } else {
                 b.append(c);
             }
@@ -236,7 +233,6 @@ public final class TJsonParser {
         boolean invert;
         if(invert = (data[cursor] == '-')) ++cursor;
         num = data[cursor]-48;
-
         boolean dec = false;
 
         for(cur=cursor+1;cur<data.length;++cur){

@@ -22,12 +22,6 @@ public abstract class TsonPrimitive implements TsonObj{
 
 
     @Override
-    public void codeJson(StringBuilder sb) {
-        sb.append(getStr());
-    }
-
-
-    @Override
     public String toJsonStr() {
         return getStr();
     }

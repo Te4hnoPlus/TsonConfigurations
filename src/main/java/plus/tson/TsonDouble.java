@@ -53,6 +53,12 @@ public final class TsonDouble extends TsonPrimitive{
 
 
     @Override
+    public void codeJson(StringBuilder sb) {
+        sb.append(value);
+    }
+
+
+    @Override
     public TsonDouble clone() {
         return this;
     }

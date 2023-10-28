@@ -83,11 +83,10 @@ final class TsonParser {
         for(cur = cursor;cur<data.length;++cur){
             char c = data[cur];
             if(c=='}')break;
-            if(waitSep){
+            if(waitSep || c==' ' || c == '\n'){
                 if(c==',')waitSep = false;
                 continue;
             }
-            if(c==' ' || c == '\n')continue;
             cursor = cur;
             if(waitKey) {
                 waitKey = false;
@@ -125,11 +124,10 @@ final class TsonParser {
                 cur = cursor;
                 first = false;
             } else {
-                if(waitSep){
+                if(waitSep || c==' ' || c == '\n'){
                     if(c==',')waitSep = false;
                     continue;
                 }
-                if(c==' ' || c == '\n')continue;
                 cursor = cur;
                 list.add(getItem());
                 cur = cursor;

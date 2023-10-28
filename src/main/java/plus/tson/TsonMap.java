@@ -2,7 +2,6 @@ package plus.tson;
 
 import plus.tson.security.ClassManager;
 import plus.tson.utl.Te4HashMap;
-
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -224,10 +223,9 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public String toString() {
-        if(super.size()==0)return "{}";
+        if(super.isEmpty())return "{}";
         StringBuilder builder = new StringBuilder("{");
         for (Map.Entry<String, TsonObj> node : super.entrySet()) {
-            if (node == null) continue;
             builder.append(node.getKey()).append('=');
             node.getValue().code(builder);
             builder.append(',');
@@ -244,7 +242,6 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
         } else {
             builder.append('{');
             for (Map.Entry<String, TsonObj> node : super.entrySet()) {
-                if (node == null) continue;
                 builder.append(node.getKey()).append('=');
                 node.getValue().code(builder);
                 builder.append(',');
@@ -261,7 +258,6 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
         } else {
             builder.append('{');
             for (Map.Entry<String, TsonObj> node : super.entrySet()) {
-                if (node == null) continue;
                 builder.append(node.getKey()).append(':');
                 node.getValue().codeJson(builder);
                 builder.append(',');
@@ -274,11 +270,10 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public String toJsonStr() {
-        if(super.size()==0) return "{}";
+        if(super.isEmpty()) return "{}";
         else {
             StringBuilder builder = new StringBuilder("{");
             for (Map.Entry<String, TsonObj> node : super.entrySet()) {
-                if (node == null) continue;
                 builder.append(node.getKey()).append(':');
                 node.getValue().codeJson(builder);
                 builder.append(',');

@@ -53,6 +53,12 @@ public final class TsonInt extends TsonPrimitive{
 
 
     @Override
+    public void codeJson(StringBuilder sb) {
+        sb.append(value);
+    }
+
+
+    @Override
     public TsonInt clone() {
         return this;
     }

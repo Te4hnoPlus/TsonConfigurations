@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 
 
 public class TsonFile extends TsonMap {
@@ -104,12 +105,7 @@ public class TsonFile extends TsonMap {
 
     @Override
     public TsonFile clone() {
-        TsonFile map = new TsonFile(file);
-        for (Node<String, TsonObj> node : super.table) {
-            if (node == null) continue;
-            map.put(node.getKey(), node.getValue().clone());
-        }
-        return map;
+        return (TsonFile) super.clone();
     }
 
 
