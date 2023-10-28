@@ -25,11 +25,11 @@ public final class TJsonParser {
 
     public TsonObj getItem(){
         switch (data[cursor++]){
-            case '"': return getStr('"');
+            case '"':  return getStr('"');
             case '\'': return getStr('\'');
-            case '{': return getMap0();
-            case '[': return getList0();
-            default: return getBasic();
+            case '{':  return getMap0();
+            case '[':  return getList0();
+            default:   return getBasic();
         }
     }
 
@@ -130,20 +130,18 @@ public final class TJsonParser {
     }
 
 
+    //TODO CHECK
     private TsonStr getStr(char end){
         int cur;
-        boolean prevEcran = false;
         b.setLength(0);
-        //StringBuilder b = new StringBuilder();
         for(cur=cursor;cur<data.length;++cur){
             byte c = data[cur];
-            if(c==end && !prevEcran)break;
+            if(c==end)break;
             if(c=='\\'){
-                prevEcran = true;
+                ++cur;
                 continue;
             }
             b.append(c);
-            prevEcran = false;
         }
         cursor = cur;
         return new TsonStr(b.toString());
@@ -161,7 +159,6 @@ public final class TJsonParser {
             }
             cursor = cur;
             return readBool();
-
         }
         throw new TsonSyntaxException(getErrorString(), cur, data[cursor]);
     }
@@ -215,7 +212,6 @@ public final class TJsonParser {
     private TsonPrimitive readLongNum(){
         int cur;
         b.setLength(0);
-        //StringBuilder sb = new StringBuilder();
         for(cur=cursor;cur<data.length;++cur){
             byte c = data[cur];
             if(c == ')') break;
@@ -248,19 +244,21 @@ public final class TJsonParser {
             if(c>47 && c < 58) {
                 num = num * 10 + (c-48);
                 ++size;
-            } else if(c=='.'){
-                dec = true;
-                ++cur;
-                break;
-            }
-            else if(c == ' '){
-                do {
+            } else {
+                if (c == '.') {
+                    dec = true;
                     ++cur;
-                    c = data[cur];
-                } while (c == ' ');
-                break;
+                    break;
+                }
+                if (c == ' ') {
+                    do {
+                        ++cur;
+                        c = data[cur];
+                    } while (c == ' ');
+                    break;
+                }
+                if (c == ',' || c == '}' || c == ']') break;
             }
-            if(c==','||c=='}'||c==']')break;
         }
         if(dec){
             double num2 = num;
@@ -296,7 +294,6 @@ public final class TJsonParser {
     private String getKey(){
         int cur = cursor;
         b.setLength(0);
-        //StringBuilder b = new StringBuilder();
         for(;cur<data.length;++cur){
             byte c = data[cur];
             if(c==':')break;

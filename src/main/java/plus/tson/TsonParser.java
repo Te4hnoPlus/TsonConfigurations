@@ -48,12 +48,12 @@ final class TsonParser {
 
     private TsonObj getItem(){
         switch (data[cursor++]){
-            case '"': return getStr('"');
+            case '"':  return getStr('"');
             case '\'': return getStr('\'');
-            case '(': return getBasic();
-            case '{': return getMap();
-            case '[': return getList();
-            case '<': return getField();
+            case '(':  return getBasic();
+            case '{':  return getMap();
+            case '[':  return getList();
+            case '<':  return getField();
         }
         throw new TsonSyntaxException(getErrorString(), cursor, data[cursor]);
     }
@@ -177,20 +177,68 @@ final class TsonParser {
     }
 
 
+    private boolean isFalse(){
+        char cur = data[cursor];
+        if(cur=='f'){
+            return data[cursor+1]=='a' && data[cursor+2]=='l' && data[cursor+3]=='s' && data[cursor+4]=='e';
+        }
+        if(cur=='F'){
+            if(data[cursor+1]=='a'){
+                return data[cursor+2]=='l' && data[cursor+3]=='s' && data[cursor+4]=='e';
+            } else if(data[cursor+1]=='A'){
+                return data[cursor+2]=='L' && data[cursor+3]=='S' && data[cursor+4]=='E';
+            }
+        }
+        return false;
+    }
+
+
+    private boolean isTrue(){
+        char cur = data[cursor];
+        if(cur=='t'){
+            return data[cursor+1]=='r' && data[cursor+2]=='u' && data[cursor+3]=='e';
+        }
+        if(cur=='T'){
+            if(data[cursor+1]=='r'){
+                return data[cursor+2]=='u' && data[cursor+3]=='e';
+            } else if(data[cursor+1]=='R'){
+                return data[cursor+2]=='U' && data[cursor+3]=='E';
+            }
+        }
+        return false;
+    }
+
+
+    private void skipAb(){
+        while (cursor<=data.length) {
+            char c = data[cursor];
+            ++cursor;
+            if(c==')')break;
+        }
+    }
+
+
     private TsonPrimitive readClassOrBool(){
+        if(isTrue()){
+            cursor+=3;
+            skipAb();
+            return TsonBool.TRUE;
+        }
+        if(isFalse()){
+            cursor += 4;
+            skipAb();
+            return TsonBool.FALSE;
+        }
         int cur;
         b.setLength(0);
-        for(cur=cursor;cur<data.length;++cur){
+        for(cur=cursor;cur<=data.length;++cur){
             char c = data[cur];
             if(c==')')break;
             b.append(c);
         }
         cursor = cur;
-        String s = b.toString();
-        if(s.equalsIgnoreCase("true"))return TsonBool.TRUE;
-        if(s.equalsIgnoreCase("false"))return TsonBool.FALSE;
         try {
-            return new TsonClass(manager, s);
+            return new TsonClass(manager, b.toString());
         } catch (NoSearchException e){
             throw new TsonSyntaxException(getErrorString(), cur, e.getMessage());
         }
@@ -200,7 +248,7 @@ final class TsonParser {
     private TsonPrimitive readLongNum(){
         int cur;
         b.setLength(0);
-        for(cur=cursor;cur<data.length;++cur){
+        for(cur=cursor;cur<=data.length;++cur){
             char c = data[cur];
             if(c == ')') break;
             else if(c == ' '){
@@ -224,10 +272,9 @@ final class TsonParser {
         boolean invert;
         if(invert = (data[cursor] == '-')) ++cursor;
         num = data[cursor]-48;
-
         boolean dec = false;
 
-        for(cur=cursor+1;cur<data.length;++cur){
+        for(cur=cursor+1;cur<=data.length;++cur){
             char c = data[cur];
             if(c>47 && c < 58) {
                 num = num * 10 + (c-48);
@@ -245,28 +292,29 @@ final class TsonParser {
                 } while (c == ' ');
                 if(c==')') break;
                 throw new TsonSyntaxException(getErrorString(), cur, c);
-            }
-            return readLongNum();
+            } else if(c!='_')return readLongNum();
         }
         if(dec){
             double num2 = num;
             int dec1 = invert?-1:1;
-            for(;cur<data.length;++cur){
+            for(;cur<=data.length;++cur){
                 char c = data[cur];
                 if(c>47 && c < 58) {
                     num2 = num2 * 10 + (c-48);
                     dec1 *= 10;
                     ++size;
+                } else {
+                    if(c == ')') break;
+                    if(c == ' ') {
+                        do {
+                            ++cur;
+                            c = data[cur];
+                        } while (c == ' ');
+                        if (c == ')') break;
+                        throw new TsonSyntaxException(getErrorString(), cur, c);
+                    }
+                    if(c!='_')return readLongNum();
                 }
-                else if(c == ')') break;
-                else if(c == ' '){
-                    do {
-                        ++cur;
-                        c = data[cur];
-                    } while (c == ' ');
-                    if(c==')') break;
-                    throw new TsonSyntaxException(getErrorString(), cur, c);
-                } else if(c!='_')return readLongNum();
             }
             cursor = cur;
             if(size>6){
@@ -291,7 +339,7 @@ final class TsonParser {
             list = new ArrayList<>();
         }
         boolean waitSep = true;
-        for(int cur = cursor;cur<data.length;++cur){
+        for(int cur = cursor;cur<=data.length;++cur){
             char c = data[cur];
             if(c == '>') break;
             if(waitSep){

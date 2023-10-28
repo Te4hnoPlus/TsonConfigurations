@@ -19,7 +19,7 @@ public class Main {
     private static HashMap<String,ArrayList<Double>> result = new HashMap<>();
     
     public static void test2(){
-        String data = "{a:true,b:false,c:20,d:50,e:'test',d:'gaga'}";
+        String data = "{a: true,b: false,c: 20,d: 50,e: 'test',d: 'gaga'}";
         TsonMap map = new TJsonParser(data.getBytes(StandardCharsets.UTF_8)).getMap();
         int count = 2000_000;
 
@@ -27,6 +27,7 @@ public class Main {
             testTime(() -> testSpeedJS(map, count), "js", count);
             testTime(() -> testSpeedTS(map, count), "ts", count);
         }
+        System.out.println(map);
         resToStr();
     }
 
