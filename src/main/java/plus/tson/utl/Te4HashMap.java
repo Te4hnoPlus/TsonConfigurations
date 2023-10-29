@@ -97,7 +97,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
     }
 
 
-    protected Node<K,V>[] table = new Node[0];
+    protected Node<K,V>[] table;
     private Set<Map.Entry<K,V>> entrySet;
     private int size;
     protected int modCount;
@@ -123,34 +123,24 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
     public Te4HashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
+        table = resize();
     }
 
 
     public Te4HashMap(Map<? extends K, ? extends V> m) {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
-        putMapEntries(m, false);
+        table = resize();
+        putMapEntries(m);
     }
 
 
-    public final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
+    public final void putMapEntries(Map<? extends K, ? extends V> m) {
         int s = m.size();
         if (s > 0) {
-            if (table == null) { // pre-size
-                float ft = ((float)s / loadFactor) + 1.0F;
-                int t = ((ft < (float)MAXIMUM_CAPACITY) ?
-                        (int)ft : MAXIMUM_CAPACITY);
-                if (t > threshold)
-                    threshold = tableSizeFor(t);
-            } else {
-                while (s > threshold && table.length < MAXIMUM_CAPACITY)
-                    resize();
-            }
-
-            for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
-                K key = e.getKey();
-                V value = e.getValue();
-                putVal(hash(key), key, value, false);
-            }
+            while (s > threshold && table.length < MAXIMUM_CAPACITY)
+                resize();
+            for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
+                fput(e.getKey(), e.getValue());
         }
     }
 
@@ -213,21 +203,47 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
     }
 
 
-    public final Node<K,V> putN(K key, V value) {
-        return putValN(hash(key), key, value, false);
+    public final void fput(K key, V value){
+        int hash = hash(key);
+        Node<K,V>[] tab = table; Node<K,V> node; int i;
+        if ((node = tab[i = (tab.length - 1) & hash]) == null) {
+            tab[i] = newNode(hash, key, value, null);
+        } else {
+            if (node.hash == hash && key.equals(node.key))
+                node.value = value;
+            else if (node instanceof TreeNode)
+                ((TreeNode<K,V>)node).putTreeVal(this, tab, hash, key, value);
+            else {
+                Node<K,V> e;
+                for (int binCount = 0; ; ++binCount) {
+                    if ((e = node.next) == null) {
+                        node.next = newNode(hash, key, value, null);
+                        if (binCount >= 7)
+                            treeifyBin(tab, hash);
+                        break;
+                    }
+                    if (e.hash == hash && key.equals(e.key))
+                        break;
+                    node = e;
+                }
+                if (e != null) {
+                    e.value = value;
+                }
+            }
+        }
+        ++modCount;
+        if (++size > threshold)
+            resize();
     }
 
 
     final Node<K,V> putValN(int hash, K key, V value, boolean onlyIfAbsent) {
-        Node<K,V>[] tab; Node<K,V> node; int n, i;
-        if ((tab = table) == null || (n = tab.length) == 0)
-            n = (tab = resize()).length;
-        if ((node = tab[i = (n - 1) & hash]) == null) {
+        Node<K,V>[] tab = table; Node<K,V> node; int i;
+        if ((node = tab[i = (tab.length - 1) & hash]) == null) {
             tab[i] = newNode(hash, key, value, null);
         } else {
             Node<K,V> e; K k;
-            if (node.hash == hash &&
-                    ((k = node.key) == key || (key != null && key.equals(k))))
+            if (node.hash == hash && ((k = node.key) == key || (key != null && key.equals(k))))
                 e = node;
             else if (node instanceof TreeNode)
                 e = ((TreeNode<K,V>)node).putTreeVal(this, tab, hash, key, value);
@@ -363,7 +379,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
 
     public void putAll(Map<? extends K, ? extends V> m) {
-        putMapEntries(m, true);
+        putMapEntries(m);
     }
 
 
@@ -892,11 +908,10 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         try {
             result = (Te4HashMap<K,V>)super.clone();
         } catch (CloneNotSupportedException e) {
-            // this shouldn't happen, since we are Cloneable
             throw new InternalError(e);
         }
         result.reinitialize();
-        result.putMapEntries(this, false);
+        result.putMapEntries(this);
         return result;
     }
 
@@ -1249,7 +1264,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
      * Reset to initial default state.  Called by clone and readObject.
      */
     void reinitialize() {
-        table = null;
+        table = resize();
         entrySet = null;
         keySet = null;
         values = null;

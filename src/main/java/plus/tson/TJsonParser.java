@@ -75,7 +75,7 @@ public final class TJsonParser {
                 waitKey = false;
                 key = getKey();
             } else {
-                map.put(key, getItem());
+                map.fput(key, getItem());
                 waitKey = true;
                 waitSep = true;
             }
@@ -129,7 +129,6 @@ public final class TJsonParser {
     }
 
 
-    //TODO CHECK
     private TsonStr getStr(char end){
         int cur;
         b.setLength(0);
@@ -272,7 +271,8 @@ public final class TJsonParser {
                         c = data[cur];
                     } while (c == ' ');
                     break;
-                } else if(c!='_')return readLongNum();
+                } else if(c!='_')
+                    return readLongNum();
             }
             cursor = cur;
             if(size>6){

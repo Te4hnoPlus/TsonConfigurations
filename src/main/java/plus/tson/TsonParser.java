@@ -92,7 +92,7 @@ final class TsonParser {
                 waitKey = false;
                 key = getKey();
             } else {
-                map.put(key, getItem());
+                map.fput(key, getItem());
                 waitKey = true;
                 waitSep = true;
             }
@@ -210,8 +210,8 @@ final class TsonParser {
     private void skipAb(){
         while (cursor<=data.length) {
             char c = data[cursor];
-            ++cursor;
             if(c==')')break;
+            ++cursor;
         }
     }
 

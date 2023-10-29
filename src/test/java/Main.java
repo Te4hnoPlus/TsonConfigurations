@@ -10,6 +10,7 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
         try{
+            while (true)
             test2();
         }catch (Exception e){
             e.printStackTrace();
@@ -27,7 +28,6 @@ public class Main {
             testTime(() -> testSpeedJS(map, count), "js", count);
             testTime(() -> testSpeedTS(map, count), "ts", count);
         }
-        System.out.println(map);
         resToStr();
     }
 
@@ -82,6 +82,7 @@ public class Main {
         for(int i=0;i<count;i++){
             code = new TsonMap(code).toString();
         }
+        System.out.println(code);
     }
 
 
@@ -90,5 +91,6 @@ public class Main {
         for(int i=0;i<count;i++){
             code = new TJsonParser(code.getBytes()).getMap().toJsonStr();
         }
+        System.out.println(code);
     }
 }
