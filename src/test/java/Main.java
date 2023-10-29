@@ -82,7 +82,6 @@ public class Main {
         for(int i=0;i<count;i++){
             code = new TsonMap(code).toString();
         }
-        System.out.println(code);
     }
 
 
@@ -91,6 +90,5 @@ public class Main {
         for(int i=0;i<count;i++){
             code = new TJsonParser(code.getBytes()).getMap().toJsonStr();
         }
-        System.out.println(code);
     }
 }
