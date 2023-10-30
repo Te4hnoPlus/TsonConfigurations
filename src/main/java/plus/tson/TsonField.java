@@ -73,6 +73,16 @@ public final class TsonField<T> implements TsonObj{
     }
 
 
+    @Override
+    public void codeJson(StringBuilder sb) {
+        if(field instanceof TsonSerelizable) {
+            ((TsonSerelizable) field).toTson().codeJson(sb);
+        } else {
+            throw new RuntimeException("Field ["+field.getClass()+"] ("+field+") cant be encode to json");
+        }
+    }
+
+
     private T cloneField() {
         try {
             Method mtd = field.getClass().getDeclaredMethod("clone");

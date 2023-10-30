@@ -27,6 +27,12 @@ public final class ByteStrBuilder {
         ++length;
     }
 
+
+    public void clear(){
+        length = 0;
+    }
+
+
     public void setLength(int length) {
         if(length >= bytes.length){
             byte[] newByte = new byte[length+16];

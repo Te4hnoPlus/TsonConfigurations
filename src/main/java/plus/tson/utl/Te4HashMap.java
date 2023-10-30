@@ -17,7 +17,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
     static final int UNTREEIFY_THRESHOLD = 6;
     static final int MIN_TREEIFY_CAPACITY = 64;
 
-    private static class Node<K,V> implements Map.Entry<K,V> {
+    public static class Node<K,V> implements Map.Entry<K,V> {
         final int hash;
         final K key;
         V value;
@@ -97,7 +97,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
     }
 
 
-    protected Node<K,V>[] table;
+    private Node<K,V>[] table;
     private Set<Map.Entry<K,V>> entrySet;
     private int size;
     protected int modCount;
@@ -200,6 +200,11 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
     public V put(K key, V value) {
         return putVal(hash(key), key, value, false);
+    }
+
+
+    public final Node<K,V> putN(K key, V value) {
+        return putValN(hash(key), key, value, false);
     }
 
 

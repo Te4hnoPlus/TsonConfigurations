@@ -9,7 +9,7 @@ public final class CharStrBuilder {
         this.bytes = new char[initLength];
     }
 
-    public int getLength() {
+    public int length() {
         return length;
     }
 
@@ -24,6 +24,12 @@ public final class CharStrBuilder {
         bytes[length] = (char) b;
         ++length;
     }
+
+
+    public void clear(){
+        length = 0;
+    }
+
 
     public void setLength(int length) {
         if (length >= bytes.length) {

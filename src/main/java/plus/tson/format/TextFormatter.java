@@ -31,7 +31,7 @@ public class TextFormatter<T> implements IVarGetter<T>{
 
 
     private static boolean isAct(char[] src, int cursor, char[] check){
-        if(cursor > 0 && src[cursor-1] != '\\')return false;
+        //if(cursor > 0 && src[cursor-1] == '\\')return false;
         int lim = Math.min(cursor+check.length, src.length);
         int n = 0;
         for (int i=cursor;i<lim;i++){
@@ -42,10 +42,9 @@ public class TextFormatter<T> implements IVarGetter<T>{
     }
 
 
-    public static<T> Tuple<String[], IVarGetter<T>[]> compileFormat(String format, IVarProvider<T> provider, String st, String ed){
+    public static<T> Tuple<ArrayList<String>,ArrayList<String>> prepare(String format, String st, String ed){
         ArrayList<String> items = new ArrayList<>();
         ArrayList<String> getters00 = new ArrayList<>();
-        ArrayList<IVarGetter<T>> getters0 = new ArrayList<>();
         char[] stc = format.toCharArray();
         boolean text = true;
         int sCursor = 0;
@@ -82,14 +81,20 @@ public class TextFormatter<T> implements IVarGetter<T>{
         } else {
             throw new RuntimeException("Syntax error!");
         }
+        return new Tuple<>(items, getters00);
+    }
 
-        return buildFormat(provider, items, getters00);
+
+    public static<T> Tuple<String[], IVarGetter<T>[]> compileFormat(String format, IVarProvider<T> provider, String st, String ed){
+        Tuple<ArrayList<String>, ArrayList<String>> res = prepare(format, st, ed);
+        return buildFormat(provider, res.A, res.B);
     }
 
 
     public static<T> Tuple<String[], IVarGetter<T>[]> buildFormat(IVarProvider<T> provider, ArrayList<String> items, ArrayList<String> vars){
         provider = new ProxyProvider<>(provider);
         ArrayList<IVarGetter<T>> getters0 = new ArrayList<>();
+        int cursor = 0;
         for (String fmGetterName:vars) {
             IVarGetter<T> getter = provider.getFmGetter(fmGetterName);
             boolean isConst = true;
@@ -100,9 +105,12 @@ public class TextFormatter<T> implements IVarGetter<T>{
                 isConst = IVarGetter.isConst(getter);
             }
             if (isConst) {
-                items.add(items.remove(items.size() - 1) + getter.get(null));
+                items.add(cursor,
+                        items.remove(cursor) + getter.get(null) + items.remove(cursor)
+                );
             } else {
                 getters0.add(getter);
+                ++cursor;
             }
         }
 
