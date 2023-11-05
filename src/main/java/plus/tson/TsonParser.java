@@ -7,7 +7,7 @@ import plus.tson.utl.CharStrBuilder;
 import java.util.ArrayList;
 
 
-final class TsonParser {
+public final class TsonParser {
     private final ClassManager manager;
     private final char[] data;
     private final CharStrBuilder b = new CharStrBuilder(16);

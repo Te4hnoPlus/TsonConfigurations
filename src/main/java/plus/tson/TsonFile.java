@@ -145,6 +145,24 @@ public class TsonFile extends TsonMap {
     }
 
 
+    public static void fillMap(TsonMap map, ClassManager manager, File file, String def){
+        String data = read(file, def);
+        Object[] data0 = Annotation.scan(data);
+        Annotation annotation = (Annotation) data0[0];
+        if(map instanceof TsonFile){
+            ((TsonFile) map).annotation = annotation;
+        }
+        data = (String) data0[1];
+        if(annotation.makeBackUp){
+            if(data.equals(""))return;
+            write(new File(file.getName()+"_backup"),annotation+data);
+        }
+        new TsonParser(manager,
+                data.replace("\r","").replace("\t","    ")
+        ).goTo('{').fillMap(map);
+    }
+
+
     public TsonFile save(){
         if(annotation.isReadOnly)return this;
         write(file, annotation+this.toString());
