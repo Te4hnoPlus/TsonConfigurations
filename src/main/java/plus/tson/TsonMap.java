@@ -301,7 +301,6 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     public String toJsonStr() {
         if(super.isEmpty()) return "{}";
         StringBuilder builder = new StringBuilder("{");
-        builder.append('{');
         for (Map.Entry<String, TsonObj> node : super.entrySet()) {
             builder.append('"').append(node.getKey()).append("\":");
             node.getValue().codeJson(builder);
