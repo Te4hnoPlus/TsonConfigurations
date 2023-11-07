@@ -20,6 +20,11 @@ public interface TsonObj extends Cloneable{
     }
 
 
+    default long getLong(){
+        throw new WrongTypeException(this.getClass(),"getLong()");
+    }
+
+
     default float getFloat(){
         throw new WrongTypeException(this.getClass(),"getFloat()");
     }

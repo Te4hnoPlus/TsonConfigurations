@@ -35,6 +35,12 @@ public final class TsonFloat extends TsonPrimitive{
 
 
     @Override
+    public long getLong() {
+        return (long) value;
+    }
+
+
+    @Override
     public double getDouble() {
         return value;
     }

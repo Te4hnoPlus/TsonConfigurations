@@ -55,6 +55,15 @@ public final class TsonParser {
             case '[':  return getList();
             case '<':  return getField();
         }
+        --cursor;
+        if(isTrue()){
+            cursor+=3;
+            return TsonBool.TRUE;
+        }
+        if(isFalse()){
+            cursor+=4;
+            return TsonBool.FALSE;
+        }
         throw new TsonSyntaxException(getErrorString(), cursor, data[cursor]);
     }
 

@@ -6,7 +6,6 @@ public final class TsonBool extends TsonPrimitive {
     public static final TsonBool FALSE = new TsonBool(false);
     private final boolean value;
 
-
     public TsonBool(boolean value) {
         this.value = value;
     }
@@ -44,7 +43,7 @@ public final class TsonBool extends TsonPrimitive {
 
     @Override
     public void code(StringBuilder sb) {
-        sb.append('(').append(value).append(')');
+        sb.append(value);
     }
 
 

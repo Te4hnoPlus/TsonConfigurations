@@ -1,10 +1,10 @@
 package plus.tson;
 
 
-public final class TsonDouble extends TsonPrimitive{
-    private final double value;
+public class TsonLong extends TsonPrimitive{
+    private final long value;
 
-    public TsonDouble(double value) {
+    public TsonLong(long value) {
         this.value = value;
     }
 
@@ -22,7 +22,7 @@ public final class TsonDouble extends TsonPrimitive{
 
 
     @Override
-    public Double getField(){
+    public Long getField(){
         return value;
     }
 
@@ -35,7 +35,7 @@ public final class TsonDouble extends TsonPrimitive{
 
     @Override
     public long getLong() {
-        return (long) value;
+        return value;
     }
 
 
@@ -64,7 +64,7 @@ public final class TsonDouble extends TsonPrimitive{
 
 
     @Override
-    public TsonDouble clone() {
+    public TsonLong clone() {
         return this;
     }
 
@@ -72,14 +72,13 @@ public final class TsonDouble extends TsonPrimitive{
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (TsonDouble.class != o.getClass()) return false;
-        return Double.compare(((TsonDouble) o).value, value) == 0;
+        if (TsonLong.class != o.getClass()) return false;
+        return ((TsonLong) o).value == value;
     }
 
 
     @Override
     public int hashCode() {
-        long temp = Double.doubleToLongBits(value);
-        return (int) (temp ^ (temp >>> 32));
+        return Long.hashCode(value);
     }
 }

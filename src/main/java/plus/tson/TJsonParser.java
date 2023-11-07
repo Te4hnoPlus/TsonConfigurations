@@ -15,6 +15,17 @@ public final class TJsonParser {
         this.objMode = objMode;
     }
 
+
+    public TJsonParser(String s){
+        this(s.getBytes());
+    }
+
+
+    public TJsonParser(String s, boolean objMode){
+        this(s.getBytes(), objMode);
+    }
+
+
     public TJsonParser(byte[] data){
         this(data, false);
     }
@@ -213,31 +224,11 @@ public final class TJsonParser {
     }
 
 
-    private TsonPrimitive readLongNum(){
-        int cur;
-        b.setLength(0);
-        for(cur=cursor;cur<data.length;++cur){
-            byte c = data[cur];
-            if(c == ' '){
-                do {
-                    ++cur;
-                    c = data[cur];
-                } while (c == ' ');
-                break;
-            } else {
-                b.append(c);
-            }
-        }
-        cursor = cur;
-        return new TsonDouble(Double.parseDouble(b.toString()));
-    }
-
-
     private TsonPrimitive readNum(){
-        int cur, num, size = 0;
+        int cur, size = 0;
         boolean invert;
         if(invert = (data[cursor] == '-')) ++cursor;
-        num = data[cursor]-48;
+        long num = data[cursor]-48;
         boolean dec = false;
 
         for(cur=cursor+1;cur<data.length;++cur){
@@ -278,7 +269,7 @@ public final class TJsonParser {
                     } while (c == ' ');
                     break;
                 } else if(c!='_')
-                    return readLongNum();
+                    throw new TsonSyntaxException(getErrorString(), cur, "Number format error");
             }
             cursor = cur;
             if(size>6){
@@ -288,7 +279,10 @@ public final class TJsonParser {
             }
         } else {
             cursor = cur-1;
-            return invert?new TsonInt(-num):new TsonInt(num);
+            if(size>10)
+                return invert?new TsonLong(-num):new TsonLong(num);
+            else
+                return invert?new TsonInt((int) -num):new TsonInt((int) num);
         }
     }
 
@@ -300,9 +294,13 @@ public final class TJsonParser {
         ++cur;
         for(;cur<data.length;++cur){
             byte c = data[cur];
-            if(c=='"')break;
+            if(c=='"'){
+                ++cur;
+                break;
+            }
             b.append(c);
         }
+        cursor = cur;
         return b.toString();
     }
 

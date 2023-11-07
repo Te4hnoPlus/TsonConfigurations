@@ -41,6 +41,11 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    public TsonLong put(String key, long v){
+        return (TsonLong) super.put(key, new TsonLong(v));
+    }
+
+
     public TsonStr put(String key, String v) {
         return (TsonStr) super.put(key, new TsonStr(v));
     }
