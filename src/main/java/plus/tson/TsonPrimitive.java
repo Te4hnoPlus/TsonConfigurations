@@ -22,7 +22,7 @@ public abstract class TsonPrimitive implements TsonObj{
 
 
     @Override
-    public String toJsonStr() {
+    public String toJsonObj() {
         return getStr();
     }
 

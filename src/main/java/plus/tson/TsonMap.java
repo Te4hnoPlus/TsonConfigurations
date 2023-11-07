@@ -252,16 +252,15 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
 
     @Override
-    public void codeJson(StringBuilder builder) {
+    public void codeJsonObj(StringBuilder builder) {
         if(super.size()==0){
             builder.append("{}");
         } else {
             builder.append('{');
             for (Map.Entry<String, TsonObj> node : super.entrySet()) {
                 builder.append(node.getKey()).append(':');
-                node.getValue().codeJson(builder);
+                node.getValue().codeJsonObj(builder);
                 builder.append(',');
-
             }
             builder.setCharAt(builder.length() - 1, '}');
         }
@@ -269,18 +268,47 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
 
     @Override
-    public String toJsonStr() {
-        if(super.isEmpty()) return "{}";
-        else {
-            StringBuilder builder = new StringBuilder("{");
+    public void codeJson(StringBuilder builder){
+        if(super.size()==0){
+            builder.append("{}");
+        } else {
+            builder.append('{');
             for (Map.Entry<String, TsonObj> node : super.entrySet()) {
-                builder.append(node.getKey()).append(':');
+                builder.append('"').append(node.getKey()).append("\":");
                 node.getValue().codeJson(builder);
                 builder.append(',');
             }
             builder.setCharAt(builder.length() - 1, '}');
-            return builder.toString();
         }
+    }
+
+
+    @Override
+    public String toJsonObj() {
+        if (super.isEmpty()) return "{}";
+        StringBuilder builder = new StringBuilder("{");
+        for (Map.Entry<String, TsonObj> node : super.entrySet()) {
+            builder.append(node.getKey()).append(':');
+            node.getValue().codeJsonObj(builder);
+            builder.append(',');
+        }
+        builder.setCharAt(builder.length() - 1, '}');
+        return builder.toString();
+    }
+
+
+    @Override
+    public String toJsonStr() {
+        if(super.isEmpty()) return "{}";
+        StringBuilder builder = new StringBuilder("{");
+        builder.append('{');
+        for (Map.Entry<String, TsonObj> node : super.entrySet()) {
+            builder.append('"').append(node.getKey()).append("\":");
+            node.getValue().codeJson(builder);
+            builder.append(',');
+        }
+        builder.setCharAt(builder.length() - 1, '}');
+        return builder.toString();
     }
 
 

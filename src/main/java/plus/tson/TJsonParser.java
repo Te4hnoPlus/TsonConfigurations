@@ -5,12 +5,18 @@ import plus.tson.utl.ByteStrBuilder;
 
 
 public final class TJsonParser {
+    private final boolean objMode;
     private final byte[] data;
     private final ByteStrBuilder b = new ByteStrBuilder(16);
     private int cursor = 0;
 
-    public TJsonParser(byte[] data) {
+    public TJsonParser(byte[] data, boolean objMode) {
         this.data = data;
+        this.objMode = objMode;
+    }
+
+    public TJsonParser(byte[] data){
+        this(data, false);
     }
 
 
@@ -73,7 +79,7 @@ public final class TJsonParser {
             cursor = cur;
             if(waitKey) {
                 waitKey = false;
-                key = getKey();
+                key = objMode?getObjKey():getKey();
             } else {
                 map.fput(key, getItem());
                 waitKey = true;
@@ -288,6 +294,20 @@ public final class TJsonParser {
 
 
     private String getKey(){
+        int cur = cursor;
+        b.setLength(0);
+        if(data[cur] != '"') throw new TsonSyntaxException(getErrorString(), cursor, "Expected [ \" ]");
+        ++cur;
+        for(;cur<data.length;++cur){
+            byte c = data[cur];
+            if(c=='"')break;
+            b.append(c);
+        }
+        return b.toString();
+    }
+
+
+    private String getObjKey(){
         int cur = cursor;
         b.setLength(0);
         for(;cur<data.length;++cur){

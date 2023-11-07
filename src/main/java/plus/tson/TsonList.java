@@ -3,7 +3,6 @@ package plus.tson;
 import plus.tson.security.ClassManager;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.StringJoiner;
 
 
 public class TsonList extends ArrayList<TsonObj> implements TsonObj {
@@ -186,6 +185,22 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
 
     @Override
+    public void codeJsonObj(StringBuilder builder) {
+        int size = this.size();
+        if(size==0){
+            builder.append("[]");
+        } else {
+            builder.append('[');
+            for (int i = 0; i < size; i++) {
+                get(i).codeJsonObj(builder);
+                builder.append(',');
+            }
+            builder.setCharAt(builder.length() - 1, ']');
+        }
+    }
+
+
+    @Override
     public void codeJson(StringBuilder builder) {
         int size = this.size();
         if(size==0){
@@ -193,11 +208,25 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
         } else {
             builder.append('[');
             for (int i = 0; i < size; i++) {
-                get(i).codeJson(builder);
+                get(i).codeJsonObj(builder);
                 builder.append(',');
             }
             builder.setCharAt(builder.length() - 1, ']');
         }
+    }
+
+
+    @Override
+    public String toJsonObj() {
+        int size = this.size();
+        if(size==0)return "[]";
+        StringBuilder builder = new StringBuilder("[");
+        for (int i = 0; i < size; i++) {
+            builder.append(get(i).toJsonObj());
+            builder.append(',');
+        }
+        builder.setCharAt(builder.length()-1, ']');
+        return builder.toString();
     }
 
 

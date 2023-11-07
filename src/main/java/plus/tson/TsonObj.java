@@ -63,7 +63,10 @@ public interface TsonObj extends Cloneable{
     default boolean isBool(){return false;}
 
 
-    default String toJsonStr(){return toString();}
+    default String toJsonObj(){return toString();}
+
+
+    default String toJsonStr(){return toJsonObj();}
 
 
     default void code(StringBuilder sb){
@@ -71,8 +74,13 @@ public interface TsonObj extends Cloneable{
     }
 
 
-    default void codeJson(StringBuilder sb){
+    default void codeJsonObj(StringBuilder sb){
         code(sb);
+    }
+
+
+    default void codeJson(StringBuilder sb){
+        codeJsonObj(sb);
     }
 
 

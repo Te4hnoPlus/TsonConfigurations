@@ -53,7 +53,7 @@ public final class TsonInt extends TsonPrimitive{
 
 
     @Override
-    public void codeJson(StringBuilder sb) {
+    public void codeJsonObj(StringBuilder sb) {
         sb.append(value);
     }
 

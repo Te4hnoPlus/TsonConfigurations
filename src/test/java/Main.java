@@ -86,9 +86,9 @@ public class Main {
 
 
     static void testSpeedJS(TsonMap map, int count){
-        String code = map.toJsonStr();
+        String code = map.toJsonObj();
         for(int i=0;i<count;i++){
-            code = new TJsonParser(code.getBytes()).getMap().toJsonStr();
+            code = new TJsonParser(code.getBytes()).getMap().toJsonObj();
         }
     }
 }

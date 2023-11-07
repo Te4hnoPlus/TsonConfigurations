@@ -32,7 +32,7 @@ public class ScemTest {
             map.put("a2", a2);
             map.put("a3", a3);
             map.put("map0", map0);
-            return map.toJsonStr();
+            return map.toJsonObj();
         }
     }
 
