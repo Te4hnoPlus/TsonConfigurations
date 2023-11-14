@@ -38,7 +38,7 @@ public final class TsonParser {
     TsonParser goTo(char chr){
         int cur;
         for(cur=cursor;cur<data.length;++cur){
-            if(data[cur]==chr)break;
+            if(data[cur] == chr)break;
         }
         cursor = ++cur;
         return this;
@@ -68,8 +68,8 @@ public final class TsonParser {
 
 
     private String getErrorString(){
-        int min = Math.max(0, cursor-50);
-        int max = Math.min(cursor+50,data.length-1);
+        int min = Math.max(0, cursor-50),
+            max = Math.min(cursor+50, data.length-1);
         char[] chars = new char[max-min];
         System.arraycopy(data, min, chars, 0, chars.length);
         return new String(chars);
@@ -149,7 +149,7 @@ public final class TsonParser {
     private TsonStr getStr(char end){
         int cur = cursor;
         boolean prevEcran = false;
-        b.setLength(0);
+        b.clear();
         for(char c;cur<data.length;++cur){
             if((c = data[cur]) == end && !prevEcran)break;
             if(c == '\\'){
@@ -231,7 +231,7 @@ public final class TsonParser {
             return TsonBool.FALSE;
         }
         int cur = cursor;
-        b.setLength(0);
+        b.clear();
         for(char c;cur<=data.length;++cur){
             if((c = data[cur]) == ')')break;
             b.append(c);
@@ -247,7 +247,7 @@ public final class TsonParser {
 
     private TsonPrimitive readLongNum(){
         int cur = cursor;
-        b.setLength(0);
+        b.clear();
         for(char c;cur<=data.length;++cur){
             if((c = data[cur]) == ')') break;
             else if(c == ' '){
@@ -362,7 +362,7 @@ public final class TsonParser {
 
     private String getKey(){
         int cur = cursor;
-        b.setLength(0);
+        b.clear();
         for(char c;cur<data.length;++cur){
             if((c = data[cur]) == '=')break;
             if(c == ' ' || c == '\n')continue;
@@ -376,7 +376,7 @@ public final class TsonParser {
     private TsonClass getTsonClass(){
         int cur = cursor;
         boolean ignore = true;
-        b.setLength(0);
+        b.clear();
         for(;cur<data.length;++cur){
             char c = data[cur];
             if(ignore){

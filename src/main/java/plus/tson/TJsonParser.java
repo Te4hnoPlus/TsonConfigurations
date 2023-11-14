@@ -3,6 +3,8 @@ package plus.tson;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.utl.ByteStrBuilder;
 
+import java.nio.charset.StandardCharsets;
+
 
 public final class TJsonParser {
     private final boolean objMode;
@@ -37,7 +39,7 @@ public final class TJsonParser {
     private void goTo(char chr){
         int cur;
         for(cur=cursor;cur<data.length;++cur)
-            if(data[cur]==chr)break;
+            if(data[cur] == chr)break;
         cursor = ++cur;
     }
 
@@ -55,7 +57,7 @@ public final class TJsonParser {
 
     private String getErrorString(){
         int min = Math.max(0, cursor-50),
-            max = Math.min(cursor+50,data.length-1);
+            max = Math.min(cursor+50, data.length-1);
         byte[] bytes = new byte[max-min];
         System.arraycopy(data, min, bytes, 0, bytes.length);
         return new String(bytes);
@@ -150,7 +152,7 @@ public final class TJsonParser {
 
     private TsonStr getStr(char end){
         int cur = cursor;
-        b.setLength(0);
+        b.clear();
         for(byte c;cur<data.length;++cur){
             if((c = data[cur]) == end)break;
             if(c == '\\'){
@@ -197,7 +199,7 @@ public final class TJsonParser {
         if(cur == 'f')
             return data[cursor+1]=='a' && data[cursor+2]=='l' && data[cursor+3]=='s' && data[cursor+4]=='e';
         if(cur == 'F'){
-            if(data[cursor+1]=='a')
+            if(data[cursor+1] == 'a')
                 return data[cursor+2]=='l' && data[cursor+3]=='s' && data[cursor+4]=='e';
             else if(data[cursor+1]=='A')
                 return data[cursor+2]=='L' && data[cursor+3]=='S' && data[cursor+4]=='E';
@@ -281,23 +283,21 @@ public final class TJsonParser {
     private String getKey(){
         int cur = cursor;
         if(data[cur] != '"') throw new TsonSyntaxException(getErrorString(), cursor, "Expected [ \" ]");
-        ++cur;
-        b.setLength(0);
-        for(byte c;cur<data.length;++cur){
-            if((c = data[cur]) == '"'){
+        int start = ++cur;
+        for(; cur<data.length; ++cur){
+            if(data[cur] == '"'){
                 ++cur;
                 break;
             }
-            b.append(c);
         }
         cursor = cur;
-        return b.toString();
+        return new String(data, start, cur-start-1, StandardCharsets.UTF_8);
     }
 
 
     private String getObjKey(){
         int cur = cursor;
-        b.setLength(0);
+        b.clear();
         for(byte c;cur<data.length;++cur){
             if((c = data[cur]) == ':')break;
             if(c == ' ' || c == '\n')continue;

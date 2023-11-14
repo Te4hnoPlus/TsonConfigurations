@@ -42,6 +42,7 @@ public final class ByteStrBuilder {
         this.length = length;
     }
 
+
     @Override
     public String toString() {
         return new String(bytes, 0, length, StandardCharsets.UTF_8);
