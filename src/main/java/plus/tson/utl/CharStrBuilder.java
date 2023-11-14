@@ -9,20 +9,21 @@ public final class CharStrBuilder {
         this.bytes = new char[initLength];
     }
 
+
     public int length() {
         return length;
     }
 
+
     public void append(char b) {
         setLength(length);
-        bytes[length] = b;
-        ++length;
+        bytes[length++] = b;
     }
+
 
     public void append(byte b){
         setLength(length);
-        bytes[length] = (char) b;
-        ++length;
+        bytes[length++] = (char) b;
     }
 
 
@@ -39,6 +40,7 @@ public final class CharStrBuilder {
         }
         this.length = length;
     }
+
 
     @Override
     public String toString() {

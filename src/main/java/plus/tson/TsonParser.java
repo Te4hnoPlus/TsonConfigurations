@@ -292,9 +292,8 @@ public final class TsonParser {
         if(dec){
             double num2 = num;
             int dec1 = invert?-1:1;
-            for(;cur<=data.length;++cur){
-                char c = data[cur];
-                if(c>47 && c < 58) {
+            for(char c;cur<=data.length;++cur){
+                if((c = data[cur]) > 47 && c < 58) {
                     num2 = num2 * 10 + (c-48);
                     dec1 *= 10;
                     ++size;
@@ -331,9 +330,9 @@ public final class TsonParser {
             list = new TsonList();
         else
             list = new ArrayList<>();
-        for(int cur = cursor;cur<=data.length;++cur){
-            char c = data[cur];
-            if(c == '>') break;
+        int cur = cursor;
+        for(char c;cur<=data.length;++cur){
+            if((c = data[cur]) == '>') break;
             if(waitSep){
                 if(c == ',')waitSep = false;
                 continue;
@@ -377,8 +376,8 @@ public final class TsonParser {
         int cur = cursor;
         boolean ignore = true;
         b.clear();
-        for(;cur<data.length;++cur){
-            char c = data[cur];
+        for(char c;cur<data.length;++cur){
+            c = data[cur];
             if(ignore){
                 ignore = c == '(';
                 if(ignore)continue;

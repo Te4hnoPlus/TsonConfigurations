@@ -11,20 +11,21 @@ public final class ByteStrBuilder {
         this.bytes = new byte[initLength];
     }
 
+
     public int getLength() {
         return length;
     }
 
+
     public void append(byte b){
         setLength(length);
-        bytes[length] = b;
-        ++length;
+        bytes[length++] = b;
     }
+
 
     public void append(char b) {
         setLength(length);
-        bytes[length] = (byte) b;
-        ++length;
+        bytes[length++] = (byte) b;
     }
 
 

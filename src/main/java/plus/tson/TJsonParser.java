@@ -2,7 +2,6 @@ package plus.tson;
 
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.utl.ByteStrBuilder;
-
 import java.nio.charset.StandardCharsets;
 
 
