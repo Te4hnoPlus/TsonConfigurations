@@ -233,7 +233,18 @@ public class TsonFile extends TsonMap {
     }
 
 
+    public static void write(File file, byte[] data){
+        try {
+            if(data==null)data = new byte[0];
+            Files.write(file.toPath(), data);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     public static void write(File file, String data){
+        if(data==null)data = "";
         try(FileWriter writer = new FileWriter(file, false)) {
             writer.write(data);
             writer.flush();

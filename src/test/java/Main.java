@@ -10,7 +10,7 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
         try{
-            while (true)
+            //while (true)
             test2();
         }catch (Exception e){
             e.printStackTrace();
@@ -21,7 +21,7 @@ public class Main {
     
     public static void test2(){
         String data = "{a: true,b: false,c: 20,d: 50,e: 'test',d: 'gaga'}";
-        TsonMap map = new TJsonParser(data.getBytes(StandardCharsets.UTF_8)).getMap();
+        TsonMap map = new TJsonParser(data,true).getMap();
         int count = 2000_000;
 
         for (int i=1;i<11;i++){
@@ -88,7 +88,7 @@ public class Main {
     static void testSpeedJS(TsonMap map, int count){
         String code = map.toJsonObj();
         for(int i=0;i<count;i++){
-            code = new TJsonParser(code.getBytes()).getMap().toJsonObj();
+            code = new TJsonParser(code, true).getMap().toJsonObj();
         }
     }
 }

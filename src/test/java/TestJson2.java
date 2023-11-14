@@ -1,12 +1,12 @@
-import plus.tson.TJsonParser;
-import plus.tson.TsonDouble;
-import plus.tson.TsonMap;
-import plus.tson.TsonObj;
+import plus.tson.*;
+
+import java.io.File;
 
 public class TestJson2 {
     public static void main(String[] args) {
         long l = System.currentTimeMillis();
 
+        TsonFile.write(new File("test.txt"), "AGAGAG".getBytes());
 //        TsonMap map = new TsonMap();
 //        map.put("k1", "v1");
 //        map.put("k2", "v2");
@@ -16,6 +16,6 @@ public class TestJson2 {
 //
 //        System.out.println(map.toJsonStr());
 
-        System.out.println(new TsonMap("{k=true,v=false}"));
+//        System.out.println(new TsonMap("{k=true,v=false}"));
     }
 }
