@@ -2,11 +2,11 @@ package plus.tson.utl;
 
 
 public final class CharStrBuilder {
-    private char[] bytes;
+    private char[] chars;
     private int length;
 
     public CharStrBuilder(int initLength) {
-        this.bytes = new char[initLength];
+        this.chars = new char[initLength];
     }
 
 
@@ -17,13 +17,13 @@ public final class CharStrBuilder {
 
     public void append(char b) {
         setLength(length);
-        bytes[length++] = b;
+        chars[length++] = b;
     }
 
 
     public void append(byte b){
         setLength(length);
-        bytes[length++] = (char) b;
+        chars[length++] = (char) b;
     }
 
 
@@ -33,10 +33,10 @@ public final class CharStrBuilder {
 
 
     public void setLength(int length) {
-        if (length >= bytes.length) {
+        if (length >= chars.length) {
             char[] newByte = new char[length+16];
-            System.arraycopy(bytes, 0, newByte, 0, bytes.length);
-            bytes = newByte;
+            System.arraycopy(chars, 0, newByte, 0, chars.length);
+            chars = newByte;
         }
         this.length = length;
     }
@@ -44,6 +44,6 @@ public final class CharStrBuilder {
 
     @Override
     public String toString() {
-        return new String(bytes, 0, length);
+        return new String(chars, 0, length);
     }
 }
