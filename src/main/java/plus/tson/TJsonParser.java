@@ -200,7 +200,7 @@ public final class TJsonParser {
         if(cur == 'F'){
             if(data[cursor+1] == 'a')
                 return data[cursor+2]=='l' && data[cursor+3]=='s' && data[cursor+4]=='e';
-            else if(data[cursor+1]=='A')
+            else if(data[cursor+1] == 'A')
                 return data[cursor+2]=='L' && data[cursor+3]=='S' && data[cursor+4]=='E';
         }
         return false;

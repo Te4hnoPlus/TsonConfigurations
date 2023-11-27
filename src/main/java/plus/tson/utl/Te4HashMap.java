@@ -211,28 +211,27 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
     public final void fput(K key, V value){
         int hash = hash(key);
         Node<K,V>[] tab = table; Node<K,V> node; int i;
-        if ((node = tab[i = (tab.length - 1) & hash]) == null) {
-            tab[i] = newNode(hash, key, value, null);
-        } else {
+        if ((node = tab[i = (tab.length - 1) & hash]) == null)
+            tab[i] = new Node<>(hash, key, value, null);
+        else {
             if (node.hash == hash && key.equals(node.key))
                 node.value = value;
             else if (node instanceof TreeNode)
-                ((TreeNode<K,V>)node).putTreeVal(this, tab, hash, key, value);
+                ((TreeNode<K,V>)node).putTreeValNR(tab, hash, key, value);
             else {
                 Node<K,V> e;
-                for (int binCount = 0; ; ++binCount) {
+                for (i = 0; ; ++i) {
                     if ((e = node.next) == null) {
-                        node.next = newNode(hash, key, value, null);
-                        if (binCount >= 7)
+                        node.next = new Node<>(hash, key, value, null);
+                        if (i >= 7)
                             treeifyBin(tab, hash);
                         break;
                     }
-                    if (e.hash == hash && key.equals(e.key))
+                    if (e.hash == hash && key.equals(e.key)){
+                        e.value = value;
                         break;
+                    }
                     node = e;
-                }
-                if (e != null) {
-                    e.value = value;
                 }
             }
         }
@@ -242,21 +241,21 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
     }
 
 
-    final Node<K,V> putValN(int hash, K key, V value, boolean onlyIfAbsent) {
+    private Node<K,V> putValN(int hash, K key, V value, boolean onlyIfAbsent) {
         Node<K,V>[] tab = table; Node<K,V> node; int i;
         if ((node = tab[i = (tab.length - 1) & hash]) == null) {
-            tab[i] = newNode(hash, key, value, null);
+            tab[i] = new Node<>(hash, key, value, null);
         } else {
             Node<K,V> e; K k;
             if (node.hash == hash && ((k = node.key) == key || (key != null && key.equals(k))))
                 e = node;
             else if (node instanceof TreeNode)
-                e = ((TreeNode<K,V>)node).putTreeVal(this, tab, hash, key, value);
+                e = ((TreeNode<K,V>)node).putTreeVal(tab, hash, key, value);
             else {
-                for (int binCount = 0; ; ++binCount) {
+                for (i = 0; ; ++i) {
                     if ((e = node.next) == null) {
-                        node.next = newNode(hash, key, value, null);
-                        if (binCount >= 7) // -1 for 1st
+                        node.next = new Node<>(hash, key, value, null);
+                        if (i >= 7) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
                     }
@@ -323,7 +322,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                     if (e.next == null)
                         newTab[e.hash & (newCap - 1)] = e;
                     else if (e instanceof TreeNode)
-                        ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                        ((TreeNode<K,V>)e).split(newTab, j, oldCap);
                     else { // preserve order
                         Node<K,V> loHead = null, loTail = null;
                         Node<K,V> hiHead = null, hiTail = null;
@@ -368,7 +367,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K,V> hd = null, tl = null;
             do {
-                TreeNode<K,V> p = replacementTreeNode(e);
+                TreeNode<K,V> p = new TreeNode<>(e.hash, e.key, e.value, null);
                 if (tl == null)
                     hd = p;
                 else {
@@ -377,8 +376,8 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                 }
                 tl = p;
             } while ((e = e.next) != null);
-            if ((tab[index] = hd) != null)
-                hd.treeify(tab);
+            tab[index] = hd;
+            hd.treeify(tab);
         }
     }
 
@@ -422,7 +421,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             if (node != null && (!matchValue || (v = node.value) == value ||
                     (value != null && value.equals(v)))) {
                 if (node instanceof TreeNode)
-                    ((TreeNode<K,V>)node).removeTreeNode(this, tab, movable);
+                    ((TreeNode<K,V>)node).removeTreeNode(tab, movable);
                 else if (node == p)
                     tab[index] = node.next;
                 else
@@ -727,9 +726,9 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             return v;
         }
         else if (t != null)
-            t.putTreeVal(this, tab, hash, key, v);
+            t.putTreeValNR(tab, hash, key, v);
         else {
-            tab[i] = newNode(hash, key, v, first);
+            tab[i] = new Node<>(hash, key, v, first);
             if (binCount >= 7)
                 treeifyBin(tab, hash);
         }
@@ -800,9 +799,9 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
         else if (v != null) {
             if (t != null)
-                t.putTreeVal(this, tab, hash, key, v);
+                t.putTreeValNR(tab, hash, key, v);
             else {
-                tab[i] = newNode(hash, key, v, first);
+                tab[i] = new Node<>(hash, key, v, first);
                 if (binCount >= 7)
                     treeifyBin(tab, hash);
             }
@@ -814,8 +813,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
 
     @Override
-    public V merge(K key, V value,
-                   BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         if (value == null || remappingFunction == null)
             throw new NullPointerException();
         int hash = hash(key);
@@ -859,9 +857,9 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             return v;
         } else {
             if (t != null)
-                t.putTreeVal(this, tab, hash, key, value);
+                t.putTreeValNR(tab, hash, key, value);
             else {
-                tab[i] = newNode(hash, key, value, first);
+                tab[i] = new Node<>(hash, key, value, first);
                 if (binCount >= 7)
                     treeifyBin(tab, hash);
             }
@@ -922,17 +920,14 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
 
     abstract class HashIterator {
-        Node<K,V> next;        // next entry to return
-        Node<K,V> current;     // current entry
-        int expectedModCount;  // for fast-fail
-        int index;             // current slot
+        Node<K,V> next, current;
+        int expectedModCount, index;
 
         HashIterator() {
             expectedModCount = modCount;
             Node<K,V>[] t = table;
-            current = next = null;
             index = 0;
-            if (t != null && size > 0) { // advance to first entry
+            if (t != null && size > 0) {
                 do {} while (index < t.length && (next = t[index++]) == null);
             }
         }
@@ -942,12 +937,12 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
 
         final Node<K,V> nextNode() {
-            Node<K,V>[] t;
             Node<K,V> e = next;
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
             if (e == null)
                 throw new NoSuchElementException();
+            Node<K,V>[] t;
             if ((next = (current = e).next) == null && (t = table) != null) {
                 do {} while (index < t.length && (next = t[index++]) == null);
             }
@@ -984,11 +979,8 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
     static class HashMapSpliterator<K,V> {
         final Te4HashMap<K,V> map;
-        Node<K,V> current;          // current node
-        int index;                  // current index, modified on advance/split
-        int fence;                  // one past last index
-        int est;                    // size estimate
-        int expectedModCount;       // for comodification checks
+        Node<K,V> current;
+        int index, fence, est, expectedModCount;
 
         HashMapSpliterator(Te4HashMap<K,V> m, int origin,
                            int fence, int est,
@@ -1233,37 +1225,6 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
     }
 
-    /* ------------------------------------------------------------ */
-    // LinkedHashMap support
-
-
-    /*
-     * The following package-protected methods are designed to be
-     * overridden by LinkedHashMap, but not by any other subclass.
-     * Nearly all other internal methods are also package-protected
-     * but are declared final, so can be used by LinkedHashMap, view
-     * classes, and HashSet.
-     */
-
-    // Create a regular (non-tree) node
-    Node<K,V> newNode(int hash, K key, V value, Node<K,V> next) {
-        return new Node<>(hash, key, value, next);
-    }
-
-    // For conversion from TreeNodes to plain nodes
-    Node<K,V> replacementNode(Node<K,V> p) {
-        return new Node<>(p.hash, p.key, p.value, null);
-    }
-
-    // Create a tree bin node
-    TreeNode<K,V> newTreeNode(int hash, K key, V value, Node<K,V> next) {
-        return new TreeNode<>(hash, key, value, next);
-    }
-
-    // For treeifyBin
-    TreeNode<K,V> replacementTreeNode(Node<K,V> p) {
-        return new TreeNode<>(p.hash, p.key, p.value, null);
-    }
 
     /**
      * Reset to initial default state.  Called by clone and readObject.
@@ -1280,10 +1241,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
 
     static final class TreeNode<K,V> extends Node<K,V> {
-        TreeNode<K,V> parent;
-        TreeNode<K,V> left;
-        TreeNode<K,V> right;
-        TreeNode<K,V> prev;
+        TreeNode<K,V> parent, left, right, prev;
         boolean red;
         TreeNode(int hash, K key, V val, Node<K,V> next) {
             super(hash, key, val, next);
@@ -1315,7 +1273,6 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                     root.next = first;
                     root.prev = null;
                 }
-                assert checkInvariants(root);
             }
         }
 
@@ -1353,7 +1310,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
 
 
-        static int tieBreakOrder(Object a, Object b) {
+        private int tieBreakOrder(Object a, Object b) {
             int d;
             if (a == null || b == null ||
                     (d = a.getClass().getName().
@@ -1407,10 +1364,10 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
 
 
-        Node<K,V> untreeify(Te4HashMap<K,V> map) {
+        Node<K,V> untreeify() {
             Node<K,V> hd = null, tl = null;
             for (Node<K,V> q = this; q != null; q = q.next) {
-                Node<K,V> p = map.replacementNode(q);
+                Node<K,V> p = new Node<>(q.hash, q.key, q.value, null);
                 if (tl == null)
                     hd = p;
                 else
@@ -1421,8 +1378,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
 
 
-        TreeNode<K,V> putTreeVal(Te4HashMap<K,V> map, Node<K,V>[] tab,
-                                 int h, K k, V v) {
+        private TreeNode<K,V> putTreeVal(Node<K,V>[] tab, int h, K k, V v) {
             Class<?> kc = null;
             boolean searched = false;
             TreeNode<K,V> root = (parent != null) ? root() : this;
@@ -1452,7 +1408,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                 TreeNode<K,V> xp = p;
                 if ((p = (dir <= 0) ? p.left : p.right) == null) {
                     Node<K,V> xpn = xp.next;
-                    TreeNode<K,V> x = map.newTreeNode(h, k, v, xpn);
+                    TreeNode<K,V> x = new TreeNode<>(h, k, v, xpn);
                     if (dir <= 0)
                         xp.left = x;
                     else
@@ -1468,14 +1424,55 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
 
 
-        void removeTreeNode(Te4HashMap<K,V> map, Node<K,V>[] tab,
-                            boolean movable) {
-            int n;
-            if (tab == null || (n = tab.length) == 0)
-                return;
-            int index = (n - 1) & hash;
-            TreeNode<K,V> first = (TreeNode<K,V>)tab[index], root = first, rl;
-            TreeNode<K,V> succ = (TreeNode<K,V>)next, pred = prev;
+        private void putTreeValNR(Node<K,V>[] tab, int h, K k, V v) {
+            Class<?> kc = null;
+            boolean search = true;
+            for (TreeNode<K,V> root = (parent != null) ? root() : this, p = root;;) {
+                int dir, ph; K pk;
+                if ((ph = p.hash) > h)
+                    dir = -1;
+                else if (ph < h)
+                    dir = 1;
+                else if ((pk = p.key) == k || (k != null && k.equals(pk)))
+                    return;
+                else if ((kc == null &&
+                        (kc = comparableClassFor(k)) == null) ||
+                        (dir = compareComparables(kc, k, pk)) == 0) {
+                    if (search) {
+                        TreeNode<K,V> ch;
+                        if (((ch = p.left) != null &&
+                                ch.find(h, k, kc) != null) ||
+                                ((ch = p.right) != null &&
+                                        ch.find(h, k, kc) != null))
+                            return;
+                        search = false;
+                    }
+                    dir = tieBreakOrder(k, pk);
+                }
+
+                TreeNode<K,V> xp = p;
+                if ((p = (dir <= 0) ? p.left : p.right) == null) {
+                    Node<K,V> xpn = xp.next;
+                    TreeNode<K,V> x = new TreeNode<>(h, k, v, xpn);
+                    if (dir <= 0)
+                        xp.left = x;
+                    else
+                        xp.right = x;
+                    xp.next = x;
+                    x.parent = x.prev = xp;
+                    if (xpn != null)
+                        ((TreeNode<K,V>)xpn).prev = x;
+                    moveRootToFront(tab, balanceInsertion(root, x));
+                    return;
+                }
+            }
+        }
+
+
+        void removeTreeNode(Node<K,V>[] tab, boolean movable) {
+            int index = (tab.length - 1) & hash;
+            TreeNode<K,V> first = (TreeNode<K,V>)tab[index], root = first, rl,
+                          succ = (TreeNode<K,V>)next, pred = prev;
             if (pred == null)
                 tab[index] = first = succ;
             else
@@ -1487,7 +1484,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             if (root.parent != null)
                 root = root.root();
             if (movable && (root.right == null || (rl = root.left) == null || rl.left == null)) {
-                tab[index] = first.untreeify(map);
+                tab[index] = first.untreeify();
                 return;
             }
             TreeNode<K,V> p = this, pl = left, pr = right, replacement;
@@ -1496,8 +1493,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                 while ((sl = s.left) != null) // find successor
                     s = sl;
                 boolean c = s.red; s.red = p.red; p.red = c; // swap colors
-                TreeNode<K,V> sr = s.right;
-                TreeNode<K,V> pp = p.parent;
+                TreeNode<K,V> sr = s.right, pp = p.parent;
                 if (s == pr) { // p was s's direct parent
                     p.parent = s;
                     s.right = p;
@@ -1510,14 +1506,14 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                         else
                             sp.right = p;
                     }
-                    if ((s.right = pr) != null)
-                        pr.parent = s;
+                    s.right = pr;
+                    pr.parent = s;
                 }
                 p.left = null;
                 if ((p.right = sr) != null)
                     sr.parent = p;
-                if ((s.left = pl) != null)
-                    pl.parent = s;
+                s.left = pl;
+                pl.parent = s;
                 if ((s.parent = pp) == null)
                     root = s;
                 else if (p == pp.left)
@@ -1563,13 +1559,11 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
         }
 
 
-        void split(Te4HashMap<K,V> map, Node<K,V>[] tab, int index, int bit) {
-            TreeNode<K,V> b = this;
-            // Relink into lo and hi lists, preserving order
-            TreeNode<K,V> loHead = null, loTail = null;
-            TreeNode<K,V> hiHead = null, hiTail = null;
+        void split(Node<K,V>[] tab, int index, int bit) {
+            TreeNode<K,V> loHead = null, loTail = null,
+                          hiHead = null, hiTail = null;
             int lc = 0, hc = 0;
-            for (TreeNode<K,V> e = b, next; e != null; e = next) {
+            for (TreeNode<K,V> e = this, next; e != null; e = next) {
                 next = (TreeNode<K,V>)e.next;
                 e.next = null;
                 if ((e.hash & bit) == 0) {
@@ -1592,7 +1586,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
             if (loHead != null) {
                 if (lc <= UNTREEIFY_THRESHOLD)
-                    tab[index] = loHead.untreeify(map);
+                    tab[index] = loHead.untreeify();
                 else {
                     tab[index] = loHead;
                     if (hiHead != null) // (else is already treeified)
@@ -1601,7 +1595,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             }
             if (hiHead != null) {
                 if (hc <= UNTREEIFY_THRESHOLD)
-                    tab[index + bit] = hiHead.untreeify(map);
+                    tab[index + bit] = hiHead.untreeify();
                 else {
                     tab[index + bit] = hiHead;
                     if (loHead != null)
@@ -1629,8 +1623,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             return root;
         }
 
-        static <K,V> TreeNode<K,V> rotateRight(TreeNode<K,V> root,
-                                               TreeNode<K,V> p) {
+        static <K,V> TreeNode<K,V> rotateRight(TreeNode<K,V> root, TreeNode<K,V> p) {
             TreeNode<K,V> l, pp, lr;
             if (p != null && (l = p.left) != null) {
                 if ((lr = p.left = l.right) != null)
@@ -1647,8 +1640,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             return root;
         }
 
-        static <K,V> TreeNode<K,V> balanceInsertion(TreeNode<K,V> root,
-                                                    TreeNode<K,V> x) {
+        static <K,V> TreeNode<K,V> balanceInsertion(TreeNode<K,V> root, TreeNode<K,V> x) {
             x.red = true;
             for (TreeNode<K,V> xp, xpp, xppl, xppr;;) {
                 if ((xp = x.parent) == null) {
@@ -1659,8 +1651,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                     return root;
                 if (xp == (xppl = xpp.left)) {
                     if ((xppr = xpp.right) != null && xppr.red) {
-                        xppr.red = false;
-                        xp.red = false;
+                        xppr.red = xp.red = false;
                         xpp.red = true;
                         x = xpp;
                     }
@@ -1680,8 +1671,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                 }
                 else {
                     if (xppl != null && xppl.red) {
-                        xppl.red = false;
-                        xp.red = false;
+                        xppl.red = xp.red = false;
                         xpp.red = true;
                         x = xpp;
                     }
@@ -1702,8 +1692,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
             }
         }
 
-        static <K,V> TreeNode<K,V> balanceDeletion(TreeNode<K,V> root,
-                                                   TreeNode<K,V> x) {
+        static <K,V> TreeNode<K,V> balanceDeletion(TreeNode<K,V> root, TreeNode<K,V> x) {
             for (TreeNode<K,V> xp, xpl, xpr;;) {
                 if (x == null || x == root)
                     return root;
@@ -1790,27 +1779,6 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                     }
                 }
             }
-        }
-
-
-        static <K,V> boolean checkInvariants(TreeNode<K,V> t) {
-            TreeNode<K,V> tp = t.parent, tl = t.left, tr = t.right,
-                    tb = t.prev, tn = (TreeNode<K,V>)t.next;
-            if (tb != null && tb.next != t)
-                return false;
-            if (tn != null && tn.prev != t)
-                return false;
-            if (tp != null && t != tp.left && t != tp.right)
-                return false;
-            if (tl != null && (tl.parent != t || tl.hash > t.hash))
-                return false;
-            if (tr != null && (tr.parent != t || tr.hash < t.hash))
-                return false;
-            if (t.red && tl != null && tl.red && tr != null && tr.red)
-                return false;
-            if (tl != null && !checkInvariants(tl))
-                return false;
-            return tr == null || checkInvariants(tr);
         }
     }
 }

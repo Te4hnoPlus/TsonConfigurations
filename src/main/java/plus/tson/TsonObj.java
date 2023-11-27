@@ -4,6 +4,10 @@ import plus.tson.exception.WrongTypeException;
 
 
 public interface TsonObj extends Cloneable{
+    static TsonObj ofString(String str){
+        return new TsonParser(str).getAutho();
+    }
+
 
     default String getStr() {
         throw new WrongTypeException(this.getClass(),"getStr()");

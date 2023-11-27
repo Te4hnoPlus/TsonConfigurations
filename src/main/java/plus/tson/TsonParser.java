@@ -25,16 +25,6 @@ public final class TsonParser {
     }
 
 
-    TsonParser goToFirst(){
-        int cur = cursor;
-        for(char c;cur<data.length;++cur){
-            if(!((c = data[cur]) == ' ' || c == '\n'))break;
-        }
-        cursor = cur;
-        return this;
-    }
-
-
     TsonParser goTo(char chr){
         int cur;
         for(cur=cursor;cur<data.length;++cur){
@@ -64,6 +54,24 @@ public final class TsonParser {
             return TsonBool.FALSE;
         }
         throw new TsonSyntaxException(getErrorString(), cursor, data[cursor]);
+    }
+
+
+    TsonObj getAutho(){
+        int cur = cursor;
+        for(char c;cur<data.length;++cur){
+            if(!((c = data[cur]) == ' ' || c == '\n'))break;
+        }
+        cursor = cur;
+        switch (data[cursor++]) {
+            case '"':  return getStr('"');
+            case '\'': return getStr('\'');
+            case '(':  return getBasic();
+            case '{':  return getMap();
+            case '[':  return getList();
+            case '<':  return getField();
+            default:   return new TsonStr(new String(data));
+        }
     }
 
 

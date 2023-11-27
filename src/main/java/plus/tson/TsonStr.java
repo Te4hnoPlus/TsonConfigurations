@@ -1,7 +1,7 @@
 package plus.tson;
 
 
-public final class TsonStr implements TsonObj {
+public final class TsonStr implements TsonObj, CharSequence {
     private final String value;
 
     public TsonStr(String value) {
@@ -22,6 +22,24 @@ public final class TsonStr implements TsonObj {
     @Override
     public String getField(){
         return value;
+    }
+
+
+    @Override
+    public int length() {
+        return value.length();
+    }
+
+
+    @Override
+    public char charAt(int index) {
+        return value.charAt(index);
+    }
+
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        return new TsonStr(value.subSequence(start, end).toString());
     }
 
 
