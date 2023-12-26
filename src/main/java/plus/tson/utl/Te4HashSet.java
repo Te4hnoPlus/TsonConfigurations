@@ -1,5 +1,6 @@
 package plus.tson.utl;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -109,7 +110,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
 
 
     @Override
-    public final Iterator<K> iterator() {
+    public final KeyIterator iterator() {
         return new KeyIterator();
     }
 
@@ -351,6 +352,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
 
     @Override
     public <T> T[] toArray(T[] a) {
+        if(a.length != size) a = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
         Node<K>[] tab;
         int idx = 0;
         if (size > 0 && (tab = table) != null) {
@@ -406,7 +408,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
     }
 
 
-    private final class KeyIterator implements Iterator<K>{
+    public final class KeyIterator implements Iterator<K>{
         Node<K> next, current;
         int expectedModCount, index;
 
@@ -414,29 +416,44 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
             expectedModCount = modCount;
             Node<K>[] t = table;
             index = 0;
-            if (t != null && size > 0) {
+            if (t != null && size > 0)
                 do {} while (index < t.length && (next = t[index++]) == null);
-            }
         }
 
-        public final boolean hasNext() {
+
+        public boolean hasNext() {
             return next != null;
         }
 
-        final Node<K> nextNode() {
+
+        Node<K> nextNode() {
             Node<K> e = next;
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
             if (e == null)
                 throw new NoSuchElementException();
             Node<K>[] t;
-            if ((next = (current = e).next) == null && (t = table) != null) {
+            if ((next = (current = e).next) == null && (t = table) != null)
                 do {} while (index < t.length && (next = t[index++]) == null);
-            }
             return e;
         }
 
-        public final void remove() {
+
+        //if next == null or detect concurrent mod return null
+        public K nextIfCan(){
+            Node<K> e = next;
+            if (modCount != expectedModCount)
+                return null;
+            if (e == null)
+                return null;
+            Node<K>[] t;
+            if ((next = (current = e).next) == null && (t = table) != null)
+                do {} while (index < t.length && (next = t[index++]) == null);
+            return e.key;
+        }
+
+
+        public void remove() {
             Node<K> p = current;
             if (p == null)
                 throw new IllegalStateException();
@@ -447,6 +464,8 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
             expectedModCount = modCount;
         }
 
+
+        @Override
         public K next() { return nextNode().key; }
     }
 

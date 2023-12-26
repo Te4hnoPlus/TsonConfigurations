@@ -162,9 +162,10 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                     ((k = first.key) == key || (k.equals(key))))
                 return first.value;
             if ((e = first.next) != null) {
-                if (first instanceof TreeNode)
-                    return ((TreeNode<K,V>)first).getTreeNode(hash, key).value;
-                do {
+                if (first instanceof TreeNode) {
+                    first = ((TreeNode<K, V>) first).getTreeNode(hash, key);
+                    return first == null?null:first.value;
+                }do {
                     if (e.hash == hash && ((k = e.key) == key || key.equals(k)))
                         return e.value;
                 } while ((e = e.next) != null);
