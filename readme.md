@@ -103,6 +103,17 @@ ClassManager manager = new ClassManager(){
         }
         throw new NoSearchException(clazz);
     }
+    
+    @Override
+    public Object newInstance(Class<?> clazz, Object... args)
+          throws InvocationTargetException, NoSuchMethodException,
+          InstantiationException, IllegalAccessException {
+        
+        if(clazz == Example.class){
+            return new Example((String) args[0], (String) args[1]);
+        }
+        return TsonClass.createInst(clazz, args);
+    }
 };
 
 Example example = new TsonField<Example>(manager, "<(#), 'k1', 'v1'>").getField();
