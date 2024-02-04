@@ -340,7 +340,9 @@ public final class TsonParser {
             list = new ArrayList<>();
         int cur = cursor;
         for(char c;cur<data.length;++cur){
-            if((c = data[cur]) == '>') break;
+            if((c = data[cur]) == '>') {
+                break;
+            }
             if(waitSep){
                 if(c == ',')waitSep = false;
                 continue;
@@ -351,6 +353,8 @@ public final class TsonParser {
             cur = cursor;
             waitSep = true;
         }
+        cursor = cur;
+
         if(list.size()>0) {
             if(isList) return list;
             if(list.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
