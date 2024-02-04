@@ -4,7 +4,6 @@ import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Objects;
 
 
 public final class TsonClass extends TsonPrimitive {
@@ -47,21 +46,35 @@ public final class TsonClass extends TsonPrimitive {
     }
 
 
+    public Object createInst(ClassManager manager, Object... args){
+        try {
+            return manager.newInstance(clazz, args);
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            return onError(e, args);
+        }
+    }
+
+
     public Object createInst(Object... args){
         try {
             return createInst(clazz, args);
         } catch (NoSuchMethodException | InvocationTargetException |
                  InstantiationException | IllegalAccessException e) {
-            String[] strings = new String[args.length];
-            for(int i=0;i<strings.length;i++){
-                strings[i] = args[i].getClass().getName();
-            }
-            e.printStackTrace();
-            throw new NoSearchException(
-                    String.format("constructor not exist! %s(%s)",
-                            clazz.getName(), String.join(", ",strings))
-            );
+            return onError(e, args);
         }
+    }
+
+
+    private Object onError(Exception e, Object... args){
+        String[] strings = new String[args.length];
+        for(int i=0;i<strings.length;i++){
+            strings[i] = args[i].getClass().getName();
+        }
+        e.printStackTrace();
+        throw new NoSearchException(
+                String.format("constructor not exist! %s(%s)",
+                        clazz.getName(), String.join(", ",strings))
+        );
     }
 
 
