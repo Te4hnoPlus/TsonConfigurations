@@ -80,6 +80,15 @@ strMap = map.toString();
 String jsonString = map.toJsonStr();
 //{"key": "value"}
 ```
+### JSON
+`TJsonParser` - обработчик синтаксиса JSON. Преобразует JSON строку в Tson-обьект. 
+Поддерживает как Обьектный (`{key: 10}`), так и словарный (`{"key": 10}`) режимы
+```java
+//обьектный
+new TJsonParser("{key: 10}", true).getMap();
+//словарный, используется по умолчанию
+new TJsonParser("{\"key\": 10}", false).getMap();
+```
 ### Безопасность, ClassManager
 При необходимости ограничить список классов, объекты которых
 могут быть порождены `TsonField`, необходимо передать собственный `ClassManager`

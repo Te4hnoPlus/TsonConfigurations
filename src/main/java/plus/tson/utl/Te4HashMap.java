@@ -113,6 +113,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                     loadFactor);
         this.loadFactor = loadFactor;
         this.threshold = tableSizeFor(initialCapacity);
+        table = new Node[initialCapacity];
     }
 
 
