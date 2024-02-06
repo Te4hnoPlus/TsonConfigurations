@@ -36,6 +36,24 @@ public final class TsonBool extends TsonPrimitive {
 
 
     @Override
+    public double getDouble() {
+        return value ? 1 : 0;
+    }
+
+
+    @Override
+    public long getLong() {
+        return value ? 1 : 0;
+    }
+
+
+    @Override
+    public float getFloat() {
+        return value ? 1 : 0;
+    }
+
+
+    @Override
     public boolean isBool() {
         return true;
     }
