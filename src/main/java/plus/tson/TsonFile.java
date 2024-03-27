@@ -136,10 +136,13 @@ public class TsonFile extends TsonMap {
             if(data.equals(""))return this;
             write(new File(file.getName()+"_backup"),annotation+data);
         }
-        new TsonParser(manager,
-                data.replace("\r","").replace("\t","    ")
-        ).goTo('{').fillMap(this);
+        new TsonParser(manager, remBadChars(data)).goTo('{').fillMap(this);
         return this;
+    }
+
+
+    public static String remBadChars(String src){
+        return src.replace("\r","").replace("\t"," ");
     }
 
 
