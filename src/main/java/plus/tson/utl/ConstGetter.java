@@ -9,10 +9,12 @@ public class ConstGetter<T,R> implements IGetter<T,R>{
         this.r = r;
     }
 
+
     @Override
     public final R get(T t) {
         return r;
     }
+
 
     @Override
     public final boolean isConst() {

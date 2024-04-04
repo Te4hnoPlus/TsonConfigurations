@@ -1,4 +1,5 @@
 ## TsonConfigurations
+#### [Плагин на поддержку синтаксиса](https://github.com/Te4hnoPlus/TsonLang) в IntelijIDEA
 
 ### Преобразования типов и TsonObj
 TsonObj - базовый элемент TsonConfigurations

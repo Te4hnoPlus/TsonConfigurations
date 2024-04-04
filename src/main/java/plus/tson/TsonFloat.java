@@ -4,7 +4,6 @@ package plus.tson;
 public final class TsonFloat extends TsonPrimitive{
     private final float value;
 
-
     public TsonFloat(float value) {
         this.value = value;
     }
