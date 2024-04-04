@@ -4,3 +4,4 @@
 *gradle
 !.gitignore
 Java-HotSpotTM-64-Bit-Server-VM
+/out/
