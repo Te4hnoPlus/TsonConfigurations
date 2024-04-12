@@ -9,6 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 
+/**
+ * Associated with the file Dictionary type String -> TsonObject
+ */
 public class TsonFile extends TsonMap {
     private final File file;
     private Annotation annotation = new Annotation();

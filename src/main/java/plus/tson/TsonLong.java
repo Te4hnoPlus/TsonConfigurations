@@ -1,6 +1,9 @@
 package plus.tson;
 
 
+/**
+ * Tson proxy for the long type
+ */
 public class TsonLong extends TsonPrimitive{
     private final long value;
 
@@ -63,6 +66,9 @@ public class TsonLong extends TsonPrimitive{
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonLong clone() {
         return this;

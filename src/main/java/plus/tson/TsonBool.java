@@ -1,6 +1,11 @@
 package plus.tson;
 
 
+/**
+ * Tson proxy for the boolean type
+ * <br>
+ * It is recommended not to create instances of this class manually
+ */
 public final class TsonBool extends TsonPrimitive {
     public static final TsonBool TRUE = new TsonBool(true);
     public static final TsonBool FALSE = new TsonBool(false);
@@ -13,7 +18,7 @@ public final class TsonBool extends TsonPrimitive {
 
     @Override
     public String getStr() {
-        return value?"true":"false";
+        return value ? "true" : "false";
     }
 
 
@@ -71,6 +76,9 @@ public final class TsonBool extends TsonPrimitive {
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonBool clone() {
         return this;

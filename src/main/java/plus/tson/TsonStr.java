@@ -1,6 +1,9 @@
 package plus.tson;
 
 
+/**
+ * Tson proxy for the string type
+ */
 public final class TsonStr implements TsonObj, CharSequence {
     private final String value;
 
@@ -55,6 +58,9 @@ public final class TsonStr implements TsonObj, CharSequence {
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonStr clone() {
         return this;

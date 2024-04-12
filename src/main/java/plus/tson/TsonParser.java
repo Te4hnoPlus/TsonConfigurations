@@ -7,6 +7,9 @@ import plus.tson.utl.CharStrBuilder;
 import java.util.ArrayList;
 
 
+/**
+ * It is not recommended to create and use instances of the class manually
+ */
 public final class TsonParser {
     private final ClassManager manager;
     private final char[] data;
@@ -27,7 +30,7 @@ public final class TsonParser {
 
     TsonParser goTo(char chr){
         int cur;
-        for(cur=cursor;cur<data.length;++cur){
+        for(cur = cursor; cur < data.length; ++cur){
             if(data[cur] == chr)break;
         }
         cursor = ++cur;
@@ -46,11 +49,11 @@ public final class TsonParser {
         }
         --cursor;
         if(isTrue()){
-            cursor+=3;
+            cursor += 3;
             return TsonBool.TRUE;
         }
         if(isFalse()){
-            cursor+=4;
+            cursor += 4;
             return TsonBool.FALSE;
         }
         throw new TsonSyntaxException(getErrorString(), cursor, data[cursor]);
@@ -59,7 +62,7 @@ public final class TsonParser {
 
     TsonObj getAutho(){
         int cur = cursor;
-        for(char c;cur<data.length;++cur){
+        for(char c; cur < data.length; ++cur){
             if(!((c = data[cur]) == ' ' || c == '\n'))break;
         }
         cursor = cur;
@@ -76,9 +79,9 @@ public final class TsonParser {
 
 
     private String getErrorString(){
-        int min = Math.max(0, cursor-50),
-            max = Math.min(cursor+50, data.length-1);
-        char[] chars = new char[max-min];
+        int min = Math.max(0, cursor - 50),
+            max = Math.min(cursor + 50, data.length - 1);
+        char[] chars = new char[max - min];
         System.arraycopy(data, min, chars, 0, chars.length);
         return new String(chars);
     }
@@ -95,10 +98,10 @@ public final class TsonParser {
         int cur = cursor;
         boolean waitSep = false, waitKey = true;
         String key = null;
-        for(char c;cur<data.length;++cur){
+        for(char c; cur<data.length; ++cur){
             if((c = data[cur]) == '}')break;
             if(waitSep || c == ' ' || c == '\n'){
-                if(c==',')waitSep = false;
+                if(c == ',')waitSep = false;
                 continue;
             }
             cursor = cur;
@@ -124,9 +127,9 @@ public final class TsonParser {
 
 
     void fillList(TsonList list){
-        int cur=cursor;
+        int cur = cursor;
         char c;
-        for(;cur<data.length;++cur){
+        for(;cur < data.length; ++cur){
             if((c = data[cur]) == ']') {
                 cursor = cur;
                 return;
@@ -137,7 +140,7 @@ public final class TsonParser {
             cur = cursor;
             break;
         }
-        for(boolean waitSep = true;cur<data.length;++cur){
+        for(boolean waitSep = true; cur < data.length; ++cur){
             if((c = data[cur]) == ']') {
                 cursor = cur;
                 return;
@@ -158,7 +161,7 @@ public final class TsonParser {
         int cur = cursor;
         boolean prevEcran = false;
         b.clear();
-        for(char c;cur<data.length;++cur){
+        for(char c; cur < data.length; ++cur){
             if((c = data[cur]) == end && !prevEcran)break;
             if(c == '\\'){
                 prevEcran = true;
@@ -174,7 +177,7 @@ public final class TsonParser {
 
     TsonPrimitive getBasic(){
         int cur = cursor;
-        for(char c;cur<data.length;++cur){
+        for(char c; cur < data.length; ++cur){
             if((c = data[cur]) == ' ' || c == '\n')continue;
             if(c > 47 && c < 58 || c == '-'){
                 cursor = cur;
@@ -193,12 +196,12 @@ public final class TsonParser {
     private boolean isFalse(){
         char cur = data[cursor];
         if(cur == 'f')
-            return data[cursor+1]=='a' && data[cursor+2]=='l' && data[cursor+3]=='s' && data[cursor+4]=='e';
+            return data[cursor + 1] == 'a' && data[cursor+2] == 'l' && data[cursor + 3] == 's' && data[cursor + 4] == 'e';
         if(cur == 'F'){
             if(data[cursor+1] == 'a')
-                return data[cursor+2]=='l' && data[cursor+3]=='s' && data[cursor+4]=='e';
+                return data[cursor + 2] == 'l' && data[cursor+3] == 's' && data[cursor + 4] == 'e';
             else if(data[cursor+1] == 'A')
-                return data[cursor+2]=='L' && data[cursor+3]=='S' && data[cursor+4]=='E';
+                return data[cursor + 2] == 'L' && data[cursor+3] == 'S' && data[cursor + 4] == 'E';
         }
         return false;
     }
@@ -207,12 +210,12 @@ public final class TsonParser {
     private boolean isTrue(){
         char cur = data[cursor];
         if(cur == 't')
-            return data[cursor+1]=='r' && data[cursor+2]=='u' && data[cursor+3]=='e';
+            return data[cursor + 1] == 'r' && data[cursor + 2] == 'u' && data[cursor + 3] == 'e';
         if(cur == 'T'){
             if(data[cursor+1] == 'r'){
-                return data[cursor+2]=='u' && data[cursor+3]=='e';
-            } else if(data[cursor+1]=='R'){
-                return data[cursor+2]=='U' && data[cursor+3]=='E';
+                return data[cursor + 2] == 'u' && data[cursor + 3] == 'e';
+            } else if(data[cursor + 1] == 'R'){
+                return data[cursor + 2] == 'U' && data[cursor + 3] == 'E';
             }
         }
         return false;
@@ -220,7 +223,7 @@ public final class TsonParser {
 
 
     private void skipAb(){
-        while (cursor<=data.length) {
+        while (cursor <= data.length) {
             if(data[cursor] == ')')break;
             ++cursor;
         }
@@ -229,7 +232,7 @@ public final class TsonParser {
 
     private TsonPrimitive readClassOrBool(){
         if(isTrue()){
-            cursor+=3;
+            cursor += 3;
             skipAb();
             return TsonBool.TRUE;
         }
@@ -240,7 +243,7 @@ public final class TsonParser {
         }
         int cur = cursor;
         b.clear();
-        for(char c;cur<=data.length;++cur){
+        for(char c; cur <= data.length; ++cur){
             if((c = data[cur]) == ')')break;
             b.append(c);
         }
@@ -256,14 +259,14 @@ public final class TsonParser {
     private TsonPrimitive readLongNum(){
         int cur = cursor;
         b.clear();
-        for(char c;cur<=data.length;++cur){
-            if((c = data[cur]) == ')') break;
+        for(char c; cur <= data.length; ++cur){
+            if((c = data[cur]) == ')')break;
             else if(c == ' '){
                 do {
                     ++cur;
                     c = data[cur];
                 } while (c == ' ');
-                if(c==')') break;
+                if(c == ')')break;
                 throw new TsonSyntaxException(getErrorString(), cur, c);
             } else
                 b.append(c);
@@ -276,31 +279,32 @@ public final class TsonParser {
     private TsonPrimitive readNum(){
         boolean invert, dec = false;
         if(invert = (data[cursor] == '-')) ++cursor;
-        int cur = cursor+1, num = data[cursor]-48, size = 0;
+        int cur = cursor+1, num = data[cursor] - 48, size = 0;
 
         for(char c;cur<=data.length;++cur){
             if((c = data[cur]) > 47 && c < 58) {
-                num = num * 10 + (c-48);
+                num = num * 10 + (c - 48);
                 ++size;
             } else if(c == '.'){
                 dec = true;
                 ++cur;
                 break;
             }
-            else if(c == ')') break;
+            else if(c == ')')break;
             else if(c == ' '){
                 do {
                     ++cur;
                     c = data[cur];
                 } while (c == ' ');
-                if(c==')') break;
+                if(c == ')')break;
                 throw new TsonSyntaxException(getErrorString(), cur, c);
-            } else if(c!='_')return readLongNum();
+            } else if(c != '_')return readLongNum();
         }
+
         if(dec){
             double num2 = num;
             int dec1 = invert?-1:1;
-            for(char c;cur<=data.length;++cur){
+            for(char c; cur <= data.length; ++cur){
                 if((c = data[cur]) > 47 && c < 58) {
                     num2 = num2 * 10 + (c-48);
                     dec1 *= 10;
@@ -319,10 +323,10 @@ public final class TsonParser {
                 }
             }
             cursor = cur;
-            if(size>6)
-                return new TsonDouble(num2/dec1);
+            if(size > 6)
+                return new TsonDouble(num2 / dec1);
             else
-                return new TsonFloat((float) (num2/dec1));
+                return new TsonFloat((float) (num2 / dec1));
         } else {
             cursor = cur;
             return invert?new TsonInt(-num):new TsonInt(num);
@@ -339,7 +343,7 @@ public final class TsonParser {
         else
             list = new ArrayList<>();
         int cur = cursor;
-        for(char c;cur<data.length;++cur){
+        for(char c; cur < data.length; ++cur){
             if((c = data[cur]) == '>') {
                 break;
             }
@@ -355,9 +359,9 @@ public final class TsonParser {
         }
         cursor = cur;
 
-        if(list.size()>0) {
+        if(list.size() > 0) {
             if(isList) return list;
-            if(list.size()>7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
+            if(list.size() > 7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
             return tsonClass.createInst(manager, list.toArray());
         } else {
             if(isList)return tsonClass;
@@ -374,7 +378,7 @@ public final class TsonParser {
     private String getKey(){
         int cur = cursor;
         b.clear();
-        for(char c;cur<data.length;++cur){
+        for(char c; cur < data.length; ++cur){
             if((c = data[cur]) == '=')break;
             if(c == ' ' || c == '\n')continue;
             b.append(c);
@@ -388,7 +392,7 @@ public final class TsonParser {
         int cur = cursor;
         boolean ignore = true;
         b.clear();
-        for(char c;cur<data.length;++cur){
+        for(char c; cur < data.length; ++cur){
             c = data[cur];
             if(ignore){
                 ignore = c == '(';

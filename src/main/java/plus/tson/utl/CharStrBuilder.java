@@ -1,6 +1,9 @@
 package plus.tson.utl;
 
 
+/**
+ * The faster equivalent of StringBuilder
+ */
 public final class CharStrBuilder {
     private char[] chars;
     private int length;

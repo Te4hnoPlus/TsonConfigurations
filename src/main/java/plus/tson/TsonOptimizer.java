@@ -1,11 +1,16 @@
 package plus.tson;
 
 import plus.tson.exception.NoSearchException;
+import plus.tson.utl.Te4HashMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 
+/**
+ * It is designed to optimize memory in Json objects.
+ * <br>
+ * All pointers that repeatedly point to an equivalent object will now point to the main object
+ */
 public class TsonOptimizer {
     private static boolean tryUseNetty = true;
     private final Map<Integer, ArrayList<Object>> cache;
@@ -13,15 +18,16 @@ public class TsonOptimizer {
     public TsonOptimizer(){
         Map<Integer, ArrayList<Object>> preCache;
         if(tryUseNetty) {
+            //Attempt to use Netty quick collection if this framework has been detected
             try {
                 preCache = (Map<Integer, ArrayList<Object>>)
                         new TsonClass("io.netty.util.collection.IntObjectHashMap").createInst();
             } catch (NoSearchException e) {
-                preCache = new HashMap<>();
+                preCache = new Te4HashMap<>();
                 tryUseNetty = false;
             }
         } else {
-            preCache = new HashMap<>();
+            preCache = new Te4HashMap<>();
         }
         cache = preCache;
     }

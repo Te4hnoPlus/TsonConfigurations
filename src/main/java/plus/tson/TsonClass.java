@@ -6,6 +6,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 
+/**
+ * Tson proxy for the class type
+ */
 public final class TsonClass extends TsonPrimitive {
     private final Class<?> clazz;
 
@@ -67,7 +70,7 @@ public final class TsonClass extends TsonPrimitive {
 
     private Object onError(Exception e, Object... args){
         String[] strings = new String[args.length];
-        for(int i=0;i<strings.length;i++){
+        for(int i = 0;i < strings.length; i++){
             strings[i] = args[i].getClass().getName();
         }
         e.printStackTrace();
@@ -138,6 +141,9 @@ public final class TsonClass extends TsonPrimitive {
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonClass clone() {
         return this;

@@ -1,6 +1,9 @@
 package plus.tson;
 
 
+/**
+ * Tson proxy for the double type
+ */
 public final class TsonDouble extends TsonPrimitive{
     private final double value;
 
@@ -63,6 +66,9 @@ public final class TsonDouble extends TsonPrimitive{
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonDouble clone() {
         return this;

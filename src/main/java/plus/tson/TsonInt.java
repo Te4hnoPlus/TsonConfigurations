@@ -1,6 +1,9 @@
 package plus.tson;
 
 
+/**
+ * Tson proxy for the int type
+ */
 public final class TsonInt extends TsonPrimitive{
     private final int value;
 
@@ -63,6 +66,9 @@ public final class TsonInt extends TsonPrimitive{
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonInt clone() {
         return this;

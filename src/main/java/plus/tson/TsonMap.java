@@ -7,6 +7,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 
+/**
+ * Dictionary type String -> TsonObject
+ */
 public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     public TsonMap(){}
 
@@ -21,73 +24,178 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    public TsonBool put(String key, boolean v) {
-        return (TsonBool) super.put(key, v?TsonBool.TRUE:TsonBool.FALSE);
+    /**
+     * Automatically creates a Tson wrapper before adding
+     * @param v new value
+     * @return previous value
+     */
+    public TsonObj put(String key, boolean v) {
+        return super.put(key, v?TsonBool.TRUE:TsonBool.FALSE);
     }
 
 
-    public TsonInt put(String key, int v) {
-        return (TsonInt) super.put(key, new TsonInt(v));
+    /**
+     * Automatically creates a Tson wrapper before adding
+     * @param v new value
+     * @return previous value
+     */
+    public TsonObj put(String key, int v) {
+        return super.put(key, new TsonInt(v));
     }
 
 
-    public TsonFloat put(String key, float v) {
-        return (TsonFloat) super.put(key, new TsonFloat(v));
+    /**
+     * Automatically creates a Tson wrapper before adding
+     * @param v new value
+     * @return previous value
+     */
+    public TsonObj put(String key, float v) {
+        return super.put(key, new TsonFloat(v));
     }
 
 
-    public TsonDouble put(String key, double v) {
-        return (TsonDouble) super.put(key, new TsonDouble(v));
+    /**
+     * Automatically creates a Tson wrapper before adding
+     * @param v new value
+     * @return previous value
+     */
+    public TsonObj put(String key, double v) {
+        return super.put(key, new TsonDouble(v));
     }
 
 
-    public TsonLong put(String key, long v){
-        return (TsonLong) super.put(key, new TsonLong(v));
+    /**
+     * Automatically creates a Tson wrapper before adding
+     * @param v new value
+     * @return previous value
+     */
+    public TsonObj put(String key, long v){
+        return super.put(key, new TsonLong(v));
     }
 
 
-    public TsonStr put(String key, String v) {
-        return (TsonStr) super.put(key, new TsonStr(v));
+    /**
+     * Automatically creates a Tson wrapper before adding
+     * @param v new value
+     * @return previous value
+     */
+    public TsonObj put(String key, String v) {
+        return super.put(key, new TsonStr(v));
     }
 
 
-    public <T extends TsonSerelizable> TsonField put(String key, T v){
-        return (TsonField<T>) super.put(key, new TsonField<>(v));
+    /**
+     * Automatically creates a Tson wrapper before adding
+     * @param v new value
+     * @return previous value
+     */
+    public TsonObj put(String key, Object v){
+        return super.put(key, new TsonField<>(v));
     }
 
 
-    public boolean ifContainsMap(String s, Consumer<TsonMap> c){
-        return ifContains0(s, c, this::getMap);
+    /**
+     * Performs an action if the subject key has a value of the TsonMap type
+     * @return Has the task been completed
+     */
+    public boolean ifContainsMap(String key, Consumer<TsonMap> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isMap()){
+            task.accept(obj.getMap());
+            return true;
+        }
+        return false;
     }
 
 
-    public boolean ifContainsList(String s, Consumer<TsonList> c){
-        return ifContains0(s, c, this::getList);
+    /**
+     * Performs an action if the subject key has a value of the TsonList type
+     * @return Has the task been completed
+     */
+    public boolean ifContainsList(String key, Consumer<TsonList> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isList()){
+            task.accept(obj.getList());
+            return true;
+        }
+        return false;
     }
 
 
-    public boolean ifContainsDouble(String s, Consumer<Double> c){
-        return ifContains0(s, c, this::getDouble);
+    /**
+     * Performs an action if the subject key has a number value
+     * @return Has the task been completed
+     */
+    public boolean ifContainsDouble(String key, Consumer<Double> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isNumber()){
+            task.accept(obj.getDouble());
+            return true;
+        }
+        return false;
     }
 
 
-    public boolean ifContainsFloat(String s, Consumer<Float> c){
-        return ifContains0(s, c, this::getFloat);
+    /**
+     * Performs an action if the subject key has a number value
+     * @return Has the task been completed
+     */
+    public boolean ifContainsFloat(String key, Consumer<Float> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isNumber()){
+            task.accept(obj.getFloat());
+            return true;
+        }
+        return false;
     }
 
 
-    public boolean ifContainsInt(String s, Consumer<Integer> c){
-        return ifContains0(s, c, this::getInt);
+    /**
+     * Performs an action if the subject key has a number value
+     * @return Has the task been completed
+     */
+    public boolean ifContainsInt(String key, Consumer<Integer> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isNumber()){
+            task.accept(obj.getInt());
+            return true;
+        }
+        return false;
     }
 
 
-    public boolean ifContainsBool(String s, Consumer<Boolean> c){
-        return ifContains0(s, c, this::getBool);
+    /**
+     * Performs an action if the subject key has a value of the TsonBool type
+     * @return Has the task been completed
+     */
+    public boolean ifContainsBool(String key, Consumer<Boolean> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isBool()){
+            task.accept(obj.getBool());
+            return true;
+        }
+        return false;
     }
 
 
-    public boolean ifContainsStr(String s, Consumer<String> c){
-        return ifContains0(s, c, this::getStr);
+    /**
+     * Performs an action if the subject key has a value of the TsonStr type
+     * @return Has the task been completed
+     */
+    public boolean ifContainsStr(String key, Consumer<String> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isString()){
+            task.accept(obj.getStr());
+            return true;
+        }
+        return false;
     }
 
 
@@ -105,48 +213,65 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
-    public TsonList addList(String key) {
-        TsonList list = new TsonList();
-        super.put(key, list);
-        return list;
-    }
-
-
     @Override
     public TsonMap getMap() {
         return this;
     }
 
 
+    /**
+     * <br>
+     * It is assumed that a value with this key will exist, and of type TsonBool
+     * @return boolean by key.
+     */
     public boolean getBool(String key){
         return super.get(key).getBool();
     }
 
 
+    /**
+     * It is assumed that a numeric value with this key will exist
+     * @return double by key.
+     */
     public double getDouble(String key) {
         return super.get(key).getDouble();
     }
 
 
+    /**
+     * It is assumed that a non-custom value with this key will exist
+     * @return string by key.
+     */
     public String getStr(String key){
         return super.get(key).getStr();
     }
 
 
+    /**
+     * @return string by key, or null if not exists or cannot be represented as a string
+     */
     public String getStrSafe(String key){
         TsonObj obj = super.get(key);
-        if(obj==null)return null;
+        if(obj == null || obj.isCustom())return null;
         return obj.getStr();
     }
 
 
+    /**
+     * @return string by key, or default if not exists
+     * @param def default value
+     */
     public String getOrDefaultStr(String key, String def) {
         TsonObj str = super.get(key);
-        if(str != null && str.isString())return str.getStr();
+        if(str != null && !str.isCustom())return str.getStr();
         return def;
     }
 
 
+    /**
+     * @return boolean by key, or default if not exists
+     * @param def default value
+     */
     public boolean getOrDefaultBool(String key, boolean def) {
         TsonObj bool = super.get(key);
         if(bool != null && bool.isBool())return bool.getBool();
@@ -154,6 +279,10 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * @return int by key, or default if not exists
+     * @param def default value
+     */
     public int getOrDefaultInt(String key, int def) {
         TsonObj num = super.get(key);
         if(num != null && num.isNumber())return num.getInt();
@@ -161,6 +290,10 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * @return float by key, or default if not exists
+     * @param def default value
+     */
     public float getOrDefaultFloat(String key, float def) {
         TsonObj num = super.get(key);
         if(num != null && num.isNumber())return num.getFloat();
@@ -168,6 +301,10 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * @return double by key, or default if not exists
+     * @param def default value
+     */
     public double getOrDefaultDouble(String key, double def) {
         TsonObj num = super.get(key);
         if(num != null && num.isNumber())return num.getDouble();
@@ -175,26 +312,45 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * It is assumed that a numeric value with this key will exist
+     * @return int by key.
+     */
     public int getInt(String key) {
         return super.get(key).getInt();
     }
 
 
+    /**
+     * It is assumed that a numeric value with this key will exist
+     * @return float by key.
+     */
     public float getFloat(String key) {
         return super.get(key).getFloat();
     }
 
 
+    /**
+     * It is assumed that a value with this key will exist, and it will be of the TsonList type
+     * @return TsonList by key.
+     */
     public TsonList getList(String key) {
         return super.get(key).getList();
     }
 
 
+    /**
+     * It is assumed that a value with this key will exist, and it will be of the TsonMap type
+     * @return TsonList by key.
+     */
     public TsonMap getMap(String key) {
         return super.get(key).getMap();
     }
 
 
+    /**
+     * @return TsonMap by key, if not exists automatically creates a TsonMap using the specified key and returns it
+     */
     public TsonMap getOrCreateMap(String key){
         TsonObj result = super.get(key);
         if(result != null)return result.getMap();
@@ -202,10 +358,25 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * Put an empty TsonMap to key
+     * @return The added TsonMap
+     */
     public TsonMap addMap(String key){
         TsonMap map = new TsonMap();
         put(key, map);
         return map;
+    }
+
+
+    /**
+     * Put an empty TsonList to key
+     * @return The added TsonList
+     */
+    public TsonList addList(String key) {
+        TsonList list = new TsonList();
+        super.put(key, list);
+        return list;
     }
 
 

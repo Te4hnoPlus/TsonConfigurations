@@ -81,8 +81,8 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     public int indexOf(int n){
         if(!get(0).isNumber())return -1;
-        for(int i=0;i<size();i++){
-            if(getInt(i)==n)return i;
+        for(int i = 0;i < size(); i++){
+            if(getInt(i) == n)return i;
         }
         return -1;
     }
@@ -90,8 +90,8 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     public int indexOf(double n){
         if(!get(0).isNumber())return -1;
-        for(int i=0;i<size();i++){
-            if(getDouble(i)==n)return i;
+        for(int i = 0;i < size();i++){
+            if(getDouble(i) == n)return i;
         }
         return -1;
     }
@@ -99,7 +99,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
 
     public int indexOf(String s){
         if(!get(0).isString())return -1;
-        for(int i=0;i<size();i++){
+        for(int i = 0; i < size(); i++){
             if(getStr(i).equals(s))return i;
         }
         return -1;
@@ -157,7 +157,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     @Override
     public String toString() {
         int size = this.size();
-        if(size==0)return "[]";
+        if(size == 0)return "[]";
         StringBuilder builder = new StringBuilder("[");
         for (int i = 0; i < size; i++) {
             get(i).code(builder);
@@ -171,7 +171,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     @Override
     public void code(StringBuilder builder) {
         int size = this.size();
-        if(size==0){
+        if(size == 0){
             builder.append("[]");
         } else {
             builder.append('[');
@@ -203,7 +203,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     @Override
     public void codeJson(StringBuilder builder) {
         int size = this.size();
-        if(size==0){
+        if(size == 0){
             builder.append("[]");
         } else {
             builder.append('[');
@@ -233,7 +233,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     @Override
     public String toJsonStr() {
         int size = this.size();
-        if(size==0)return "[]";
+        if(size == 0)return "[]";
         StringBuilder builder = new StringBuilder("[");
         for (int i = 0; i < size; i++) {
             builder.append(get(i).toJsonStr());
@@ -248,7 +248,7 @@ public class TsonList extends ArrayList<TsonObj> implements TsonObj {
     public TsonList clone() {
         int size;
         TsonList list = new TsonList(size = size());
-        for(int i=0;i<size;i++){
+        for(int i = 0; i < size; i++){
             list.add(this.get(i).clone());
         }
         return list;

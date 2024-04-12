@@ -1,6 +1,9 @@
 package plus.tson;
 
 
+/**
+ * Tson proxy for the float type
+ */
 public final class TsonFloat extends TsonPrimitive{
     private final float value;
 
@@ -63,6 +66,9 @@ public final class TsonFloat extends TsonPrimitive{
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonFloat clone() {
         return this;

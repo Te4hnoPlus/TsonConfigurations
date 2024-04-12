@@ -4,6 +4,9 @@ import plus.tson.security.ClassManager;
 import java.lang.reflect.Method;
 
 
+/**
+ * Tson proxy for any types
+ */
 public final class TsonField<T> implements TsonObj{
     private final T field;
 

@@ -3,6 +3,9 @@ package plus.tson.utl;
 import java.nio.charset.StandardCharsets;
 
 
+/**
+ * The faster equivalent of StringBuilder
+ */
 public final class ByteStrBuilder {
     private byte[] bytes;
     private int length;

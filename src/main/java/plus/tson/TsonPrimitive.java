@@ -29,6 +29,9 @@ public abstract class TsonPrimitive implements TsonObj{
     }
 
 
+    /**
+     * Due to the fact that the nested value is not modifiable, cloning is ignored for optimization purposes.
+     */
     @Override
     public TsonPrimitive clone() {
         return this;
