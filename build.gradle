@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'plus.tson'
+version project(':core').version
 
 repositories {
     mavenCentral()
@@ -12,6 +12,19 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+jar{
+    archivesBaseName = 'TsonConfigurations-All'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir project(':core').file('src/main/java')
+            srcDir project(':extensions').file('src/main/java')
+        }
+    }
 }
 
 test {

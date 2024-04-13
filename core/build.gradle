@@ -9,6 +9,10 @@ repositories {
     mavenCentral()
 }
 
+jar{
+    archivesBaseName = 'TsonConfigurations'
+}
+
 dependencies {
 
 }
