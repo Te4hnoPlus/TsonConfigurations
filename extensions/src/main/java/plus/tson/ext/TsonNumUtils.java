@@ -51,13 +51,13 @@ public class TsonNumUtils {
                     Class<?> clazz = def.getClass();
                     try {
                         if (clazz == TsonInt.class) {
-                            src.put(obj.getKey(), calc(cur.getStr(), def.getInt()));
+                            src.fput(obj.getKey(), new TsonInt(calc(cur.getStr(), def.getInt())));
                         } else if (clazz == TsonDouble.class) {
-                            src.put(obj.getKey(), calc(cur.getStr(), def.getDouble()));
+                            src.fput(obj.getKey(), new TsonDouble(calc(cur.getStr(), def.getDouble())));
                         } else if (clazz == TsonFloat.class) {
-                            src.put(obj.getKey(), calc(cur.getStr(), def.getFloat()));
+                            src.fput(obj.getKey(), new TsonFloat(calc(cur.getStr(), def.getFloat())));
                         } else if (clazz == TsonLong.class) {
-                            src.put(obj.getKey(), calc(cur.getStr(), def.getLong()));
+                            src.fput(obj.getKey(), new TsonLong(calc(cur.getStr(), def.getLong())));
                         }
                     } catch (NumberFormatException e){}
                 }
