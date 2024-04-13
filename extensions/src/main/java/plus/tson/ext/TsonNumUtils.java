@@ -39,7 +39,7 @@ public class TsonNumUtils {
      * @param defaults Default data
      */
     public static void calcR(TsonMap src, TsonMap defaults){
-        for (Map.Entry<String, TsonObj> obj: src.entrySet()){
+        for (Map.Entry<String, TsonObj> obj: src.entrySet().stream().toList()){
             TsonObj def = defaults.get(obj.getKey());
             if(def == null)continue;
             TsonObj cur = obj.getValue();;
