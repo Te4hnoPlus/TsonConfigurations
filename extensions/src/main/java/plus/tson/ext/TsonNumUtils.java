@@ -1,0 +1,195 @@
+package plus.tson.ext;
+
+import plus.tson.*;
+import java.util.Map;
+
+
+/**
+ * Utilities for working with relative numbers in configurations.
+ * <br>
+ * Default data and user data are required for operation
+ * <br><br>
+ * Example:
+ * <pre>
+ * {@code
+ * TsonMap defaults = new TsonMap("""
+ *     {k1=(10), k2=(15), i1={k3=(16)}}
+ * """);
+ *
+ * TsonMap src = new TsonMap("""
+ *     {k1=(12), k2='+2', i1={k3='-7'}}
+ * """);
+ *
+ * calcR(src, defaults);
+ * //now src = "{k1=(12),k2=(17),i1={k3=(9)}}"
+ * }
+ * </pre>
+ */
+public class TsonNumUtils {
+    /**
+     * If a string is found in the user data that is located in the same place as the number in the default data,
+     * then the following operations will be applied to this string:
+     * <br><br>
+     * 1. If the string is a number, then the string will be replaced with a number.
+     * <br>
+     * 2. If there is a mathematical operation sign in front of the received number,
+     * then it is performed between the default value and the user value.
+     * <br>
+     * @param src User data
+     * @param defaults Default data
+     */
+    public static void calcR(TsonMap src, TsonMap defaults){
+        for (Map.Entry<String, TsonObj> obj: src.entrySet()){
+            TsonObj def = defaults.get(obj.getKey());
+            if(def == null)continue;
+            TsonObj cur = obj.getValue();;
+
+            if(cur.isMap() && def.isMap()){
+                calcR(cur.getMap(), def.getMap());
+            } else {
+                if(def.isNumber() && cur.isString()){
+                    Class<?> clazz = def.getClass();
+                    try {
+                        if (clazz == TsonInt.class) {
+                            src.put(obj.getKey(), calc(cur.getStr(), def.getInt()));
+                        } else if (clazz == TsonDouble.class) {
+                            src.put(obj.getKey(), calc(cur.getStr(), def.getDouble()));
+                        } else if (clazz == TsonFloat.class) {
+                            src.put(obj.getKey(), calc(cur.getStr(), def.getFloat()));
+                        } else if (clazz == TsonLong.class) {
+                            src.put(obj.getKey(), calc(cur.getStr(), def.getLong()));
+                        }
+                    } catch (NumberFormatException e){}
+                }
+            }
+        }
+    }
+
+
+    /**
+     * See {@link #calcR(TsonMap, TsonMap)}}
+     * @param src User data
+     * @param def Default value
+     * @return Mathematical int result between the default data and the user data by key
+     */
+    public static int calc(TsonMap src, String key, int def){
+        TsonObj res = src.get(key);
+        if(res==null)return def;
+        if(res.isNumber())return res.getInt();
+        if(res.isString())return calc(res.getStr(), def);
+        throw new IllegalArgumentException();
+    }
+
+
+    /**
+     * See {@link #calcR(TsonMap, TsonMap)}}
+     * @param src User data
+     * @param def Default value
+     * @return Mathematical long result between the default data and the user data by key
+     */
+    public static long calc(TsonMap src, String key, long def){
+        TsonObj res = src.get(key);
+        if(res==null)return def;
+        if(res.isNumber())return res.getLong();
+        if(res.isString())return calc(res.getStr(), def);
+        throw new IllegalArgumentException();
+    }
+
+
+    /**
+     * See {@link #calcR(TsonMap, TsonMap)}}
+     * @param src User data
+     * @param def Default value
+     * @return Mathematical float result between the default data and the user data by key
+     */
+    public static float calc(TsonMap src, String key, float def){
+        TsonObj res = src.get(key);
+        if(res==null)return def;
+        if(res.isNumber())return res.getFloat();
+        if(res.isString())return calc(res.getStr(), def);
+        throw new IllegalArgumentException();
+    }
+
+
+    /**
+     * See {@link #calcR(TsonMap, TsonMap)}}
+     * @param src User data
+     * @param def Default value
+     * @return Mathematical double result between the default data and the user data by key
+     */
+    public static double calc(TsonMap src, String key, double def){
+        TsonObj res = src.get(key);
+        if(res==null)return def;
+        if(res.isNumber())return res.getDouble();
+        if(res.isString())return calc(res.getStr(), def);
+        throw new IllegalArgumentException();
+    }
+
+
+    /**
+     * Defines and performs a mathematical operation between a string and int.
+     * @param s Numbers with an operation
+     * @param def Default value
+     * @return Result of the operation
+     */
+    public static int calc(String s, int def) {
+        switch (s.charAt(0)) {
+            case '+': return def + Integer.parseInt(s.substring(1));
+            case '-': return def - Integer.parseInt(s.substring(1));
+            case '*': return def * Integer.parseInt(s.substring(1));
+            case '/': return def / Integer.parseInt(s.substring(1));
+            default : return Integer.parseInt(s);
+        }
+    }
+
+
+    /**
+     * Defines and performs a mathematical operation between a string and long.
+     * @param s Numbers with an operation
+     * @param def Default value
+     * @return Result of the operation
+     */
+    public static long calc(String s, long def) {
+        switch (s.charAt(0)) {
+            case '+': return def + Long.parseLong(s.substring(1));
+            case '-': return def - Long.parseLong(s.substring(1));
+            case '*': return def * Long.parseLong(s.substring(1));
+            case '/': return def / Long.parseLong(s.substring(1));
+            default : return Long.parseLong(s);
+        }
+    }
+
+
+    /**
+     * Defines and performs a mathematical operation between a string and float.
+     * @param s Numbers with an operation
+     * @param def Default value
+     * @return Result of the operation
+     */
+    public static float calc(String s, float def) {
+        switch (s.charAt(0)) {
+            case '+': return def + Float.parseFloat(s.substring(1));
+            case '-': return def - Float.parseFloat(s.substring(1));
+            case '*': return def * Float.parseFloat(s.substring(1));
+            case '/': return def / Float.parseFloat(s.substring(1));
+            default : return Float.parseFloat(s);
+        }
+    }
+
+
+    /**
+     * Defines and performs a mathematical operation between a string and double.
+     * @param s Numbers with an operation
+     * @param def Default value
+     * @return Result of the operation
+     */
+    public static double calc(String s, double def) {
+        switch (s.charAt(0)) {
+            case '+': return def + Double.parseDouble(s.substring(1));
+            case '-': return def - Double.parseDouble(s.substring(1));
+            case '*': return def * Double.parseDouble(s.substring(1));
+            case '/': return def / Double.parseDouble(s.substring(1));
+            default : return Double.parseDouble(s);
+        }
+    }
+}
