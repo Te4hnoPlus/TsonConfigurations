@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 
 
 public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
-    private static final Object PRESENT = new Object();
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
     static final int MAXIMUM_CAPACITY = 1 << 30;
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
@@ -18,20 +17,18 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
     private static class Node<K>{
         final int hash;
         final K key;
-        Object value;
         Node<K> next;
 
-        Node(int hash, K key, Object value, Node<K> next) {
+        Node(int hash, K key, Node<K> next) {
             this.hash = hash;
             this.key = key;
-            this.value = value;
             this.next = next;
         }
 
         public final String toString() {return key.toString();}
 
         public final int hashCode() {
-            return Objects.hashCode(key) ^ Objects.hashCode(value);
+            return hash;
         }
 
         public final boolean equals(Object o) {
@@ -39,7 +36,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
                 return true;
             if (o instanceof Node) {
                 Node<?> e = (Node<?>)o;
-                return Objects.equals(key, e.key) && value == e.value;
+                return Objects.equals(key, e.key);
             }
             return false;
         }
@@ -157,7 +154,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
         int hash = hash(key);
         Node<K>[] tab = table; Node<K> node; int i;
         if ((node = tab[i = (tab.length - 1) & hash]) == null) {
-            tab[i] = new Node<>(hash, key, Te4HashSet.PRESENT, null);
+            tab[i] = new Node<>(hash, key, null);
         } else {
             Node<K> e; K k;
             if (node.hash == hash && ((k = node.key) == key || key.equals(k)))
@@ -167,7 +164,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
             else {
                 for (i = 0; ; ++i) {
                     if ((e = node.next) == null) {
-                        node.next = new Node<>(hash, key, Te4HashSet.PRESENT, null);
+                        node.next = new Node<>(hash, key, null);
                         if (i >= 7) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
@@ -177,10 +174,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
                     node = e;
                 }
             }
-            if (e != null) {
-                e.value = Te4HashSet.PRESENT;
-                return false;
-            }
+            if (e != null) return false;
         }
         ++modCount;
         if (++size > threshold)
@@ -191,8 +185,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
 
     @Override
     public boolean remove(Object key) {
-        Node<K> e = removeNode(hash(key), key, true);
-        return !(e == null || e.value == null);
+        return removeNode(hash(key), key, true) != null;
     }
 
 
@@ -278,7 +271,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
         else if ((e = tab[index = (n - 1) & hash]) != null) {
             TreeNode<K> hd = null, tl = null;
             do {
-                TreeNode<K> p = new TreeNode<>(e.hash, e.key, e.value, null);
+                TreeNode<K> p = new TreeNode<>(e.hash, e.key, null);
                 if (tl == null)
                     hd = p;
                 else {
@@ -590,8 +583,8 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
     private static final class TreeNode<K> extends Node<K> {
         private TreeNode<K> parent, left, right, prev;
         private boolean red;
-        TreeNode(int hash, K key, Object val, Node<K> next) {
-            super(hash, key, val, next);
+        TreeNode(int hash, K key, Node<K> next) {
+            super(hash, key, next);
         }
 
         private TreeNode<K> root() {
@@ -714,7 +707,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
         private Node<K> untreeify() {
             Node<K> hd = null, tl = null;
             for (Node<K> q = this; q != null; q = q.next) {
-                Node<K> p = new Node<>(q.hash, q.key, q.value, null);
+                Node<K> p = new Node<>(q.hash, q.key, null);
                 if (tl == null)
                     hd = p;
                 else
@@ -755,7 +748,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
                 TreeNode<K> xp = p;
                 if ((p = (dir <= 0) ? p.left : p.right) == null) {
                     Node<K> xpn = xp.next;
-                    TreeNode<K> x = new TreeNode<>(h, k, Te4HashSet.PRESENT, xpn);
+                    TreeNode<K> x = new TreeNode<>(h, k, xpn);
                     if (dir <= 0)
                         xp.left = x;
                     else
