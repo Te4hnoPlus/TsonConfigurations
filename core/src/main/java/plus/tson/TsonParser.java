@@ -335,13 +335,13 @@ public final class TsonParser {
 
 
     Object getFieldObj(){
-        TsonClass tsonClass = getTsonClass();
-        boolean isList, waitSep = true;
-        ArrayList list;
-        if(isList = tsonClass.getField() == TsonObj.class)
-            list = new TsonList();
-        else
-            list = new ArrayList<>();
+        String tsonClass = getTsonClass();
+        boolean waitSep = true;
+        ArrayList<Object> list = new ArrayList<>();
+//        if(isList = tsonClass.getField() == TsonObj.class)
+//            list = new TsonList();
+//        else
+//            list = new ArrayList<>();
         int cur = cursor;
         for(char c; cur < data.length; ++cur){
             if((c = data[cur]) == '>') {
@@ -353,19 +353,29 @@ public final class TsonParser {
             }
             if(c == ' ' || c == '\n')continue;
             cursor = cur;
-            list.add(isList?getItem():getItem().getField());
+            list.add(getItem().getField());
             cur = cursor;
             waitSep = true;
         }
         cursor = cur;
 
         if(list.size() > 0) {
-            if(isList) return list;
+            //if(isList) return list;
             if(list.size() > 7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
-            return tsonClass.createInst(manager, list.toArray());
+            try {
+                return manager.newInstance(tsonClass, list.toArray());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            //return tsonClass.createInst(manager, list.toArray());
         } else {
-            if(isList)return tsonClass;
-            return tsonClass.createInst(manager);
+            try {
+                return manager.newInstance(tsonClass);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            //if(isList)return tsonClass;
+            //return tsonClass.createInst(manager);
         }
     }
 
@@ -388,7 +398,7 @@ public final class TsonParser {
     }
 
 
-    private TsonClass getTsonClass(){
+    private String getTsonClass(){
         int cur = cursor;
         boolean ignore = true;
         b.clear();
@@ -403,6 +413,7 @@ public final class TsonParser {
             b.append(c);
         }
         cursor = cur;
-        return new TsonClass(manager, b.toString());
+        return b.toString();
+        //return new TsonClass(manager, b.toString());
     }
 }

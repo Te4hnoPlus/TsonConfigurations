@@ -5,13 +5,13 @@ public class TestA {
 
     public static void main(String[] args) {
 
-        new TsonMap(
-                """
-                        {k = <(TestA$Test), <(TestA$Test2)>, "b"> }
-                        """
-        );
-
-        System.out.println("NEN");
+//        new TsonMap(
+//                """
+//                        {k = <(TestA$Test), <(TestA$Test2)>, "b"> }
+//                        """
+//        );
+//
+//        System.out.println("NEN");
     }
 
     static class Test2{

@@ -22,7 +22,12 @@ public interface ClassManager {
     }
 
 
-    default Object newInstance(Class<?> clazz, Object... args) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    default Object newInstance(String className, Object... args) throws Exception {
+        return newInstance(forName(className), args);
+    }
+
+
+    default Object newInstance(Class<?> clazz, Object... args) throws Exception {
         return TsonClass.createInst(clazz, args);
     }
 

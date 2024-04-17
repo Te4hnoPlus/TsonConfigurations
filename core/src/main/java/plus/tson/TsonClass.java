@@ -52,7 +52,7 @@ public final class TsonClass extends TsonPrimitive {
     public Object createInst(ClassManager manager, Object... args){
         try {
             return manager.newInstance(clazz, args);
-        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+        } catch (Exception e) {
             return onError(e, args);
         }
     }
