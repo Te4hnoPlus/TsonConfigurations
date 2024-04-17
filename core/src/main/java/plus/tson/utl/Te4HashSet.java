@@ -80,7 +80,8 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
         return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
     }
 
-    private Node<K>[] table;
+    private static final Node[] EMPTY = new Node[]{};
+    private Node<K>[] table = EMPTY;
     private int size;
     protected int modCount;
     private int threshold;
@@ -102,7 +103,6 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
 
     public Te4HashSet() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
-        table = resize();
     }
 
 
@@ -152,7 +152,9 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
     @Override
     public boolean add(K key) {
         int hash = hash(key);
-        Node<K>[] tab = table; Node<K> node; int i;
+        Node<K>[] tab = table.length==0?table = resize():table;
+        Node<K> node; int i;
+
         if ((node = tab[i = (tab.length - 1) & hash]) == null) {
             tab[i] = new Node<>(hash, key, null);
         } else {
