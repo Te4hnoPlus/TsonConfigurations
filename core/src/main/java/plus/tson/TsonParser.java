@@ -14,7 +14,7 @@ public final class TsonParser {
     private final ClassManager manager;
     private final char[] data;
     private final CharStrBuilder b = new CharStrBuilder(16);
-    private int cursor = 0;
+    int cursor = 0;
 
     public TsonParser(String data) {
         this.manager = new ClassManager.Def();
@@ -25,6 +25,12 @@ public final class TsonParser {
     public TsonParser(ClassManager manager, String data) {
         this.manager = manager;
         this.data = data.toCharArray();
+    }
+
+
+    public TsonParser(ClassManager manager, char[] data) {
+        this.manager = manager;
+        this.data = data;
     }
 
 
@@ -73,7 +79,7 @@ public final class TsonParser {
             case '{':  return getMap();
             case '[':  return getList();
             case '<':  return getField();
-            default:   return new TsonStr(new String(data));
+            default:   return null;
         }
     }
 

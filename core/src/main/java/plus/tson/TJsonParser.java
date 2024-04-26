@@ -17,7 +17,7 @@ public final class TJsonParser {
     private final boolean objMode;
     private final byte[] data;
     private final ByteStrBuilder b = new ByteStrBuilder(16);
-    private int cursor = 0;
+    int cursor = 0;
 
     public TJsonParser(byte[] data, boolean objMode) {
         this.data = data;
