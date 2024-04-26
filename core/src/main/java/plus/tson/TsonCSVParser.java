@@ -11,15 +11,27 @@ public class TsonCSVParser {
     private final char[] data;
     private final ByteStrBuilder b = new ByteStrBuilder(16);
     private final TsonParser parser;
+    private final int defLineSize;
 
     public TsonCSVParser(String data) {
-        this(new ClassManager.Def(), data.toCharArray());
+        this(new ClassManager.Def(), data.toCharArray(), 10);
+    }
+
+
+    public TsonCSVParser(ClassManager manager, String data) {
+        this(manager, data.toCharArray(), 10);
     }
 
 
     public TsonCSVParser(ClassManager manager, char[] data) {
+        this(manager, data, 10);
+    }
+
+
+    public TsonCSVParser(ClassManager manager, char[] data, int defLineSize) {
         parser = new TsonParser(manager, data);
         this.data = data;
+        this.defLineSize = defLineSize;
     }
 
 
@@ -31,7 +43,7 @@ public class TsonCSVParser {
     public TsonList getList(boolean includeEmpty){
 
         TsonList list = new TsonList();
-        TsonList line = new TsonList();
+        TsonList line = new TsonList(defLineSize);
 
 
         for (int cursor = 0; cursor < data.length; cursor++) {
@@ -42,7 +54,7 @@ public class TsonCSVParser {
             if(c == '\n'){
                 if(includeEmpty || !line.isEmpty()){
                     list.add(line);
-                    line = new TsonList();
+                    line = new TsonList(defLineSize);
                 }
                 continue;
             }
@@ -58,7 +70,7 @@ public class TsonCSVParser {
                 if(c == '\n'){
                     if(includeEmpty || !line.isEmpty()){
                         list.add(line);
-                        line = new TsonList();
+                        line = new TsonList(defLineSize);
                     }
                     break;
                 }
