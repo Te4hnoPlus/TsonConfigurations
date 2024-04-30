@@ -30,9 +30,9 @@ public class TsonBoolUtils {
         name = name.toLowerCase();
 
         switch (name) {
-            case "t", "y", "v", "+", "true", "yes":
+            case "t", "y", "v", "+", "true", "yes", "1":
                 return true;
-            case "f", "x", "n", "-", "false", "no":
+            case "f", "x", "n", "-", "false", "no", "0":
                 return false;
             case "invert":
                 return !def;
