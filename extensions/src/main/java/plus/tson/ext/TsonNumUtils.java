@@ -39,7 +39,7 @@ public class TsonNumUtils {
      * @param defaults Default data
      */
     public static void calcR(TsonMap src, TsonMap defaults){
-        for (Map.Entry<String, TsonObj> obj: src.entrySet().stream().toList()){
+        for (Map.Entry<String, TsonObj> obj: src.entrySet().toArray(new Map.Entry[0])){
             TsonObj def = defaults.get(obj.getKey());
             if(def == null)continue;
             TsonObj cur = obj.getValue();;
@@ -60,6 +60,8 @@ public class TsonNumUtils {
                             src.fput(obj.getKey(), new TsonLong(calc(cur.getStr(), def.getLong())));
                         }
                     } catch (NumberFormatException e){}
+                } else if (def.isBool() && cur.isString()) {
+                    src.fput(obj.getKey(), new TsonBool(TsonBoolUtils.bool(cur.getStr(), def.getBool())));
                 }
             }
         }
@@ -69,6 +71,7 @@ public class TsonNumUtils {
     /**
      * See {@link #calcR(TsonMap, TsonMap)}}
      * @param src User data
+     * @param key Key for access to TsonMap
      * @param def Default value
      * @return Mathematical int result between the default data and the user data by key
      */
@@ -84,6 +87,7 @@ public class TsonNumUtils {
     /**
      * See {@link #calcR(TsonMap, TsonMap)}}
      * @param src User data
+     * @param key Key for access to TsonMap
      * @param def Default value
      * @return Mathematical long result between the default data and the user data by key
      */
@@ -99,6 +103,7 @@ public class TsonNumUtils {
     /**
      * See {@link #calcR(TsonMap, TsonMap)}}
      * @param src User data
+     * @param key Key for access to TsonMap
      * @param def Default value
      * @return Mathematical float result between the default data and the user data by key
      */
@@ -114,6 +119,7 @@ public class TsonNumUtils {
     /**
      * See {@link #calcR(TsonMap, TsonMap)}}
      * @param src User data
+     * @param key Key for access to TsonMap
      * @param def Default value
      * @return Mathematical double result between the default data and the user data by key
      */
