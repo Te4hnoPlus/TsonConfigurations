@@ -76,7 +76,14 @@ public class TsonNumUtils {
      * @return Mathematical int result between the default data and the user data by key
      */
     public static int calc(TsonMap src, String key, int def){
-        TsonObj res = src.get(key);
+        return calc(src.get(key), def);
+    }
+
+
+    /**
+     * See {@link #calc(TsonMap, String, int)}
+     */
+    static int calc(TsonObj res, int def){
         if(res==null)return def;
         if(res.isNumber())return res.getInt();
         if(res.isString())return calc(res.getStr(), def);
@@ -92,7 +99,14 @@ public class TsonNumUtils {
      * @return Mathematical long result between the default data and the user data by key
      */
     public static long calc(TsonMap src, String key, long def){
-        TsonObj res = src.get(key);
+        return calc(src.get(key), def);
+    }
+
+
+    /**
+     * See {@link #calc(TsonMap, String, long)}
+     */
+    static long calc(TsonObj res, long def){
         if(res==null)return def;
         if(res.isNumber())return res.getLong();
         if(res.isString())return calc(res.getStr(), def);
@@ -108,7 +122,14 @@ public class TsonNumUtils {
      * @return Mathematical float result between the default data and the user data by key
      */
     public static float calc(TsonMap src, String key, float def){
-        TsonObj res = src.get(key);
+        return calc(src.get(key), def);
+    }
+
+
+    /**
+     * See {@link #calc(TsonMap, String, float)}
+     */
+    static float calc(TsonObj res, float def){
         if(res==null)return def;
         if(res.isNumber())return res.getFloat();
         if(res.isString())return calc(res.getStr(), def);
@@ -124,9 +145,16 @@ public class TsonNumUtils {
      * @return Mathematical double result between the default data and the user data by key
      */
     public static double calc(TsonMap src, String key, double def){
-        TsonObj res = src.get(key);
+        return calc(src.get(key), def);
+    }
+
+
+    /**
+     * See {@link #calc(TsonMap, String, double)}
+     */
+    static double calc(TsonObj res, double def){
         if(res==null)return def;
-        if(res.isNumber())return res.getDouble();
+        if(res.isNumber())return res.getFloat();
         if(res.isString())return calc(res.getStr(), def);
         throw new IllegalArgumentException();
     }
