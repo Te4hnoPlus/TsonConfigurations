@@ -7,8 +7,8 @@ import plus.tson.TsonObj;
 /**
  * Utilities for working with boolean in configurations.
  * <pre>{@code
- *  True, Yes, Y, 1, +  -> true
- *  False, No, N, 0, -  -> false
+ *  True,  T, Yes, Y, V, 1, +  -> true
+ *  False, F, No,  N, X, 0, -  -> false
  * }</pre>
  */
 public class TsonBoolUtils {
@@ -27,25 +27,15 @@ public class TsonBoolUtils {
 
 
     public static boolean bool(String name, boolean def){
-        switch (name) {
-            case "Y":
-            case "y":
-            case "+":
-                return true;
-            case "N":
-            case "n":
-            case "-":
-                return false;
-        }
         name = name.toLowerCase();
 
         switch (name) {
-            case "true":
-            case "yes":
+            case "t", "y", "v", "+", "true", "yes":
                 return true;
-            case "false":
-            case "no":
+            case "f", "x", "n", "-", "false", "no":
                 return false;
+            case "invert":
+                return !def;
         }
         return def;
     }

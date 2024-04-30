@@ -60,7 +60,7 @@ public class TsonNumUtils {
                             src.fput(obj.getKey(), new TsonLong(calc(cur.getStr(), def.getLong())));
                         }
                     } catch (NumberFormatException e){}
-                } else if (def.isBool() && cur.isString()) {
+                } else if (def.isBool()) {
                     src.fput(obj.getKey(), new TsonBool(TsonBoolUtils.bool(cur.getStr(), def.getBool())));
                 }
             }
