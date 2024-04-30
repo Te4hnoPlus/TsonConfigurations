@@ -20,7 +20,7 @@ public class TsonBoolUtils {
     public static boolean calc(TsonMap src, String key, boolean def){
         TsonObj res = src.get(key);
         if(res==null)return def;
-        if(res.isNumber())return res.getInt() != 0;
+        if(res.isNumber())return res.getInt() > 0;
         if(res.isString())return bool(res.getStr(), def);
         throw new IllegalArgumentException();
     }
