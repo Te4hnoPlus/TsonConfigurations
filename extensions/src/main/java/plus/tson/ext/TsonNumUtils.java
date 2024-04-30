@@ -47,9 +47,9 @@ public class TsonNumUtils {
             if(cur.isMap() && def.isMap()){
                 calcR(cur.getMap(), def.getMap());
             } else {
-                if(def.isNumber() && cur.isString()){
-                    Class<?> clazz = def.getClass();
-                    try {
+                try {
+                    if (def.isNumber() && cur.isString()) {
+                        Class<?> clazz = def.getClass();
                         if (clazz == TsonInt.class) {
                             src.fput(obj.getKey(), new TsonInt(calc(cur.getStr(), def.getInt())));
                         } else if (clazz == TsonDouble.class) {
@@ -59,10 +59,10 @@ public class TsonNumUtils {
                         } else if (clazz == TsonLong.class) {
                             src.fput(obj.getKey(), new TsonLong(calc(cur.getStr(), def.getLong())));
                         }
-                    } catch (NumberFormatException e){}
-                } else if (def.isBool()) {
-                    src.fput(obj.getKey(), new TsonBool(TsonBoolUtils.bool(cur.getStr(), def.getBool())));
-                }
+                    } else if (def.isBool()) {
+                        src.fput(obj.getKey(), new TsonBool(TsonBoolUtils.bool(cur.getStr(), def.getBool())));
+                    }
+                } catch (NumberFormatException e) {}
             }
         }
     }
@@ -142,8 +142,8 @@ public class TsonNumUtils {
         switch (s.charAt(0)) {
             case '+': return def + Integer.parseInt(s.substring(1));
             case '-': return def - Integer.parseInt(s.substring(1));
-            case '*': return def * Integer.parseInt(s.substring(1));
-            case '/': return def / Integer.parseInt(s.substring(1));
+            case '*': return (int) (def * Double.parseDouble(s.substring(1)));
+            case '/': return (int) (def / Double.parseDouble(s.substring(1)));
             default : return Integer.parseInt(s);
         }
     }
