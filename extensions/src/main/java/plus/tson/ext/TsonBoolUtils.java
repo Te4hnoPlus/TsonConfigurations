@@ -35,9 +35,9 @@ public class TsonBoolUtils {
      */
     public static boolean bool(String res, boolean def){
         switch (res.toLowerCase()) {
-            case "t", "y", "v", "+", "true", "yes", "1": return true;
-            case "f", "x", "n", "-", "false", "no", "0": return false;
-            case "invert"                              : return !def;
+            case "t": case "y": case "v": case "+": case "true": case "yes": case "1": return true;
+            case "f": case "x": case "n": case "-": case "false": case "no": case "0": return false;
+            case "invert"                                                            : return !def;
         }
         return def;
     }
