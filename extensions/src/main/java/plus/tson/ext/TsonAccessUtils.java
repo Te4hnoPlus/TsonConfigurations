@@ -14,6 +14,7 @@ public class TsonAccessUtils {
      * @return Value if the path was correct or default
      */
     public static TsonObj getR(TsonObj src, String path, TsonObj def){
+        if(src == null)return def;
         int end = path.indexOf('.');
         if(end == -1){
             if(src.isMap())return src.getMap().get(path);
