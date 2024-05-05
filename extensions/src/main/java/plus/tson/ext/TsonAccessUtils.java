@@ -46,7 +46,7 @@ public class TsonAccessUtils {
      * @return Value if the path was correct or null
      */
     public static TsonObj getR(TsonObj src, String path){
-        return getR(src, path, null);
+        return getR(src, path, (TsonObj) null);
     }
 
 
@@ -71,7 +71,7 @@ public class TsonAccessUtils {
      * @return First found result from the list of paths or null
      */
     public static TsonObj getR(TsonObj src, String... keys){
-        return getR(src, null, keys);
+        return getR(src, (TsonObj) null, keys);
     }
 
 
@@ -93,7 +93,7 @@ public class TsonAccessUtils {
      * @return Value if the path was correct or default
      */
     public static boolean getR(TsonObj src, String key, boolean def){
-        return TsonBoolUtils.calc(getR(src, key, null), def);
+        return TsonBoolUtils.calc(getR(src, key, (TsonObj) null), def);
     }
 
 
@@ -102,7 +102,7 @@ public class TsonAccessUtils {
      * @return Value if the path was correct or default
      */
     public static int getR(TsonObj src, String key, int def){
-        return TsonNumUtils.calc(getR(src, key, null), def);
+        return TsonNumUtils.calc(getR(src, key, (TsonObj) null), def);
     }
 
 
@@ -111,7 +111,7 @@ public class TsonAccessUtils {
      * @return Value if the path was correct or default
      */
     public static long getR(TsonObj src, String key, long def){
-        return TsonNumUtils.calc(getR(src, key, null), def);
+        return TsonNumUtils.calc(getR(src, key, (TsonObj) null), def);
     }
 
 
@@ -120,7 +120,7 @@ public class TsonAccessUtils {
      * @return Value if the path was correct or default
      */
     public static float getR(TsonObj src, String key, float def){
-        return TsonNumUtils.calc(getR(src, key, null), def);
+        return TsonNumUtils.calc(getR(src, key, (TsonObj) null), def);
     }
 
 
@@ -129,7 +129,7 @@ public class TsonAccessUtils {
      * @return Value if the path was correct or default
      */
     public static double getR(TsonObj src, String key, double def){
-        return TsonNumUtils.calc(getR(src, key, null), def);
+        return TsonNumUtils.calc(getR(src, key, (TsonObj) null), def);
     }
 
 
@@ -138,7 +138,7 @@ public class TsonAccessUtils {
      * @return First found result from the list of paths or default
      */
     public static boolean getR(TsonObj src, boolean def, String... keys){
-        return TsonBoolUtils.calc(getR(src, null, keys), def);
+        return TsonBoolUtils.calc(getR(src, (TsonObj) null, keys), def);
     }
 
 
@@ -147,7 +147,7 @@ public class TsonAccessUtils {
      * @return First found result from the list of paths or default
      */
     public static int getR(TsonObj src, int def, String... keys){
-        return TsonNumUtils.calc(getR(src, null, keys), def);
+        return TsonNumUtils.calc(getR(src, (TsonObj) null, keys), def);
     }
 
 
@@ -156,7 +156,7 @@ public class TsonAccessUtils {
      * @return First found result from the list of paths or default
      */
     public static long getR(TsonObj src, long def, String... keys){
-        return TsonNumUtils.calc(getR(src, null, keys), def);
+        return TsonNumUtils.calc(getR(src, (TsonObj) null, keys), def);
     }
 
 
@@ -165,7 +165,7 @@ public class TsonAccessUtils {
      * @return First found result from the list of paths or default
      */
     public static float getR(TsonObj src, float def, String... keys){
-        return TsonNumUtils.calc(getR(src, null, keys), def);
+        return TsonNumUtils.calc(getR(src, (TsonObj) null, keys), def);
     }
 
 
@@ -174,6 +174,26 @@ public class TsonAccessUtils {
      * @return First found result from the list of paths or default
      */
     public static double getR(TsonObj src, double def, String... keys){
-        return TsonNumUtils.calc(getR(src, null, keys), def);
+        return TsonNumUtils.calc(getR(src, (TsonObj) null, keys), def);
+    }
+
+
+    /**
+     * See {@link #getR(TsonObj, TsonObj, String...)}
+     * @return First found result from the list of paths or default
+     */
+    public static String getR(String def, TsonObj src, String... keys){
+        TsonObj res = getR(src, keys);
+        return res == null ? def : res.getStr();
+    }
+
+
+    /**
+     * See {@link #getR(TsonObj, TsonObj, String...)}
+     * @return First found result from the list of paths or default
+     */
+    public static String getR(String def, TsonObj src, String key){
+        TsonObj res = getR(src, key);
+        return res == null ? def : res.getStr();
     }
 }
