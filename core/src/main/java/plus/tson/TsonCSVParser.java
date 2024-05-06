@@ -1,7 +1,6 @@
 package plus.tson;
 
 import plus.tson.security.ClassManager;
-import plus.tson.utl.ByteStrBuilder;
 
 
 /**
@@ -9,7 +8,6 @@ import plus.tson.utl.ByteStrBuilder;
  */
 public class TsonCSVParser {
     private final char[] data;
-    private final ByteStrBuilder b = new ByteStrBuilder(16);
     private final TsonParser parser;
     private final int defLineSize;
 
