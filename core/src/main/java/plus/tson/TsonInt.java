@@ -87,4 +87,10 @@ public final class TsonInt extends TsonPrimitive{
     public int hashCode() {
         return value;
     }
+
+
+    @Override
+    public Type type() {
+        return Type.INT;
+    }
 }

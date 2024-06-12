@@ -88,4 +88,10 @@ public final class TsonDouble extends TsonPrimitive{
         long temp = Double.doubleToLongBits(value);
         return (int) (temp ^ (temp >>> 32));
     }
+
+
+    @Override
+    public Type type() {
+        return Type.DOUBLE;
+    }
 }

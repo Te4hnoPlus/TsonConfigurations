@@ -87,4 +87,10 @@ public class TsonLong extends TsonPrimitive{
     public int hashCode() {
         return Long.hashCode(value);
     }
+
+
+    @Override
+    public Type type() {
+        return Type.LONG;
+    }
 }

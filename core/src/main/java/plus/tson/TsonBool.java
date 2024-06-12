@@ -97,4 +97,10 @@ public final class TsonBool extends TsonPrimitive {
     public int hashCode() {
         return (value ? 1 : 0);
     }
+
+
+    @Override
+    public Type type() {
+        return Type.BOOL;
+    }
 }

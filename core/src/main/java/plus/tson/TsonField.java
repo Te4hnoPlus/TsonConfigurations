@@ -124,4 +124,10 @@ public final class TsonField<T> implements TsonObj{
     public int hashCode() {
         return field.hashCode();
     }
+
+
+    @Override
+    public Type type() {
+        return Type.CUSTOM;
+    }
 }

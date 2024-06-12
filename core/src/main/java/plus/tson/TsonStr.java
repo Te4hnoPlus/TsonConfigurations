@@ -79,4 +79,10 @@ public final class TsonStr implements TsonObj, CharSequence {
     public int hashCode() {
         return value.hashCode();
     }
+
+
+    @Override
+    public Type type() {
+        return Type.STRING;
+    }
 }

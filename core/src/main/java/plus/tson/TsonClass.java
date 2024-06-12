@@ -168,4 +168,10 @@ public final class TsonClass extends TsonPrimitive {
     public String getStr() {
         return clazz.toString();
     }
+
+
+    @Override
+    public Type type() {
+        return Type.CLASS;
+    }
 }

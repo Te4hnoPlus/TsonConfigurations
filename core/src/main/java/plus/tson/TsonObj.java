@@ -239,4 +239,33 @@ public interface TsonObj extends Cloneable{
     default TsonObj clone(){
         return this;
     }
+
+
+    Type type();
+
+
+    default int ordinal(){
+        return type().ordinal();
+    }
+
+
+    public static enum Type{
+        BOOL   ,
+        INT    , LONG   ,
+        FLOAT  , DOUBLE ,
+        STRING , CLASS  ,
+        LIST   , MAP    ,
+        CUSTOM;
+
+        static final Type[] types = Type.values();
+
+        public static Type[] valuesC(){
+            return types;
+        }
+
+
+        public static Type valueOfC(int ordinal){
+            return types[ordinal];
+        }
+    }
 }

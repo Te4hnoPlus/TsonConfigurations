@@ -497,4 +497,10 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     public boolean equals(Object o) {
         return o == this;
     }
+
+
+    @Override
+    public Type type() {
+        return Type.MAP;
+    }
 }

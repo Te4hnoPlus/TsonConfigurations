@@ -87,4 +87,10 @@ public final class TsonFloat extends TsonPrimitive{
     public int hashCode() {
         return (value != +0.0f ? Float.floatToIntBits(value) : 0);
     }
+
+
+    @Override
+    public Type type() {
+        return Type.FLOAT;
+    }
 }
