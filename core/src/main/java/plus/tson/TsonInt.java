@@ -5,6 +5,7 @@ package plus.tson;
  * Tson proxy for the int type
  */
 public final class TsonInt extends TsonPrimitive{
+    public static final TsonInt ZERO = new TsonInt(0);
     private final int value;
 
     public TsonInt(int value) {
