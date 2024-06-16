@@ -364,7 +364,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
      */
     public TsonMap addMap(String key){
         TsonMap map = new TsonMap();
-        put(key, map);
+        fput(key, map);
         return map;
     }
 
@@ -375,7 +375,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
      */
     public TsonList addList(String key) {
         TsonList list = new TsonList();
-        super.put(key, list);
+        fput(key, list);
         return list;
     }
 

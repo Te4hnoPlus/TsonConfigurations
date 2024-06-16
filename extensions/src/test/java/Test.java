@@ -13,16 +13,10 @@ public class Test {
 
 
     private static void testNums(){
-        TsonMap defaults = new TsonMap("""
-                {k1=(10), k2=(15), i1={k3=(16)}}
-                """);
+        TsonMap defaults = new TsonMap(" {k1=(10), k2=(15), i1={k3=(16)}} ");
 
-        TsonMap src = new TsonMap("""
-                {k1=(12), k2='+2', i1={k3='-7'}}
-                """);
-        TsonMap src2 = new TsonMap("""
-                {key1=(true), key2=(false), data={key3=(3), key4=(4)}, list=[(2), (3), (4)]}
-                """);
+        TsonMap src = new TsonMap(" {k1=(12), k2='+2', i1={k3='-7'}} ");
+        TsonMap src2 = new TsonMap(" {key1=(true), key2=(false), data={key3=(3), key4=(4)}, list=[(2), (3), (4)]} ");
 
         calcR(src, defaults);
 

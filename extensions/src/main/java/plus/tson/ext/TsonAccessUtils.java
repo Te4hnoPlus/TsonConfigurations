@@ -1,6 +1,8 @@
 package plus.tson.ext;
 
+import plus.tson.TsonInt;
 import plus.tson.TsonList;
+import plus.tson.TsonMap;
 import plus.tson.TsonObj;
 
 
@@ -38,6 +40,44 @@ public class TsonAccessUtils {
             else src = null;
         } while (src != null);
         return def;
+    }
+
+
+    public static void setR(TsonObj src, String path, TsonObj value){
+        if(src == null)throw new IllegalArgumentException("Source cannot be null");
+
+        String[] keys = path.split("\\.");
+        TsonObj prev = null;
+
+        for (int i = 0; i < keys.length; i++){
+            String key = keys[i];
+
+            if(src.isMap()){
+                if(i == keys.length-1){
+                    src.getMap().fput(key, value);
+                    return;
+                }
+                TsonObj res = src.getMap().getOrCreateMap(key);
+                prev = src;
+                src = res;
+                continue;
+            }
+            if(i == 0)throw new IllegalArgumentException("Cant edit path!");
+
+            if(src.isList()){
+                TsonMap newSrc = new TsonMap();
+                TsonList lst = src.getList();
+                for (int j = 0;j<lst.size();j++){
+                    newSrc.fput(String.valueOf(j), lst.get(j));
+                }
+                prev.getMap().fput(keys[i-1], newSrc);
+                prev = newSrc;
+                continue;
+            }
+
+            prev = src;
+            src = src.getMap().addMap(key);
+        }
     }
 
 
