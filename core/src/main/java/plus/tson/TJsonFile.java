@@ -9,8 +9,20 @@ public class TJsonFile extends TsonFile{
     private final boolean objMode;
 
     public TJsonFile(String fileName, boolean objMode) {
-        super(fileName);
-        this.objMode = objMode;
+        this(new File(fileName), objMode);
+        load();
+    }
+
+
+    @Override
+    public TJsonFile load(){
+        return (TJsonFile) load((ClassManager) null);
+    }
+
+
+    @Override
+    public TJsonFile load(ClassManager manager, String def) {
+        return (TJsonFile) super.load(manager, def);
     }
 
 
