@@ -55,4 +55,10 @@ public class TJsonFile extends TsonFile{
         write(getFile(), str);
         return this;
     }
+
+
+    @Override
+    public TJsonFile clone() {
+        return (TJsonFile) super.clone();
+    }
 }
