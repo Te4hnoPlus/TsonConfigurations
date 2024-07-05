@@ -14,78 +14,6 @@ import java.nio.file.Files;
  */
 public class TsonFile extends TsonMap {
     private final File file;
-    private Annotation annotation = new Annotation();
-
-    enum AnnotationKey {
-        ReadOnly("@ReadOnly"),
-        MakeBackUp("@Backup");
-        private final String KEY;
-
-        AnnotationKey(String key) {
-            KEY = key;
-        }
-    }
-
-    public static class Annotation {
-        public final boolean isReadOnly;
-        public final boolean makeBackUp;
-
-
-        private Annotation(){
-            this(false, false);
-        }
-
-
-        private Annotation(boolean isReadOnly, boolean makeBackUp) {
-            this.isReadOnly = isReadOnly;
-            this.makeBackUp = makeBackUp;
-        }
-
-
-        static Object[] scan(String data){
-            return scan(data, null, null);
-        }
-
-
-        static Object[] scan(String data0, Boolean ro, Boolean mb){
-            String data = data0;
-            data = data.trim();
-            if(data.isEmpty() || data.charAt(0) != '@'){
-                return new Object[]{
-                        new Annotation(ro != null && ro, mb != null && mb),data};
-            }
-            if(ro==null && data.startsWith(AnnotationKey.ReadOnly.KEY)){
-                data = data.substring(AnnotationKey.ReadOnly.KEY.length()).trim();
-                ro = true;
-            }
-            if(mb==null && data.startsWith(AnnotationKey.MakeBackUp.KEY)){
-                data = data.substring(AnnotationKey.MakeBackUp.KEY.length()).trim();
-                mb = true;
-            }
-            if(data.equals(data0)){
-                for(int i=0;i<data.length();i++){
-                    char c = data.charAt(i);
-                    if(c==' ' || c == '\n' || c =='{'){
-                        data = data.substring(i);
-                        break;
-                    }
-                }
-            }
-            return scan(data, ro, mb);
-        }
-
-        @Override
-        public String toString(){
-            return ""+(isReadOnly?AnnotationKey.ReadOnly.KEY+"\n":"")
-                    +(makeBackUp?AnnotationKey.MakeBackUp.KEY+"\n":"");
-        }
-    }
-
-
-    public File getFile(){
-        return file;
-    }
-
 
     public TsonFile(String fileName){
         file = new File(fileName);
@@ -104,14 +32,14 @@ public class TsonFile extends TsonMap {
     }
 
 
-    @Override
-    public TsonFile clone() {
-        return (TsonFile) super.clone();
+    public File getFile(){
+        return file;
     }
 
 
-    public Annotation getAnnotation(){
-        return annotation;
+    @Override
+    public TsonFile clone() {
+        return (TsonFile) super.clone();
     }
 
 
@@ -131,16 +59,13 @@ public class TsonFile extends TsonMap {
 
 
     public TsonFile load(ClassManager manager, String def){
-        String data = read(file, def);
-        Object[] data0 = Annotation.scan(data);
-        annotation = (Annotation) data0[0];
-        data = (String) data0[1];
-        if(annotation.makeBackUp){
-            if(data.equals(""))return this;
-            write(new File(file.getName()+"_backup"),annotation+data);
-        }
-        new TsonParser(manager, remBadChars(data)).goTo('{').fillMap(this);
+        parse(manager, read(file, def));
         return this;
+    }
+
+
+    protected void parse(ClassManager manager, String data){
+        new TsonParser(manager, remBadChars(data)).goTo('{').fillMap(this);
     }
 
 
@@ -150,26 +75,14 @@ public class TsonFile extends TsonMap {
 
 
     public static void fillMap(TsonMap map, ClassManager manager, File file, String def){
-        String data = read(file, def);
-        Object[] data0 = Annotation.scan(data);
-        Annotation annotation = (Annotation) data0[0];
-        if(map instanceof TsonFile){
-            ((TsonFile) map).annotation = annotation;
-        }
-        data = (String) data0[1];
-        if(annotation.makeBackUp){
-            if(data.equals(""))return;
-            write(new File(file.getName()+"_backup"),annotation+data);
-        }
         new TsonParser(manager,
-                data.replace("\r","").replace("\t","    ")
+                read(file, def).replace("\r","").replace("\t","    ")
         ).goTo('{').fillMap(map);
     }
 
 
     public TsonFile save(){
-        if(annotation.isReadOnly)return this;
-        write(file, annotation+this.toString());
+        write(file, this.toString());
         return this;
     }
 

@@ -2,7 +2,10 @@ package plus.tson;
 
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.utl.ByteStrBuilder;
+import plus.tson.utl.Te4HashMap;
+
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -43,7 +46,7 @@ public final class TJsonParser {
     }
 
 
-    private void goTo(char chr){
+    public void goTo(char chr){
         int cur;
         for(cur=cursor;cur<data.length;++cur)
             if(data[cur] == chr)break;
@@ -86,7 +89,7 @@ public final class TJsonParser {
     }
 
 
-    private void fillMap(TsonMap map){
+    public void fillMap(TsonMap map){
         int cur = cursor;
         boolean waitSep = false, waitKey = true;
         String key = null;
