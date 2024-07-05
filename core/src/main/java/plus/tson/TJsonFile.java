@@ -6,31 +6,32 @@ import java.io.File;
 
 public class TJsonFile extends TsonFile{
     private int indent = 4, maxInline = 32;
-    private boolean objMode = true;
+    private final boolean objMode;
 
-    public TJsonFile(String fileName) {
+    public TJsonFile(String fileName, boolean objMode) {
         super(fileName);
+        this.objMode = objMode;
     }
 
 
-    public TJsonFile(ClassManager manager, String fileName) {
-        super(manager, fileName);
+    public TJsonFile(File file, boolean objMode) {
+        super(file);
+        this.objMode = objMode;
+    }
+
+
+    public TJsonFile(String fileName) {
+        this(fileName, true);
     }
 
 
     public TJsonFile(File file) {
-        super(file);
+        this(file, true);
     }
 
 
     public TJsonFile indent(int indent){
         this.indent = indent;
-        return this;
-    }
-
-
-    public TJsonFile objMode(boolean mode){
-        this.objMode = mode;
         return this;
     }
 
