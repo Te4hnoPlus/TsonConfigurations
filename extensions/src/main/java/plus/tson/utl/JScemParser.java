@@ -205,7 +205,7 @@ public class JScemParser {
             cursor = cur;
             return new TsonBool(readBool());
         }
-        throw new TsonSyntaxException(getErrorString(), cur, data[cursor]);
+        throw TsonSyntaxException.make(cur, data);
     }
 
 
@@ -282,7 +282,7 @@ public class JScemParser {
             schem.set(key, obj, readBool());
             return;
         }
-        throw new TsonSyntaxException(getErrorString(), cur, data[cursor]);
+        throw TsonSyntaxException.make(cur, data);
     }
 
 
@@ -295,7 +295,7 @@ public class JScemParser {
             cursor += 4;
             return false;
         }
-        throw new TsonSyntaxException(getErrorString(), cursor, "Wrong value");
+        throw TsonSyntaxException.make(cursor, data, "Wrong value");
     }
 
 

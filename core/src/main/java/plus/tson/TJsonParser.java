@@ -65,15 +65,6 @@ public final class TJsonParser {
     }
 
 
-    private String getErrorString(){
-        int min = Math.max(0, cursor - 50),
-            max = Math.min(cursor + 50, data.length - 1);
-        byte[] bytes = new byte[max-min];
-        System.arraycopy(data, min, bytes, 0, bytes.length);
-        return new String(bytes);
-    }
-
-
     private TsonMap getMap0(){
         TsonMap map = new TsonMap();
         fillMap(map);
@@ -187,7 +178,7 @@ public final class TJsonParser {
             cursor = cur;
             return readBool();
         }
-        throw new TsonSyntaxException(getErrorString(), cur, data[cursor]);
+        throw TsonSyntaxException.make(cur, data);
     }
 
 
@@ -200,7 +191,7 @@ public final class TJsonParser {
             cursor += 4;
             return TsonBool.FALSE;
         }
-        throw new TsonSyntaxException(getErrorString(), cursor, "Wrong value");
+        throw TsonSyntaxException.make(cursor, data,"Wrong value");
     }
 
 
@@ -275,7 +266,7 @@ public final class TJsonParser {
                     } while (c == ' ');
                     break;
                 } else if(c!='_')
-                    throw new TsonSyntaxException(getErrorString(), cur, "Number format error");
+                    throw TsonSyntaxException.make(cur, data,"Number format error");
             }
             cursor = cur;
             if(size > 6) return new TsonDouble(num2 / dec1);
@@ -292,7 +283,7 @@ public final class TJsonParser {
 
     private String getKey(){
         int cur = cursor;
-        if(data[cur] != '"') throw new TsonSyntaxException(getErrorString(), cursor, "Expected [ \" ]");
+        if(data[cur] != '"') throw TsonSyntaxException.make(cursor, data, "Expected [ \" ]");
         int start = ++cur;
         for(; cur < data.length; ++cur){
             if(data[cur] == '"'){

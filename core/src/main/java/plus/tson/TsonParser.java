@@ -62,7 +62,7 @@ public final class TsonParser {
             cursor += 4;
             return TsonBool.FALSE;
         }
-        throw new TsonSyntaxException(getErrorString(), cursor, data[cursor]);
+        throw TsonSyntaxException.make(cursor, data);
     }
 
 
@@ -81,15 +81,6 @@ public final class TsonParser {
             case '<':  return getField();
             default:   return null;
         }
-    }
-
-
-    private String getErrorString(){
-        int min = Math.max(0, cursor - 50),
-            max = Math.min(cursor + 50, data.length - 1);
-        char[] chars = new char[max - min];
-        System.arraycopy(data, min, chars, 0, chars.length);
-        return new String(chars);
     }
 
 
@@ -195,7 +186,7 @@ public final class TsonParser {
                 return readClassOrBool();
             }
         }
-        throw new TsonSyntaxException(getErrorString(), cur, data[cur]);
+        throw TsonSyntaxException.make(cur, data);
     }
 
 
@@ -257,7 +248,7 @@ public final class TsonParser {
         try {
             return new TsonClass(manager, b.toString());
         } catch (NoSearchException e){
-            throw new TsonSyntaxException(getErrorString(), cur, e.getMessage());
+            throw TsonSyntaxException.make(cur, data, e.getMessage());
         }
     }
 
@@ -273,12 +264,17 @@ public final class TsonParser {
                     c = data[cur];
                 } while (c == ' ');
                 if(c == ')')break;
-                throw new TsonSyntaxException(getErrorString(), cur, c);
+                throw TsonSyntaxException.make(cur, data, c);
             } else
                 b.append(c);
         }
         cursor = cur;
-        return new TsonDouble(Double.parseDouble(b.toString()));
+        String str = b.toString();
+        try {
+            return new TsonDouble(Double.parseDouble(str));
+        } catch (NumberFormatException e){
+            throw TsonSyntaxException.make(cursor, data, "Invalid number: '"+str+"\'");
+        }
     }
 
 
@@ -303,7 +299,7 @@ public final class TsonParser {
                     c = data[cur];
                 } while (c == ' ');
                 if(c == ')')break;
-                throw new TsonSyntaxException(getErrorString(), cur, c);
+                throw TsonSyntaxException.make(cur, data, c);
             } else if(c != '_')return readLongNum();
         }
 
@@ -323,7 +319,7 @@ public final class TsonParser {
                             c = data[cur];
                         } while (c == ' ');
                         if (c == ')') break;
-                        throw new TsonSyntaxException(getErrorString(), cur, c);
+                        throw TsonSyntaxException.make(cur, data, c);
                     }
                     if(c!='_')return readLongNum();
                 }
@@ -344,10 +340,6 @@ public final class TsonParser {
         String tsonClass = getTsonClass();
         boolean waitSep = true;
         ArrayList<Object> list = new ArrayList<>();
-//        if(isList = tsonClass.getField() == TsonObj.class)
-//            list = new TsonList();
-//        else
-//            list = new ArrayList<>();
         int cur = cursor;
         for(char c; cur < data.length; ++cur){
             if((c = data[cur]) == '>') {
@@ -366,22 +358,18 @@ public final class TsonParser {
         cursor = cur;
 
         if(list.size() > 0) {
-            //if(isList) return list;
             if(list.size() > 7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
             try {
                 return manager.newInstance(tsonClass, list.toArray());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            //return tsonClass.createInst(manager, list.toArray());
         } else {
             try {
                 return manager.newInstance(tsonClass);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            //if(isList)return tsonClass;
-            //return tsonClass.createInst(manager);
         }
     }
 
@@ -420,6 +408,5 @@ public final class TsonParser {
         }
         cursor = cur;
         return b.toString();
-        //return new TsonClass(manager, b.toString());
     }
 }
