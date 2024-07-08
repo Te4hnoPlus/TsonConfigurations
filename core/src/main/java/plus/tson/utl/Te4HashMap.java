@@ -1233,13 +1233,13 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
      */
     void reinitialize() {
         table = null;
+        size = 0;
+        modCount = 0;
+        threshold = 0;
         table = resize();
         entrySet = null;
         keySet = null;
         values = null;
-        modCount = 0;
-        threshold = 0;
-        size = 0;
     }
 
 
