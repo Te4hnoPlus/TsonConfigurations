@@ -19,7 +19,7 @@ public final class TJsonParser extends ByteStrBuilder{
     private int cursor = 0;
 
     public TJsonParser(final String str) {
-        this(str.getBytes(StandardCharsets.UTF_8), true);
+        this(str.getBytes(StandardCharsets.UTF_8), false);
     }
 
 
@@ -287,8 +287,10 @@ public final class TJsonParser extends ByteStrBuilder{
     private String getKey(final byte[] data, int cur){
         if(data[cur] != '"') throw TsonSyntaxException.make(cur, data, "Wait '\"', but '" + ((char)data[cur]) + "'");
         final int start = ++cur;
+        int end = start;
         l1: for(final int length = data.length; cur < length; ++cur){
             if(data[cur] == '"'){
+                end = cur;
                 ++cur;
                 while (cur < length){
                     if(data[cur] == ':'){
@@ -300,7 +302,7 @@ public final class TJsonParser extends ByteStrBuilder{
             }
         }
         this.cursor = cur;
-        return new String(data, start, cur - start - 1, StandardCharsets.UTF_8);
+        return new String(data, start, end - start, StandardCharsets.UTF_8);
     }
 
 
