@@ -2,18 +2,24 @@ package plus.tson.exception;
 
 
 public class TsonSyntaxException extends RuntimeException {
-    public TsonSyntaxException(String msg, int cursor, char c) {
-        this(msg, cursor, "bad char: " + c);
-    }
-
-
-    public TsonSyntaxException(String msg, int cursor, Object c) {
+    private TsonSyntaxException(String msg, int cursor, Object c) {
         super("Syntax exception: [" + c + "] in pos [" + cursor + "]:\n---ERROR START---\n" + msg + "\n----ERROR END----");
     }
 
 
     private TsonSyntaxException(String msg, int line, int cursor, Object c) {
         super("Syntax exception: [" + c + "] in line ["+line+"] pos [" + cursor + "]:\n---ERROR START---\n" + msg + "\n----ERROR END----");
+    }
+
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        super.fillInStackTrace();
+        StackTraceElement[] pre = super.getStackTrace();
+        StackTraceElement[] result = new StackTraceElement[pre.length-1];
+        System.arraycopy(pre, 1, result, 0, result.length);
+        setStackTrace(result);
+        return this;
     }
 
 

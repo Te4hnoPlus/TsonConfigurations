@@ -19,13 +19,14 @@ public class Main {
     private static HashMap<String,ArrayList<Double>> result = new HashMap<>();
     
     public static void test2(){
-        String data = "{a: true,b: false,c: 20,d: 50,e: 'test',d: 'gaga'}";
+        String data = "{ak1: true,bk1: false,ck1: 20,dk1: 50,ek1: 'test',dk1: 'gaga',ek1: 'gaga4'}";
         TsonMap map = new TJsonParser(data,true).getMap();
-        int count = 2000_000;
+        int count = 1000_000;
 
         for (int i=1;i<11;i++){
-            testTime(() -> testSpeedJS(map, count), "js", count);
-            testTime(() -> testSpeedTS(map, count), "ts", count);
+            testTime(() ->   testSpeedJS(map, count), "js", count);
+            testTime(() -> testSpeedJSV2(map, count), "v2", count);
+            //testTime(() ->   testSpeedTS(map, count), "ts", count);
         }
         resToStr();
     }
@@ -88,6 +89,14 @@ public class Main {
         String code = map.toJsonObj();
         for(int i=0;i<count;i++){
             code = new TJsonParser(code, true).getMap().toJsonObj();
+        }
+    }
+
+
+    static void testSpeedJSV2(TsonMap map, int count){
+        String code = map.toJsonObj();
+        for(int i=0;i<count;i++){
+            code = new TJsonParserV2(code, true).getMap().toJsonObj();
         }
     }
 }

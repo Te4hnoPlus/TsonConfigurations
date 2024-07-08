@@ -33,12 +33,12 @@ public class TJsonFile extends TsonFile{
 
 
     public TJsonFile(String fileName) {
-        this(fileName, true);
+        this(fileName, false);
     }
 
 
     public TJsonFile(File file) {
-        this(file, true);
+        this(file, false);
     }
 
 

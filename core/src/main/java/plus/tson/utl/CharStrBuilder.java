@@ -4,7 +4,7 @@ package plus.tson.utl;
 /**
  * The faster equivalent of StringBuilder
  */
-public final class CharStrBuilder {
+public class CharStrBuilder {
     private char[] chars;
     private int length;
 
@@ -13,29 +13,29 @@ public final class CharStrBuilder {
     }
 
 
-    public int length() {
+    public final int length() {
         return length;
     }
 
 
-    public void append(char b) {
+    public final void append(char b) {
         setLength(length);
         chars[length++] = b;
     }
 
 
-    public void append(byte b){
+    public final void append(byte b){
         setLength(length);
         chars[length++] = (char) b;
     }
 
 
-    public void clear(){
+    public final void clear(){
         length = 0;
     }
 
 
-    public void setLength(int length) {
+    public final void setLength(int length) {
         if (length >= chars.length) {
             char[] newByte = new char[length+16];
             System.arraycopy(chars, 0, newByte, 0, chars.length);
@@ -47,6 +47,11 @@ public final class CharStrBuilder {
 
     @Override
     public String toString() {
+        return cString();
+    }
+
+
+    protected final String cString(){
         return new String(chars, 0, length);
     }
 }

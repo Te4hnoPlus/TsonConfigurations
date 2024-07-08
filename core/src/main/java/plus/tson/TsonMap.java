@@ -13,6 +13,10 @@ import java.util.function.Function;
 public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     public TsonMap(){}
 
+    public TsonMap(int size){
+        super(size);
+    }
+
 
     public TsonMap(ClassManager manager, String data) {
         new TsonParser(manager, data).goTo('{').fillMap(this);
