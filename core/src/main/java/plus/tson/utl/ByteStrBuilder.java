@@ -53,7 +53,7 @@ public class ByteStrBuilder {
     }
 
 
-    protected final String cString(){
+    public final String cString(){
         return new String(bytes, 0, length, StandardCharsets.UTF_8);
     }
 }

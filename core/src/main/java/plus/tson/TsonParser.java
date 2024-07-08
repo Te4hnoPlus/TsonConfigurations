@@ -124,6 +124,7 @@ public final class TsonParser {
 
 
     void fillList(TsonList list){
+        final char[] data = this.data;
         int cur = cursor;
         char c;
         for(;cur < data.length; ++cur){
@@ -155,6 +156,7 @@ public final class TsonParser {
 
 
     private TsonStr getStr(char end){
+        final char[] data = this.data;
         int cur = cursor;
         boolean prevEcran = false;
         b.clear();
@@ -380,6 +382,7 @@ public final class TsonParser {
 
 
     private String getKey(){
+        final char[] data = this.data;
         int cur = cursor;
         b.clear();
         for(char c; cur < data.length; ++cur){

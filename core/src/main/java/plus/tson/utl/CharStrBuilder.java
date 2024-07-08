@@ -51,7 +51,7 @@ public class CharStrBuilder {
     }
 
 
-    protected final String cString(){
+    public final String cString(){
         return new String(chars, 0, length);
     }
 }
