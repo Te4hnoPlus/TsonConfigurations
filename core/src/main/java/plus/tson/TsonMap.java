@@ -3,6 +3,7 @@ package plus.tson;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.Te4HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -493,7 +494,15 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public TsonMap clone() {
-        return (TsonMap) super.clone();
+        TsonMap map = new TsonMap(size());
+        cloneValues(map);
+        return map;
+    }
+
+
+    protected TsonMap cloneValues(TsonMap map){
+        forEach((s, obj) -> map.fput(s, obj.clone()));
+        return map;
     }
 
 

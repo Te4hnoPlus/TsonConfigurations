@@ -1232,6 +1232,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
      * Reset to initial default state.  Called by clone and readObject.
      */
     void reinitialize() {
+        table = null;
         table = resize();
         entrySet = null;
         keySet = null;

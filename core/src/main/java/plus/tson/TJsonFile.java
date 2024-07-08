@@ -70,6 +70,10 @@ public class TJsonFile extends TsonFile{
 
     @Override
     public TJsonFile clone() {
-        return (TJsonFile) super.clone();
+        TJsonFile map = new TJsonFile(getFile(), objMode);
+        map.indent = indent;
+        map.maxInline = maxInline;
+        cloneValues(map);
+        return map;
     }
 }

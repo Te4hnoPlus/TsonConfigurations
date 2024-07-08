@@ -39,7 +39,9 @@ public class TsonFile extends TsonMap {
 
     @Override
     public TsonFile clone() {
-        return (TsonFile) super.clone();
+        TsonFile result = new TsonFile(file);
+        cloneValues(result);
+        return result;
     }
 
 
