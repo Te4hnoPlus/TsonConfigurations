@@ -56,9 +56,7 @@ public class TJsonFile extends TsonFile{
 
     @Override
     protected void parse(ClassManager manager, String data) {
-        TJsonParser parser = new TJsonParser(data, objMode);
-        parser.goTo('{');
-        parser.fillMap(this);
+        new TJsonParser(data, objMode).fillMap(this);
     }
 
 

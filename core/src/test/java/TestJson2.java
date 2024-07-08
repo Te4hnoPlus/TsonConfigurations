@@ -6,7 +6,7 @@ public class TestJson2 {
     public static void main(String[] args) {
         //long l = System.currentTimeMillis();
         TsonMap map = null;{
-            map = new TJsonParserV2(
+            map = new TJsonParser(
                     """
 {
     "PLANETS": {

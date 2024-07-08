@@ -25,8 +25,8 @@ public class Main {
 
         for (int i=1;i<11;i++){
             testTime(() ->   testSpeedJS(map, count), "js", count);
-            testTime(() -> testSpeedJSV2(map, count), "v2", count);
-            //testTime(() ->   testSpeedTS(map, count), "ts", count);
+            //testTime(() -> testSpeedJSV2(map, count), "v2", count);
+            testTime(() ->   testSpeedTS(map, count), "ts", count);
         }
         resToStr();
     }
@@ -91,12 +91,12 @@ public class Main {
             code = new TJsonParser(code, true).getMap().toJsonObj();
         }
     }
-
-
-    static void testSpeedJSV2(TsonMap map, int count){
-        String code = map.toJsonObj();
-        for(int i=0;i<count;i++){
-            code = new TJsonParserV2(code, true).getMap().toJsonObj();
-        }
-    }
+//
+//
+//    static void testSpeedJSV2(TsonMap map, int count){
+//        String code = map.toJsonObj();
+//        for(int i=0;i<count;i++){
+//            code = new TJsonParserV2(code, true).getMap().toJsonObj();
+//        }
+//    }
 }

@@ -2,6 +2,7 @@ package plus.tson;
 
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.utl.ByteStrBuilder;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -9,187 +10,223 @@ import plus.tson.utl.ByteStrBuilder;
  * <br><br>
  * Usage example:
  * <pre>
- * {@code new TJsonParser("{key: 10}").getMap()}
+ * {@code new TJsonParser("{\"key\": 10}").getMap()}
  * </pre>
  */
-public final class TJsonParser {
+public final class TJsonParser extends ByteStrBuilder{
     private final boolean objMode;
-    private final char[] data;
-    private final ByteStrBuilder b = new ByteStrBuilder(16);
-    int cursor = 0;
+    private final byte[] data;
+    private int cursor = 0;
 
-    public TJsonParser(byte[] data, boolean objMode) {
-        this.data = new String(data).toCharArray();
+    public TJsonParser(final String str) {
+        this(str.getBytes(StandardCharsets.UTF_8), true);
+    }
+
+
+    public TJsonParser(final String str, final boolean objMode) {
+        this(str.getBytes(StandardCharsets.UTF_8), objMode);
+    }
+
+
+    public TJsonParser(final byte[] data, final boolean objMode) {
+        super(16);
         this.objMode = objMode;
-    }
-
-
-    public TJsonParser(String s){
-        this.data = s.toCharArray();
-        objMode = false;
-    }
-
-
-    public TJsonParser(String s, boolean objMode){
-        this.data = s.toCharArray();
-        this.objMode = objMode;
-    }
-
-
-    public TJsonParser(byte[] data){
-        this.data = new String(data).toCharArray();
-        objMode = false;
-    }
-
-
-    public void goTo(char chr){
-        int cur;
-        for(cur=cursor;cur<data.length;++cur)
-            if(data[cur] == chr)break;
-        cursor = ++cur;
-    }
-
-
-    public TsonObj getItem(){
-        switch (data[cursor++]){
-            case '"':  return getStr('"');
-            case '\'': return getStr('\'');
-            case '{':  return getMap0();
-            case '[':  return getList0();
-            default:   return getBasic();
-        }
-    }
-
-
-    private TsonMap getMap0(){
-        TsonMap map = new TsonMap();
-        fillMap(map);
-        return map;
+        this.data = data;
     }
 
 
     public TsonMap getMap(){
-        TsonMap map = new TsonMap();
-        goTo('{');
-        fillMap(map);
+        final byte[] data = this.data;
+        for (int i = 0, s = data.length; i < s;i++){
+            if(data[i] == '{') return getMap(data, this.cursor = i+1);
+        }
+        return null;
+    }
+
+
+    public void fillMap(final TsonMap map){
+        final byte[] data = this.data;
+        for (int i = 0, s = data.length; i < s; i++){
+            if(data[i] == '{'){
+                fillMap(map, data, this.cursor = i+1, this.objMode);
+                return;
+            }
+        }
+    }
+
+
+    public void fillList(final TsonList list){
+        final byte[] data = this.data;
+        for (int i = 0, s = data.length; i < s; i++){
+            if(data[i] == '['){
+                fillList(list, data, this.cursor = i+1);
+                return;
+            }
+        }
+    }
+
+
+    private TsonMap getMap(final byte[] data, final int cursor){
+        final TsonMap map;
+        fillMap(map = new TsonMap(), data, cursor, this.objMode);
         return map;
     }
 
 
-    public void fillMap(TsonMap map){
-        final char[] data = this.data;
+    private void fillMap(final TsonMap map, final byte[] data, int cursor, final boolean objMode){
         final int length = data.length;
-        int cur = cursor;
         boolean waitSep = false, waitKey = true;
         String key = null;
-
-        for(char c; cur < length; ++cur){
-            if((c = data[cur]) == '}'){
-                cursor = cur + 1;
+        for (byte chr; cursor < length; cursor++){
+            if((chr = data[cursor]) == '}'){
+                this.cursor = cursor+1;
                 return;
             }
-            if(c == ' ' || c == '\n') continue;
-            if(waitSep && c == ','){
-                waitSep = false;
-                continue;
-            }
-            cursor = cur;
-            if(waitKey) {
+            if(chr == ' ' || chr == '\n')continue;
+            if(waitSep) {
+                if(chr == ',') waitSep = false;
+            }else if(waitKey){
+                if(objMode) key = getObjKey(data, cursor);
+                else        key = getKey(data, cursor);
+                cursor = this.cursor;
                 waitKey = false;
-                key = objMode?getObjKey(data):getKey(data);
             } else {
-                map.fput(key, getItem());
-                waitKey = true;
+                this.cursor = cursor;
+                map.fput(key, getItem(data, chr));
+                cursor = this.cursor-1;
                 waitSep = true;
+                waitKey = true;
             }
-            cur = cursor;
         }
-        cursor = cur;
     }
 
 
-    private TsonList getList0(){
-        TsonList list = new TsonList();
-        fillList(list);
+    private TsonList getList(final byte[] data, int cursor){
+        final TsonList list;
+        fillList(list = new TsonList(), data, cursor);
         return list;
     }
 
 
-    public TsonList getList(){
-        TsonList list = new TsonList();
-        goTo('[');
-        fillList(list);
-        return list;
-    }
-
-
-    private void fillList(TsonList list){
-        final char[] data = this.data;
-        final int length = data.length;
-        int cur = cursor;
-        char c;
-        for(;cur < length; ++cur){
-            if((c = data[cur]) == ']') {
-                cursor = cur;
+    private void fillList(final TsonList list, final byte[] data, int cursor){
+        boolean waitSep = false;
+        byte chr;
+        for (final int length = data.length; cursor < length; cursor++){
+            if((chr = data[cursor]) == ']'){
+                this.cursor = cursor+1;
                 return;
             }
-            if(c == ' ' || c == '\n')continue;
-            cursor = cur;
-            list.add(getItem());
-            cur = cursor;
-            break;
-        }
-        for(boolean waitSep = true; cur < length; ++cur){
-            if((c = data[cur]) == ']') {
-                cursor = cur;
-                return;
-            }
-            if(c == ' ' || c == '\n') continue;
-            if(waitSep && c == ','){
-                waitSep = false;
+            if(chr == ' ' || chr == '\n')continue;
+            if(waitSep) {
+                if(chr == ',') waitSep = false;
                 continue;
             }
-            cursor = cur;
-            list.add(getItem());
-            cur = cursor;
+            this.cursor = cursor;
+            list.add(getItem(data, chr));
+            cursor = this.cursor-1;
             waitSep = true;
         }
     }
 
 
-    private TsonStr getStr(char end){
-        int cur = cursor;
-        b.clear();
-        for(char c; cur < data.length; ++cur){
-            if((c = data[cur]) == end)break;
-            if(c == '\\'){
-                ++cur;
+    public TsonObj getItem(final byte[] data, final byte chr){
+        switch (chr){
+            case '"' : return getStr(data,'"');
+            case '\'': return getStr(data,'\'');
+            case '{' : return getMap(data, ++cursor);
+            case '[' : return getList(data, ++cursor);
+            case '-' : return getNum(data, ++cursor, true);
+            default: {
+                if(chr >= '0' && chr <= '9')return getNum(data, cursor, false);
+                return readBool(data);
+            }
+        }
+    }
+
+
+    private TsonObj getNum(final byte[] data, int cursor, final boolean invert){
+        boolean sep = false;
+        final int length = data.length;
+        int num = 0;
+        byte size = 0;
+
+        byte c;
+        for (;cursor < length && size < 9; cursor++){
+            if((c = data[cursor]) > 47 && c < 58) {
+                num = (num * 10) + (c-48);
+                ++size;
                 continue;
             }
-            b.append(c);
-        }
-        cursor = cur;
-        return new TsonStr(b.toString());
-    }
-
-
-    TsonPrimitive getBasic(){
-        final char[] data = this.data;
-        int cur = cursor-1;
-        for(char c; cur < data.length; ++cur){
-            if((c = data[cur]) == ' ' || c == '\n')continue;
-            if(c > 47 && c < 58 || c == '-'){
-                cursor = cur;
-                return readNum(data);
+            if(c == '_')continue;
+            if(c == '.'){
+                ++cursor;
+                sep = true;
             }
-            cursor = cur;
-            return readBool(data);
+            break;
         }
-        throw TsonSyntaxException.make(cur, data);
+        if(size == 9){
+            long lNum = num;
+            for (;cursor < length; cursor++, size++){
+                if(size > 18)throw TsonSyntaxException.make(cursor, data, "Number '"+lNum+((char)data[cursor])+"..' is too big");
+                if((c = data[cursor]) > 47 && c < 58) {
+                    num = num * 10 + (c-48);
+                    ++size;
+                }
+                if(c == '_')continue;
+                if(c == '.'){
+                    ++cursor;
+                    sep = true;
+                    break;
+                }
+            }
+            if(sep){
+                return readDel(data, cursor, num, size, invert);
+            } else {
+                this.cursor = cursor;
+                if(invert)return new TsonLong(-lNum);
+                return new TsonLong(lNum);
+            }
+        }
+
+        if(sep){
+            return readDel(data, cursor, num, size, invert);
+        } else {
+            this.cursor = cursor;
+            if(invert)return new TsonInt(-num);
+            return new TsonInt(num);
+        }
     }
 
 
-    private TsonPrimitive readBool(final char[] data){
+    private TsonObj readDel(final byte[] data, int cursor, long lNum, byte size, final boolean invert){
+        final int length = data.length;
+        int pSize = 0, nSize = 1;
+
+        for (byte c ;cursor < length; cursor++){
+            if((c = data[cursor]) > 47 && c < 58) {
+                if(++size > 18){
+                    throw TsonSyntaxException.make(cursor, data, "Number '"+(((double)lNum)/pSize)+((char)data[cursor])+"..' is too big");
+                }
+                lNum = lNum * 10 + (c-48);
+                pSize = nSize;
+                nSize *= 10;
+                continue;
+            }
+            if(c == '_')continue;
+            break;
+        }
+        this.cursor = cursor;
+        if(size > 8){
+            if(invert)return new TsonDouble(-(((double)lNum)/pSize));
+            return new TsonDouble(((double)lNum)/pSize);
+        } else {
+            if(invert)return new TsonFloat(-((float)(((double)lNum)/pSize)));
+            return new TsonFloat((float)(((double)lNum)/pSize));
+        }
+    }
+
+
+    private TsonPrimitive readBool(final byte[] data){
         if(isTrue(data, cursor)){
             cursor += 3;
             return TsonBool.TRUE;
@@ -202,8 +239,8 @@ public final class TJsonParser {
     }
 
 
-    private boolean isFalse(final char[] data, final int cursor){
-        char cur = data[cursor];
+    private static boolean isFalse(final byte[] data, final int cursor){
+        final byte cur = data[cursor];
         if(cur == 'f')
             return data[cursor + 1] == 'a' && data[cursor + 2] == 'l' && data[cursor + 3] == 's' && data[cursor + 4] == 'e';
         if(cur == 'F'){
@@ -216,8 +253,8 @@ public final class TJsonParser {
     }
 
 
-    private boolean isTrue(final char[] data, final int cursor){
-        char cur = data[cursor];
+    private static boolean isTrue(final byte[] data, final int cursor){
+        final byte cur = data[cursor];
         if(cur == 't')
             return data[cursor + 1] == 'r' && data[cursor + 2] == 'u' && data[cursor + 3] == 'e';
         if(cur == 'T'){
@@ -230,71 +267,26 @@ public final class TJsonParser {
     }
 
 
-    private TsonPrimitive readNum(final char[] data){
-        boolean invert, dec = false;
-        if(invert = (data[cursor] == '-')) ++cursor;
-        long num = data[cursor] - 48;
-        int cur = cursor + 1, size = 0;
-
-        for(char c; cur < data.length; ++cur){
-            if((c = data[cur]) > 47 && c < 58) {
-                num = num * 10 + (c-48);
-                ++size;
-            } else {
-                if (c == '.') {
-                    dec = true;
-                    ++cur;
-                    break;
-                }
-                if (c == ' ') {
-                    do {
-                        ++cur;
-                        c = data[cur];
-                    } while (c == ' ');
-                    break;
-                }
-                if (c == ',' || c == '}' || c == ']') {
-                    //++cur;
-                    break;
-                }
+    private TsonStr getStr(final byte[] data, final char end){
+        final int length = data.length;
+        clear();
+        int cur = cursor+1;
+        for(byte c; cur < length; ++cur){
+            if((c = data[cur]) == end)break;
+            if(c == '\\'){
+                ++cur;
+                continue;
             }
+            append(c);
         }
-        if(dec){
-            double num2 = num;
-            int dec1 = invert?-1:1;
-            for(char c;cur<data.length;++cur){
-                c = data[cur];
-                if(c > 47 && c < 58) {
-                    num2 = num2 * 10 + (c - 48);
-                    dec1 *= 10;
-                    ++size;
-                }
-                else if(c == ' '){
-                    do {
-                        ++cur;
-                        c = data[cur];
-                    } while (c == ' ');
-                    break;
-                } else if(c!='_')
-                    throw TsonSyntaxException.make(cur, data,"Number format error");
-            }
-            cursor = cur;
-            if(size > 6) return new TsonDouble(num2 / dec1);
-            else return new TsonFloat((float) (num2 / dec1));
-        } else {
-            cursor = cur - 1;
-            if(size > 10)
-                return invert?new TsonLong(-num):new TsonLong(num);
-            else
-                return invert?new TsonInt((int) -num):new TsonInt((int) num);
-        }
+        this.cursor = cur;
+        return new TsonStr(cString());
     }
 
 
-    private String getKey(final char[] data){
-        int cur = cursor;
-        if(data[cur] != '"') throw TsonSyntaxException.make(cursor, data, "Wait '\"', but '" + ((char)data[cur]) + "'");
-        int start = ++cur;
+    private String getKey(final byte[] data, int cur){
+        if(data[cur] != '"') throw TsonSyntaxException.make(cur, data, "Wait '\"', but '" + ((char)data[cur]) + "'");
+        final int start = ++cur;
         l1: for(final int length = data.length; cur < length; ++cur){
             if(data[cur] == '"'){
                 ++cur;
@@ -307,23 +299,20 @@ public final class TJsonParser {
                 break;
             }
         }
-        cursor = cur;
-        return new String(data, start, cur - start - 1);
+        this.cursor = cur;
+        return new String(data, start, cur - start - 1, StandardCharsets.UTF_8);
     }
 
 
-    private String getObjKey(final char[] data){
-        //final byte[] data = this.data;
-        final int length = data.length;
-        ByteStrBuilder b = this.b;
-        int cur = cursor;
-        b.clear();
-        for(char c; cur < length; ++cur){
-            if((c = data[cur]) == ':') break;
+    private String getObjKey(final byte[] data, int cursor){
+        clear();
+        byte c;
+        for(final int length = data.length; cursor < length; ++cursor){
+            if((c = data[cursor]) == ':') break;
             if(c == ' ' || c == '\n')continue;
-            b.append(c);
+            append(c);
         }
-        cursor = cur;
-        return b.toString();
+        this.cursor = cursor;
+        return cString();
     }
 }
