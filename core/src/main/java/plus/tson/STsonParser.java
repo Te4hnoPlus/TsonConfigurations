@@ -1,6 +1,5 @@
-package plus.tson.v2;
+package plus.tson;
 
-import plus.tson.*;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.ByteStrBuilder;
@@ -16,11 +15,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
- * Alternative parser for creating a hierarchy of Tson objects from a Json string
+ * Alternative smart parser for creating a hierarchy of Tson objects from a STson string
  * <br><br>
  * Usage example:
  * <pre>
- * {@code new TJsonParser("{\"key\": 10}").getMap()}
+ * {@code
+int length = new STsonParser("""
+{
+obj = new TestV2('test1', 'test2'){//create an object
+field1 = 'test3',                  //insert to field 'field1' value 'test3'
+field2 = this.test2('test4'),      //insert to field 'field2' result of call method 'this.test2(..)'
+this.test3()                       //call method 'this.test3()'
+}.name()                           //call methods over the result
+.length()                          //if method return void -> return 'this'
+
+}"""
+).compile().getInt("obj");
+ * }
  * </pre>
  */
 public final class STsonParser extends ByteStrBuilder{
@@ -271,6 +282,11 @@ public final class STsonParser extends ByteStrBuilder{
                 AtomicBoolean isVoid = new AtomicBoolean(false);
                 TsonObj res = invokeCustom(inst, data, isVoid);
                 if(!isVoid.get())inst = res.getField();
+
+                byte cur = data[cursor];
+                while (cur == ' ' || cur == '\n') {
+                    cur = data[++cursor];
+                }
             } catch (Exception e) {
                 if(e instanceof TsonSyntaxException){
                     throw (TsonSyntaxException)e;
@@ -379,17 +395,6 @@ public final class STsonParser extends ByteStrBuilder{
     }
 
 
-//    private static void fillFields0(Object inst, TsonMap fieldsMap) throws NoSuchFieldException, IllegalAccessException {
-//        Class<?> clazz = inst.getClass();
-//        for (Map.Entry<String,TsonObj> entry:fieldsMap.entrySet()){
-//            Field field = clazz.getDeclaredField(entry.getKey());
-//            field.setAccessible(true);
-//
-//            insert(inst, field, entry.getValue());
-//        }
-//    }
-
-
     private static void insert(Object inst, Field field, TsonObj obj) throws IllegalAccessException {
         if(Modifier.isStatic(field.getModifiers())){
             inst = null;
@@ -431,20 +436,6 @@ public final class STsonParser extends ByteStrBuilder{
         this.cursor = cursor;
         return cString();
     }
-
-//    private String tempName;
-//    private int    tempType;
-//    private void rescanType(final byte[] data){
-//        int cur = cursor;
-//        byte chr = data[cur];
-//        while (
-//                (chr >= 'a' && chr <= 'z') ||
-//                (chr >= 'A' && chr <= 'Z') ||
-//                (chr >= '0' && chr <= '9')
-//        ){
-//            chr = data[++cur];
-//        }
-//    }
 
 
     private TsonObj getNum(final byte[] data, int cursor, final boolean invert){
@@ -590,7 +581,6 @@ public final class STsonParser extends ByteStrBuilder{
         for(final int length = data.length; cursor < length; ++cursor){
             if((c = data[cursor]) == '=') break;
             if(c == ',' || c == '}'){
-                //this.cursor = cursor;
                 return null;
             }
             if(c == ' ' || c == '\n')continue;
