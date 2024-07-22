@@ -1,6 +1,5 @@
 package plus.tson.ext;
 
-import plus.tson.TsonInt;
 import plus.tson.TsonList;
 import plus.tson.TsonMap;
 import plus.tson.TsonObj;

@@ -1,13 +1,18 @@
 package plus.tson;
 
 import plus.tson.security.ClassManager;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 
 /**
  * Tson proxy for any types
  */
 public final class TsonField<T> implements TsonObj{
+    public static final TsonField<?> NULL = new TsonField<>(null);
     private final T field;
 
     public static TsonField<?> build(ClassManager manager, String data){
@@ -27,6 +32,20 @@ public final class TsonField<T> implements TsonObj{
 
     public TsonField(T field) {
         this.field = field;
+    }
+
+
+    public Object invoke(String methodName, Object... args){
+        return invoke(methodName, null, args);
+    }
+
+
+    public Object invoke(String methodName, AtomicBoolean nonVoid, Object... args){
+        try {
+            return TsonClass.invoke(field.getClass(), field, methodName, nonVoid, args);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

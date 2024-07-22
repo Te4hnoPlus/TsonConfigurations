@@ -3,6 +3,7 @@ package plus.tson.security;
 import plus.tson.*;
 import plus.tson.exception.NoSearchException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public interface ClassManager {
@@ -45,6 +46,26 @@ public interface ClassManager {
 
     default Object newInstance(Class<?> clazz, Object... args) throws Exception {
         return TsonClass.createInst(clazz, args);
+    }
+
+
+    default Object invoke(Object inst, String methodName, Object... args) throws Exception{
+        return invoke(inst.getClass(), inst, methodName, null, args);
+    }
+
+
+    default Object invoke(Class<?> clazz, Object inst, String methodName, AtomicBoolean nonVoid, Object... args) throws Exception{
+        return TsonClass.invoke(clazz, inst, methodName, nonVoid, args);
+    }
+
+
+    default Object invoke(Class<?> clazz, Object inst, String methodName, Object... args) throws Exception{
+        return invoke(clazz, inst, methodName, null, args);
+    }
+
+
+    default Object invoke(Object inst, String methodName, AtomicBoolean nonVoid, Object... args) throws Exception{
+        return invoke(inst.getClass(), inst, methodName, nonVoid, args);
     }
 
 

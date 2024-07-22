@@ -4,12 +4,16 @@ import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 
 /**
  * Tson proxy for the class type
  */
 public final class TsonClass extends TsonPrimitive {
+    private static final Class<?>[] EMPTY = new Class[0];
     private final Class<?> clazz;
 
     public TsonClass(String clazz){
@@ -93,42 +97,46 @@ public final class TsonClass extends TsonPrimitive {
             InstantiationException, IllegalAccessException {
 
         Constructor<?> cons;
-        switch (args.length){
-            default:
-                cons = clazz.getDeclaredConstructor();
-                break;
-            case 1:
-                cons = clazz.getDeclaredConstructor(args[0].getClass());
-                break;
-            case 2:
-                cons = clazz.getDeclaredConstructor(
-                        args[0].getClass(), args[1].getClass()
-                );
-                break;
-            case 3:
-                cons = clazz.getDeclaredConstructor(
-                        args[0].getClass(), args[1].getClass(),
-                        args[2].getClass()
-                );
-                break;
-            case 4:
-                cons = clazz.getDeclaredConstructor(
-                        args[0].getClass(), args[1].getClass(),
-                        args[2].getClass(), args[3].getClass()
-                );
-                break;
-            case 5:
-                cons = clazz.getDeclaredConstructor(
-                        args[0].getClass(), args[1].getClass(),args[2].getClass(),
-                        args[3].getClass(), args[4].getClass()
-                );
-                break;
-            case 6:
-                cons = clazz.getDeclaredConstructor(
-                        args[0].getClass(), args[1].getClass(),args[2].getClass(),
-                        args[3].getClass(), args[4].getClass(),args[5].getClass()
-                );
-                break;
+        if(args != null) {
+            switch (args.length) {
+                default:
+                    cons = clazz.getDeclaredConstructor();
+                    break;
+                case 1:
+                    cons = clazz.getDeclaredConstructor(args[0].getClass());
+                    break;
+                case 2:
+                    cons = clazz.getDeclaredConstructor(
+                            args[0].getClass(), args[1].getClass()
+                    );
+                    break;
+                case 3:
+                    cons = clazz.getDeclaredConstructor(
+                            args[0].getClass(), args[1].getClass(),
+                            args[2].getClass()
+                    );
+                    break;
+                case 4:
+                    cons = clazz.getDeclaredConstructor(
+                            args[0].getClass(), args[1].getClass(),
+                            args[2].getClass(), args[3].getClass()
+                    );
+                    break;
+                case 5:
+                    cons = clazz.getDeclaredConstructor(
+                            args[0].getClass(), args[1].getClass(), args[2].getClass(),
+                            args[3].getClass(), args[4].getClass()
+                    );
+                    break;
+                case 6:
+                    cons = clazz.getDeclaredConstructor(
+                            args[0].getClass(), args[1].getClass(), args[2].getClass(),
+                            args[3].getClass(), args[4].getClass(), args[5].getClass()
+                    );
+                    break;
+            }
+        } else {
+            cons = clazz.getDeclaredConstructor();
         }
         return createInst(cons, args);
     }
@@ -138,6 +146,30 @@ public final class TsonClass extends TsonPrimitive {
             throws InvocationTargetException, InstantiationException, IllegalAccessException {
         cons.setAccessible(true);
         return cons.newInstance(args);
+    }
+
+
+    public static Object invoke(Class<?> clazz, Object inst, String name, Object... args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        return invoke(clazz, inst, name, null, args);
+    }
+
+
+    public static Object invoke(Class<?> clazz, Object inst, String name, AtomicBoolean nonVoid, Object... args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method method = clazz.getDeclaredMethod(name, types(args));
+        if(nonVoid != null){
+            nonVoid.set(method.getReturnType() == void.class);
+        }
+        return method.invoke(inst, args);
+    }
+
+
+    private static Class<?>[] types(Object[] args){
+        if(args == null || args.length == 0)return EMPTY;
+        Class<?>[] classes = new Class[args.length];
+        for (int i = 0; i < args.length; i++) {
+            classes[i] = args[i].getClass();
+        }
+        return classes;
     }
 
 

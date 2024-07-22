@@ -11,6 +11,11 @@ public final class TsonBool extends TsonPrimitive {
     public static final TsonBool FALSE = new TsonBool(false);
     private final boolean value;
 
+    public static TsonBool of(boolean value) {
+        return value ? TsonBool.TRUE : TsonBool.FALSE;
+    }
+
+
     public TsonBool(boolean value) {
         this.value = value;
     }

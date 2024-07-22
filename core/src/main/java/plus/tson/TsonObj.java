@@ -2,6 +2,9 @@ package plus.tson;
 
 import plus.tson.exception.WrongTypeException;
 
+import java.util.IdentityHashMap;
+import java.util.function.Function;
+
 
 /**
  * The main interface of TsonConfigurations
@@ -78,6 +81,15 @@ public interface TsonObj extends Cloneable{
      */
     static TsonObj ofString(String str){
         return new TsonParser(str).getAutho();
+    }
+
+
+    /**
+     * Wrap an object
+     * @param obj An object
+     */
+    static TsonObj wrap(Object obj){
+        return TsonWrapper.wrap(obj);
     }
 
 

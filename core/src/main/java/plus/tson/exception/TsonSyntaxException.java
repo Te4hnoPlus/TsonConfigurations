@@ -7,8 +7,18 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    private TsonSyntaxException(String msg, int cursor, Object c, Throwable err) {
+        super("Syntax exception: [" + c + "] in pos [" + cursor + "]:\n---ERROR START---\n" + msg + "\n----ERROR END----", err);
+    }
+
+
     private TsonSyntaxException(String msg, int line, int cursor, Object c) {
         super("Syntax exception: [" + c + "] in line ["+line+"] pos [" + cursor + "]:\n---ERROR START---\n" + msg + "\n----ERROR END----");
+    }
+
+
+    private TsonSyntaxException(String msg, int line, int cursor, Object c, Throwable err) {
+        super("Syntax exception: [" + c + "] in line ["+line+"] pos [" + cursor + "]:\n---ERROR START---\n" + msg + "\n----ERROR END----", err);
     }
 
 
@@ -45,13 +55,26 @@ public class TsonSyntaxException extends RuntimeException {
 
 
     public static TsonSyntaxException make(int cursor, byte[] data, Object msg){
-        if(msg instanceof Character){
-            msg = "bad char: " + msg;
+        Throwable cause;
+        if(msg instanceof Throwable){
+            cause = (Throwable) msg;
+            msg = cause.getMessage();
+            if(msg == null)msg = " ? ";
+        } else {
+            cause = null;
+            if(msg instanceof Character){
+                msg = "bad char: " + msg;
+            }
         }
         int line = countLinesIn(cursor, data);
         String err = getErrorString(cursor, data);
-        if(line < 2)return new TsonSyntaxException(err, cursor, msg);
-        return new TsonSyntaxException(err, line, cursor, msg);
+        if(line < 2){
+            if(cause != null)return new TsonSyntaxException(err, cursor, msg, cause);
+            return new TsonSyntaxException(err, cursor, msg);
+        }else{
+            if(cause != null)return new TsonSyntaxException(err, line, cursor, msg, cause);
+            return new TsonSyntaxException(err, line, cursor, msg);
+        }
     }
 
 
