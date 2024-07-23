@@ -1,5 +1,6 @@
 package plus.tson;
 
+import plus.tson.exception.NoSearchException;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.ByteStrBuilder;
@@ -37,30 +38,26 @@ this.test3()                       //call method 'this.test3()'
 public final class STsonParser extends ByteStrBuilder{
     private final ClassManager manager;
     private final byte[] data;
+    private Proxy proxy;
     private int cursor = 0;
 
     public STsonParser(final String str){
-        this(str, false, new ClassManager.Def());
+        this(str, new ClassManager.Def());
     }
 
     public STsonParser(final String str, ClassManager manager) {
-        this(str.getBytes(StandardCharsets.UTF_8), false, manager);
+        this(str.getBytes(StandardCharsets.UTF_8), manager);
     }
 
 
-    public STsonParser(final String str, final boolean objMode, ClassManager manager) {
-        this(str.getBytes(StandardCharsets.UTF_8), objMode, manager);
-    }
-
-
-    public STsonParser(final byte[] data, final boolean objMode, ClassManager manager) {
+    public STsonParser(final byte[] data, ClassManager manager) {
         super(16);
         this.data = data;
         this.manager = manager;
     }
 
 
-    public TsonMap compile(){
+    public TsonMap getMap(){
         final byte[] data = this.data;
         for (int i = 0, s = data.length; i < s;i++){
             if(data[i] == '{') return getMap(null, data, this.cursor = i+1);
@@ -121,7 +118,7 @@ public final class STsonParser extends ByteStrBuilder{
             if(waitSep) {
                 if(chr == ',') waitSep = false;
             }else if(waitKey){
-                key = getObjKey(data, cursor);
+                key = getKey(data, cursor);
                 if(key != null) {
                     cursor = this.cursor;
                 } else {
@@ -172,12 +169,18 @@ public final class STsonParser extends ByteStrBuilder{
 
 
     public TsonObj getItem(Object ctx, final byte[] data, final byte chr){
+        return processCalls(getItemRaw(ctx, data, chr), data);
+    }
+
+
+    private Object getItemRaw(Object ctx, final byte[] data, final byte chr){
         switch (chr){
-            case '"' : return getStr(data,'"');
-            case '\'': return getStr(data,'\'');
+            case '"' : return getStr(data, cursor, (byte) '"');
+            case '\'': return getStr(data, cursor, (byte) '\'');
             case '{' : return getMap(ctx, data, ++cursor);
             case '[' : return getList(ctx, data, ++cursor);
             case '-' : return getNum(data, ++cursor, true);
+            case '(' : return readClassOrBool(data, cursor);
             default: {
                 if(chr >= '0' && chr <= '9')return getNum(data, cursor, false);
                 if(isTrue(data, cursor)){
@@ -242,7 +245,7 @@ public final class STsonParser extends ByteStrBuilder{
     }
 
 
-    private TsonObj getCustom(final Object ctx, final byte[] data){
+    private Object getCustom(final Object ctx, final byte[] data){
         String clazzName = readMethodName(data, cursor);
 
         int lastCharName = cursor-1;
@@ -266,7 +269,7 @@ public final class STsonParser extends ByteStrBuilder{
         if(data[cursor] == '{'){
             lastCharName = cursor-1;
             try {
-                Proxy proxy = new Proxy(inst);
+                Proxy proxy = proxy(inst);
                 fillMap(inst, proxy, data, ++cursor);
             } catch (Exception e) {
                 if(e instanceof TsonSyntaxException){
@@ -275,11 +278,30 @@ public final class STsonParser extends ByteStrBuilder{
                 throw TsonSyntaxException.make(lastCharName, data, e);
             }
         }
+        return inst;
+    }
+
+
+    private Proxy proxy(Object obj){
+        Proxy proxy = this.proxy;
+        if(proxy != null){
+            proxy.init(obj);
+            return proxy;
+        }
+        return this.proxy = new Proxy(obj);
+    }
+
+
+    private TsonObj processCalls(Object inst, final byte[] data){
+        int lastCharName;
         while(data[cursor] == '.'){
             lastCharName = cursor-1;
             ++this.cursor;
             try {
                 AtomicBoolean isVoid = new AtomicBoolean(false);
+                if(inst instanceof TsonObj){
+                    inst = ((TsonObj)inst).getField();
+                }
                 TsonObj res = invokeCustom(inst, data, isVoid);
                 if(!isVoid.get())inst = res.getField();
 
@@ -299,43 +321,48 @@ public final class STsonParser extends ByteStrBuilder{
 
 
     private static final class Proxy implements Map<String,TsonObj>{
-        private final Class<?> clazz;
-        private final Object inst;
+        private Class<?> clazz;
+        private Object inst;
 
         private Proxy(Object inst) {
             this.inst = inst;
             this.clazz = inst.getClass();
         }
 
-        @Override
-        public int size() {
-            return 0;
+        private void init(Object inst){
+            if(this.inst != inst) {
+                this.inst = inst;
+                this.clazz = inst.getClass();
+            }
         }
 
         @Override
-        public boolean isEmpty() {
-            return false;
-        }
+        public int size() {return 0;}
+        @Override
+        public boolean isEmpty() {return false;}
+        @Override
+        public boolean containsKey(Object key) {return false;}
+        @Override
+        public boolean containsValue(Object value) {return false;}
+        @Override
+        public TsonObj get(Object key) {return null;}
+        @Override
+        public Set<String> keySet() {return Set.of();}
+        @Override
+        public Collection<TsonObj> values() {return List.of();}
+        @Override
+        public Set<Entry<String, TsonObj>> entrySet() {return Set.of();}
 
         @Override
-        public boolean containsKey(Object key) {
-            return false;
-        }
-
-        @Override
-        public boolean containsValue(Object value) {
-            return false;
-        }
-
-        @Override
-        public TsonObj get(Object key) {
-            return null;
+        public void putAll(Map<? extends String, ? extends TsonObj> m) {
+            for (Map.Entry<? extends String, ? extends TsonObj> entry : m.entrySet()) {
+                put(entry.getKey(), entry.getValue());
+            }
         }
 
 
         @Override
         public TsonObj put(String key, TsonObj value) {
-
             try {
                 Field field = clazz.getDeclaredField(key);
                 boolean isAccessible = field.isAccessible();
@@ -343,7 +370,6 @@ public final class STsonParser extends ByteStrBuilder{
                 if (!isAccessible) {
                     field.setAccessible(true);
                 }
-
                 insert(inst, field, value);
 
                 if (!isAccessible) {
@@ -363,34 +389,8 @@ public final class STsonParser extends ByteStrBuilder{
 
 
         @Override
-        public void putAll(Map<? extends String, ? extends TsonObj> m) {
-            for (Map.Entry<? extends String, ? extends TsonObj> entry : m.entrySet()) {
-                put(entry.getKey(), entry.getValue());
-            }
-        }
-
-
-        @Override
         public void clear() {
             throw new UnsupportedOperationException();
-        }
-
-
-        @Override
-        public Set<String> keySet() {
-            return Set.of();
-        }
-
-
-        @Override
-        public Collection<TsonObj> values() {
-            return List.of();
-        }
-
-
-        @Override
-        public Set<Entry<String, TsonObj>> entrySet() {
-            return Set.of();
         }
     }
 
@@ -558,7 +558,12 @@ public final class STsonParser extends ByteStrBuilder{
     }
 
 
-    private TsonStr getStr(final byte[] data, final char end){
+    private TsonStr getTsonStr(final byte[] data, final byte end){
+        return new TsonStr(getStr(data, cursor, end));
+    }
+
+
+    private String getStr(final byte[] data, final int cursor, final byte end){
         final int length = data.length;
         clear();
         int cur = cursor+1;
@@ -570,14 +575,29 @@ public final class STsonParser extends ByteStrBuilder{
             }
             append(c);
         }
-        this.cursor = cur;
-        return new TsonStr(cString());
+        this.cursor = cur+1;
+        return cString();
     }
 
 
-    private String getObjKey(final byte[] data, int cursor){
+    private String getKey(final byte[] data, int cursor){
+        byte c = data[cursor];
+        if(c == '"' || c == '\'') {
+            int prev = this.cursor;
+            String result = getStr(data, cursor, c);
+            cursor = this.cursor;
+
+            for(final int length = data.length; cursor < length; ++cursor){
+                if((c = data[cursor]) == '=') break;
+                if(c == ',' || c == '}'){
+                    this.cursor = prev;
+                    return null;
+                }
+            }
+            this.cursor = cursor;
+            return result;
+        }
         clear();
-        byte c;
         for(final int length = data.length; cursor < length; ++cursor){
             if((c = data[cursor]) == '=') break;
             if(c == ',' || c == '}'){
@@ -588,5 +608,38 @@ public final class STsonParser extends ByteStrBuilder{
         }
         this.cursor = cursor;
         return cString();
+    }
+
+
+    private void skipAb(byte[] data, int cursor){
+        while (cursor <= data.length) {
+            if(data[cursor] == ')')break;
+            ++cursor;
+        }
+        this.cursor = cursor;
+    }
+
+
+    private TsonPrimitive readClassOrBool(byte[] data, int cursor){
+        if(isTrue(data, cursor)){
+            skipAb(data, cursor + 3);
+            return TsonBool.TRUE;
+        }
+        if(isFalse(data, cursor)){
+            skipAb(data, cursor + 4);
+            return TsonBool.FALSE;
+        }
+        int cur = cursor;
+        clear();
+        for(byte c; cur <= data.length; ++cur){
+            if((c = data[cur]) == ')')break;
+            append(c);
+        }
+        this.cursor = cur;
+        try {
+            return new TsonClass(manager, cString());
+        } catch (NoSearchException e){
+            throw TsonSyntaxException.make(cur, data, e.getMessage());
+        }
     }
 }

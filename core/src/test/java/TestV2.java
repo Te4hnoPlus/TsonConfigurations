@@ -1,28 +1,29 @@
 import plus.tson.TsonMap;
 import plus.tson.STsonParser;
-import plus.tson.TsonObj;
 
 public class TestV2 {
     public static void main(String[] args) {
         int length = new STsonParser("""
         {
 
-        obj = new TestV2('test1', 'test2'){
+        obj = new TestV2('test1', 'test2', {'key test' = true}){
             field1 = 'test3',
             field2 = this.test2('test4'),
+            field3 = 'abc'.length(),
             this.test3()
         }.name().length()
 
         }"""
-        ).compile().getInt("obj");
+        ).getMap().getInt("obj");
 
         System.out.println(length);
     }
 
     private String field1 = null;
     private String field2 = null;
+    private int field3;
 
-    public TestV2(String s1, String s2){
+    public TestV2(String s1, String s2, TsonMap map){
         System.out.println(s1+":"+s2);
     }
 
