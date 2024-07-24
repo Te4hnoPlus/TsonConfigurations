@@ -346,11 +346,11 @@ public final class STsonParser extends ByteStrBuilder{
         @Override
         public TsonObj get(Object key) {return null;}
         @Override
-        public Set<String> keySet() {return Set.of();}
+        public Set<String> keySet() {return null;}
         @Override
-        public Collection<TsonObj> values() {return List.of();}
+        public Collection<TsonObj> values() {return null;}
         @Override
-        public Set<Entry<String, TsonObj>> entrySet() {return Set.of();}
+        public Set<Entry<String, TsonObj>> entrySet() {return null;}
 
         @Override
         public void putAll(Map<? extends String, ? extends TsonObj> m) {
