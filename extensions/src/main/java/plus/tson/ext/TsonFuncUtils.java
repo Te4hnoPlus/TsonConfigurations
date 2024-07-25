@@ -8,13 +8,16 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 
+/**
+ * Utility methods for building functions from Tson
+ */
 public class TsonFuncUtils {
     public static final Predicate ALWAYS_TRUE    = msg -> true;
     public static final Consumer  EMPTY_CONSUMER = msg -> {};
     public static final Function  EMPTY_FUNCTION = msg -> null;
 
     public static <T> T tryCast(TsonObj obj){
-        if(!obj.isCustom())throw new RuntimeException("Only custom objects is supported");
+        if(!obj.isCustom())throw new RuntimeException("Only custom objects is supported!");
         return (T) (obj.getField());
     }
 
