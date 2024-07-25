@@ -1,6 +1,7 @@
 package plus.tson;
 
 import plus.tson.security.ClassManager;
+import plus.tson.utl.TsonMethod;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -46,6 +47,11 @@ public final class TsonField<T> implements TsonObj{
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    public TsonMethod method(String name, Class<?> ... args){
+        return new TsonMethod(field.getClass(), name, args);
     }
 
 

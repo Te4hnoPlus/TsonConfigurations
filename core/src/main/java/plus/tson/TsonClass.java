@@ -2,6 +2,8 @@ package plus.tson;
 
 import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
+import plus.tson.utl.TsonMethod;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -163,7 +165,12 @@ public final class TsonClass extends TsonPrimitive {
     }
 
 
-    private static Class<?>[] types(Object[] args){
+    public TsonMethod method(String name, Class<?> ... args){
+        return new TsonMethod(clazz, name, args);
+    }
+
+
+    public static Class<?>[] types(Object[] args){
         if(args == null || args.length == 0)return EMPTY;
         Class<?>[] classes = new Class[args.length];
         for (int i = 0; i < args.length; i++) {

@@ -143,7 +143,7 @@ public class TextFormatter<T> implements IVarGetter<T>{
 
 
     public boolean isConst(){
-        return getters.length==0;
+        return getters.length == 0;
     }
 
 
