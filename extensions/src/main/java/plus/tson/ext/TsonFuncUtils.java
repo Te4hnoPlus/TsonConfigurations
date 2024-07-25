@@ -1,6 +1,5 @@
 package plus.tson.ext;
 
-import plus.fmsg.msg.TsonCompUtls;
 import plus.tson.TsonList;
 import plus.tson.TsonMap;
 import plus.tson.TsonObj;
@@ -14,9 +13,15 @@ public class TsonFuncUtils {
     public static final Consumer  EMPTY_CONSUMER = msg -> {};
     public static final Function  EMPTY_FUNCTION = msg -> null;
 
+    public static <T> T tryCast(TsonObj obj){
+        if(!obj.isCustom())throw new RuntimeException("Only custom objects is supported");
+        return (T) (obj.getField());
+    }
+
+
     public static <T> Consumer<T> consumerOf(TsonObj obj, Function<TsonObj, Consumer<T>> factory, Function<TsonObj, Predicate<T>> logFactory) {
         if(obj != null) {
-            if (obj.isCustom()) return TsonCompUtls.tryCast(obj);
+            if (obj.isCustom()) return tryCast(obj);
             if (obj.isMap()) {
                 Consumer<T> result = consumerOfMap(obj.getMap(), factory, logFactory);
                 if(result != null) return result;
@@ -66,7 +71,7 @@ public class TsonFuncUtils {
 
     public static <T,R> Function<T,R> functionOf(TsonObj obj, Function<TsonObj, Function<T,R>> factory, Function<TsonObj, Predicate<T>> logFactory) {
         if(obj != null) {
-            if (obj.isCustom()) return TsonCompUtls.tryCast(obj);
+            if (obj.isCustom()) return tryCast(obj);
             if (obj.isMap()) {
                 Function<T,R> result = functionOfMap(obj.getMap(), factory, logFactory);
                 if(result != null) return result;
@@ -104,7 +109,7 @@ public class TsonFuncUtils {
 
     public static <T> Predicate<T> predicateOf(TsonObj obj, Function<TsonObj, Predicate<T>> factory) {
         if(obj != null) {
-            if (obj.isCustom()) return TsonCompUtls.tryCast(obj);
+            if (obj.isCustom()) return tryCast(obj);
             if (obj.isMap()) {
                 Predicate<T> result = predicateOfMap(obj.getMap(), factory);
                 if(result != null) return result;
