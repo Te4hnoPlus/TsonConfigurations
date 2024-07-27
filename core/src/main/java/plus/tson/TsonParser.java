@@ -349,6 +349,7 @@ public final class TsonParser {
         int cur = cursor;
         for(char c; cur < data.length; ++cur){
             if((c = data[cur]) == '>') {
+                ++cur;
                 break;
             }
             if(waitSep){
@@ -358,7 +359,7 @@ public final class TsonParser {
             if(c == ' ' || c == '\n')continue;
             cursor = cur;
             list.add(getItem().getField());
-            cur = cursor;
+            cur = cursor-1;
             waitSep = true;
         }
         cursor = cur;

@@ -22,6 +22,10 @@ public interface ClassManager {
             }
             return list;
         }
+        @Override
+        public Class<?> forName(String clazz){
+            return Object.class;
+        }
     }
 
 

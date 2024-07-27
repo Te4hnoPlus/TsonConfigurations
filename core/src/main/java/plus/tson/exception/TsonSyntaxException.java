@@ -26,19 +26,34 @@ public class TsonSyntaxException extends RuntimeException {
     public synchronized Throwable fillInStackTrace() {
         super.fillInStackTrace();
         StackTraceElement[] pre = super.getStackTrace();
-        StackTraceElement[] result = new StackTraceElement[pre.length-1];
-        System.arraycopy(pre, 1, result, 0, result.length);
+        StackTraceElement[] result = new StackTraceElement[pre.length-2];
+        System.arraycopy(pre, 2, result, 0, result.length);
         setStackTrace(result);
         return this;
     }
 
 
     public static TsonSyntaxException make(int cursor, byte[] data){
-        return make(cursor, data, data[cursor]);
+        return make0(cursor, data, data[cursor]);
     }
 
 
     public static TsonSyntaxException make(int cursor, char[] data, Object msg){
+        return make0(cursor, data, msg);
+    }
+
+
+    public static TsonSyntaxException make(int cursor, char[] data){
+        return make0(cursor, data, data[cursor]);
+    }
+
+
+    public static TsonSyntaxException make(int cursor, byte[] data, Object msg){
+        return make0(cursor, data, msg);
+    }
+
+
+    private static TsonSyntaxException make0(int cursor, char[] data, Object msg){
         if(msg instanceof Character){
             msg = "bad char: " + msg;
         }
@@ -49,12 +64,7 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
-    public static TsonSyntaxException make(int cursor, char[] data){
-        return make(cursor, data, data[cursor]);
-    }
-
-
-    public static TsonSyntaxException make(int cursor, byte[] data, Object msg){
+    private static TsonSyntaxException make0(int cursor, byte[] data, Object msg){
         Throwable cause;
         if(msg instanceof Throwable){
             cause = (Throwable) msg;
