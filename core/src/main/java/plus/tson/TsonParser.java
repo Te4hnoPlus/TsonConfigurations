@@ -96,7 +96,10 @@ public final class TsonParser {
         boolean waitSep = false, waitKey = true;
         String key = null;
         for(char c; cur<data.length; ++cur){
-            if((c = data[cur]) == '}')break;
+            if((c = data[cur]) == '}'){
+                cursor = cur+1;
+                return;
+            }
             if(waitSep || c == ' ' || c == '\n'){
                 if(c == ',')waitSep = false;
                 continue;
@@ -105,14 +108,15 @@ public final class TsonParser {
             if(waitKey) {
                 waitKey = false;
                 key = getKey();
+                cur = cursor;
             } else {
                 map.fput(key, getItem());
+                cur = cursor-1;
                 waitKey = true;
                 waitSep = true;
             }
-            cur = cursor;
         }
-        cursor = cur;
+        throw TsonSyntaxException.make(cursor, data);
     }
 
 
@@ -129,7 +133,7 @@ public final class TsonParser {
         char c;
         for(;cur < data.length; ++cur){
             if((c = data[cur]) == ']') {
-                cursor = cur;
+                cursor = cur+1;
                 return;
             }
             if(c == ' ' || c == '\n')continue;
@@ -140,7 +144,7 @@ public final class TsonParser {
         }
         for(boolean waitSep = true; cur < data.length; ++cur){
             if((c = data[cur]) == ']') {
-                cursor = cur;
+                cursor = cur+1;
                 return;
             }
             if(waitSep || c == ' ' || c == '\n'){
@@ -149,7 +153,7 @@ public final class TsonParser {
             }
             cursor = cur;
             list.add(getItem());
-            cur = cursor;
+            cur = cursor-1;
             waitSep = true;
         }
     }
@@ -332,7 +336,7 @@ public final class TsonParser {
             else
                 return new TsonFloat((float) (num2 / dec1));
         } else {
-            cursor = cur;
+            cursor = cur+1;
             return invert?new TsonInt(-num):new TsonInt(num);
         }
     }
