@@ -116,7 +116,6 @@ public final class TsonParser {
                 waitSep = true;
             }
         }
-        throw TsonSyntaxException.make(cursor, data);
     }
 
 
