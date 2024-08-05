@@ -3,18 +3,18 @@ package plus.tson;
 import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.TsonMethod;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.IdentityHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 
 /**
  * Tson proxy for the class type
  */
 public final class TsonClass extends TsonPrimitive {
+    private static final IdentityHashMap<Class<?>, Class<?>> eqMap;
     private static final Class<?>[] EMPTY = new Class[0];
     private final Class<?> clazz;
 
@@ -100,47 +100,36 @@ public final class TsonClass extends TsonPrimitive {
 
         Constructor<?> cons;
         if(args != null) {
-            switch (args.length) {
-                default:
-                    cons = clazz.getDeclaredConstructor();
-                    break;
-                case 1:
-                    cons = clazz.getDeclaredConstructor(args[0].getClass());
-                    break;
-                case 2:
-                    cons = clazz.getDeclaredConstructor(
-                            args[0].getClass(), args[1].getClass()
-                    );
-                    break;
-                case 3:
-                    cons = clazz.getDeclaredConstructor(
-                            args[0].getClass(), args[1].getClass(),
-                            args[2].getClass()
-                    );
-                    break;
-                case 4:
-                    cons = clazz.getDeclaredConstructor(
-                            args[0].getClass(), args[1].getClass(),
-                            args[2].getClass(), args[3].getClass()
-                    );
-                    break;
-                case 5:
-                    cons = clazz.getDeclaredConstructor(
-                            args[0].getClass(), args[1].getClass(), args[2].getClass(),
-                            args[3].getClass(), args[4].getClass()
-                    );
-                    break;
-                case 6:
-                    cons = clazz.getDeclaredConstructor(
-                            args[0].getClass(), args[1].getClass(), args[2].getClass(),
-                            args[3].getClass(), args[4].getClass(), args[5].getClass()
-                    );
-                    break;
-            }
+            cons = tryFindConstructor(clazz, args);
         } else {
             cons = clazz.getDeclaredConstructor();
         }
         return createInst(cons, args);
+    }
+
+
+    private static Constructor<?> tryFindConstructor(Class<?> clazz, Object... args){
+        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+        Class<?>[] classes = types(args);
+
+        l1: for (Constructor<?> cns:constructors){
+            if(cns.getParameterCount() == args.length){
+                Class<?>[] params = cns.getParameterTypes();
+                for (int i = 0; i < params.length; i++){
+                    if(!isEqual(params[i], classes[i]))
+                        continue l1;
+                }
+                return cns;
+            }
+        }
+        return null;
+    }
+
+
+    private static boolean isEqual(Class<?> c1, Class<?> c2){
+        if(c1 == c2)return true;
+        if(eqMap.getOrDefault(c1, c1) == c2)return true;
+        return c1.isAssignableFrom(c2);
     }
 
 
@@ -212,5 +201,27 @@ public final class TsonClass extends TsonPrimitive {
     @Override
     public Type type() {
         return Type.CLASS;
+    }
+
+
+    static {
+        IdentityHashMap<Class<?>, Class<?>> map = eqMap = new IdentityHashMap<>();
+
+        map.put(boolean.class, Boolean.class);
+        map.put(Boolean.class, boolean.class);
+        map.put(byte.class, Byte.class);
+        map.put(Byte.class, byte.class);
+        map.put(char.class, Character.class);
+        map.put(Character.class, char.class);
+        map.put(double.class, Double.class);
+        map.put(Double.class, double.class);
+        map.put(float.class, Float.class);
+        map.put(Float.class, float.class);
+        map.put(int.class, Integer.class);
+        map.put(Integer.class, int.class);
+        map.put(long.class, Long.class);
+        map.put(Long.class, long.class);
+        map.put(short.class, Short.class);
+        map.put(Short.class, short.class);
     }
 }

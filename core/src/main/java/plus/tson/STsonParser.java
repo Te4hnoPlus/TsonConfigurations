@@ -4,11 +4,13 @@ import plus.tson.exception.NoSearchException;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.ByteStrBuilder;
+import plus.tson.utl.Te4HashMap;
+import plus.tson.utl.Tuple;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,11 +36,13 @@ this.test3()                       //call method 'this.test3()'
  * }
  * </pre>
  */
-public final class STsonParser extends ByteStrBuilder{
+public class STsonParser extends ByteStrBuilder{
     private final ClassManager manager;
     private final byte[] data;
     private Proxy proxy;
     private int cursor = 0;
+    private TsonFunc.Compiler compiler;
+    private Imports imports;
 
     public STsonParser(final String str){
         this(str, new ClassManager.Def());
@@ -49,10 +53,57 @@ public final class STsonParser extends ByteStrBuilder{
     }
 
 
+    public STsonParser with(TsonFunc.Compiler compiler){
+        this.compiler = compiler;
+        return this;
+    }
+
+
+    public STsonParser with(Imports imports){
+        if(this.imports != null){
+            for (Map.Entry<Byte, ArrayList<Tuple<byte[],String>>> entry:this.imports.entrySet()){
+                for (Tuple<byte[],String> pair:entry.getValue()){
+                    imports.add(pair.B, pair.A, 0, pair.A.length);
+                }
+            }
+        } else {
+            this.imports = imports;
+        }
+        return this;
+    }
+
+
     public STsonParser(final byte[] data, ClassManager manager) {
         super(16);
         this.data = data;
         this.manager = manager;
+    }
+
+
+    public STsonParser readImports(){
+        if(imports == null) imports = new Imports();
+        byte[] data = this.data;
+        for (int cursor = this.cursor;cursor < data.length; cursor++){
+            byte chr = data[cursor];
+            if(chr == '{')return this;
+            if(chr == ' ' || chr == '\r' || chr == '\n' || chr == '\t')continue;
+            if(isImport(data, cursor)){
+                readImport(data, this.cursor = cursor+7);
+                cursor = this.cursor-1;
+            }
+        }
+        return this;
+    }
+
+
+    private void readImport(final byte[] data, final int cursor){
+        final int length = data.length;
+        int cur = cursor+1;
+        for(byte c; cur < length; ++cur){
+            if((c = data[cur]) == '\n' || c == ';')break;
+        }
+        this.cursor = cur+1;
+        imports.add(null, data, cursor, cur);
     }
 
 
@@ -194,22 +245,239 @@ public final class STsonParser extends ByteStrBuilder{
                     cursor += 4;
                     return getCustom(ctx, data);
                 }
+                if(isFunc(data, cursor)){
+                    cursor += 4;
+                    return getFunc(ctx, data);
+                }
                 if(isThis(data, cursor)){
-                    if(data[cursor+4] == '.'){
+                    byte chr2 = data[cursor+4];
+                    if(chr2 == '.'){
                         if(ctx == null){
                             throw TsonSyntaxException.make(cursor, data, "Null pointer 'this'");
                         }
                         cursor += 5;
                         return invokeCustom(ctx, data, null);
+                    } else if(chr2 == ':' && data[cursor+5] == ':'){
+                        cursor += 6;
+                        //TODO
+                        return readLambda(ctx, data);
                     } else {
                         cursor += 4;
                         if(ctx == null)return TsonField.NULL;
                         return new TsonField<>(ctx);
                     }
                 }
+
+                Object obj = readU(ctx, data);
+                if(obj != null)return obj;
+
                 throw TsonSyntaxException.make(cursor, data,"Unknown token '"+((char)data[cursor])+"'");
             }
         }
+    }
+
+
+    private Object readU(Object ctx, final byte[] data){
+        String name = readToSpecial(data);
+
+        byte chr = data[cursor];
+        if(chr == ':' && data[cursor+1] == ':'){
+            if(imports != null){
+                name = imports.findFull(name);
+            }
+
+            cursor += 2;
+            String mtd = readToSpecial(data);
+            return compiler.compile(manager.forName(name), mtd);
+        }
+        if(chr == '('){
+            int index = name.lastIndexOf('.');
+            if(index == -1)return null;
+            String methodName = name.substring(index+1);
+            name = name.substring(0, index);
+            if(imports != null){
+                name = imports.findFull(name);
+            }
+            Object[] args = readMethodArgs(ctx, data, ++this.cursor);
+            try {
+                return manager.invoke(
+                        manager.forName(name), null, methodName, args
+                );
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
+
+
+    public static class Imports extends Te4HashMap<Byte, ArrayList<Tuple<byte[],String>>>{
+        public void add(String path){
+            byte[] bytes = path.getBytes(StandardCharsets.UTF_8);
+            add(path, bytes, 0, bytes.length);
+        }
+
+
+        private void add(byte[] bytes, int from, int to){
+            add(null, bytes, from, to);
+        }
+
+
+        private void add(String str, byte[] bytes, int from, int to){
+            byte key = bytes[to-1];
+            ArrayList<Tuple<byte[],String>> list = super.get(key);
+            if(list == null){
+                super.fput(key, list = new ArrayList<>());
+            }
+            //list.add(new String(bytes, from, to-from, StandardCharsets.UTF_8));
+            byte[] imp = new byte[to-from];
+            System.arraycopy(bytes, from, imp, 0, to-from);
+            if(str == null) str = new String(imp, StandardCharsets.UTF_8);
+            list.add(new Tuple<>(imp, str));
+        }
+
+
+        public String findFull(String str){
+            byte[] bytes = str.getBytes();
+            String res = find(bytes, 0, bytes.length-1);
+            if(res == null)return str;
+            return res;
+        }
+
+
+        public String find(byte[] bytes, int from, int to){
+            byte key = bytes[to];
+            ArrayList<Tuple<byte[],String>> list = super.get(key);
+            if(list == null){
+                return null;
+            }
+            for (Tuple<byte[],String> pair:list){
+                byte[] im = pair.A;
+                if(isEqualEnd(im, bytes, from, to)){
+                    if(im[im.length-to+from-2] == '.') return pair.B;
+                }
+            }
+            return null;
+        }
+    }
+//
+//
+//    public static void main(String[] args) {
+//        byte[] im = "plus.1Test".getBytes(StandardCharsets.UTF_8);
+//        byte[] bytes = "  .1Test".getBytes(StandardCharsets.UTF_8);
+//        int from = 2;
+//        int to = bytes.length;
+//
+//        System.out.println(im[im.length-to+from] == '.');
+//        System.out.println(bytes[from] == im[im.length-to+from]);
+//
+//        System.out.println(isEqualEnd(im, bytes, from, to-1));
+//    }
+
+
+    private static boolean isEqualEnd(byte[] src, byte[] check, int checkFrom, int checkTo){
+        int len = src.length-1;
+        int c = 0;
+        for (int i = checkTo; i >= checkFrom; i--, c++){
+            if(check[i] != src[len-c])return false;
+        }
+        return true;
+    }
+
+
+    private Object readLambda(Object ctx, byte[] data){
+        return compiler.compile(ctx, readToSpecial(data));
+    }
+
+
+    private String readToSpecial(byte[] data){
+        clear();
+        byte c;
+        int cursor = this.cursor;
+        for(final int length = data.length; cursor < length; ++cursor){
+            if(isSpecial(c = data[cursor])) break;
+            append(c);
+        }
+        this.cursor = cursor;
+        if(super.getLength() == 0)return "";
+        return cString();
+    }
+
+
+    private static boolean isSpecial(byte c){
+        return c == ')' || c == '}' || c == ' ' || c == '\n' || c == '(' || c == '{' || c == ',' || c == ':';
+    }
+
+
+    private Object getFunc(Object ctx, byte[] data) {
+        //todo
+        ArrayList<String> args = new ArrayList<>();
+        int from = cursor;
+        int to = data.length;
+
+        for (int cur = from; cur < to; cur++){
+            byte chr = data[cur];
+            if(chr == ')'){
+                ++cur;
+                while (data[cur] != '{' && cur < to)++cur;
+                from = ++cur;
+                break;
+            }
+            if(chr == '(' || chr == ','){
+                chr = data[++cur];
+                while (chr == ' ' || chr == '\n' || chr == '\r' || chr == '\t'){
+                    chr = data[++cur];
+                }
+                cursor = cur;
+                args.add(readToSpecial(data));
+                cur = this.cursor-1;
+            }
+        }
+        //todo read args
+        String[] args0 = args.toArray(new String[0]);
+
+        int opens = 1;
+        for (int cur = from; cur < to; cur++){
+            if(skipCommentsIfNeed(data, cur)){
+                cur = this.cursor-1;
+            }
+            byte chr = data[cur];
+            if(chr == '\'' || chr == '"'){
+                skipStr(data, cur, chr);
+                cur = cursor-1;
+                continue;
+            }
+            if(chr == '{'){
+                opens += 1;
+                continue;
+            }
+            if(chr == '}'){
+                opens -= 1;
+                if(opens == 0){
+                    to = cur;
+                    cursor = cur+1;
+                    break;
+                }
+            }
+        }
+        TsonFunc.Frame frame = new TsonFunc.Frame(ctx, data, from, to, args0);
+        try {
+            return compiler.compile(frame);
+        } catch (Exception e){
+            e.printStackTrace();
+            return frame;
+        }
+    }
+
+
+    private void skipStr(final byte[] data, final int cursor, final byte end){
+        final int length = data.length;
+        int cur = cursor+1;
+        for(byte c; cur < length; ++cur){
+            if((c = data[cur]) == end)break;
+            if(c == '\\') ++cur;
+        }
+        this.cursor = cur+1;
     }
 
 
@@ -246,6 +514,9 @@ public final class STsonParser extends ByteStrBuilder{
 
     private Object getCustom(final Object ctx, final byte[] data){
         String clazzName = readMethodName(data, cursor);
+        if(imports != null){
+            clazzName = imports.findFull(clazzName);
+        }
 
         int lastCharName = cursor-1;
         Object inst;
@@ -433,6 +704,7 @@ public final class STsonParser extends ByteStrBuilder{
             append(c);
         }
         this.cursor = cursor;
+        if(super.getLength() == 0)return "";
         return cString();
     }
 
@@ -547,6 +819,14 @@ public final class STsonParser extends ByteStrBuilder{
     }
 
 
+    private static boolean isFunc(final byte[] data, final int cursor){
+        final byte cur = data[cursor];
+        if(cur == 'f' || cur == 'F')
+            return data[cursor + 1] == 'u' && data[cursor + 2] == 'n' && data[cursor + 3] == 'c';
+        return false;
+    }
+
+
     private static boolean isNew(final byte[] data, final int cursor){
         return data[cursor] == 'n' && data[cursor + 1] == 'e' && data[cursor + 2] == 'w' && data[cursor + 3] == ' ';
     }
@@ -554,6 +834,17 @@ public final class STsonParser extends ByteStrBuilder{
 
     private static boolean isThis(final byte[] data, final int cursor){
         return data[cursor] == 't' && data[cursor + 1] == 'h' && data[cursor + 2] == 'i' && data[cursor + 3] == 's';
+    }
+
+
+    private static boolean isImport(final byte[] data, final int cursor){
+        return  data[cursor    ] == 'i' &&
+                data[cursor + 1] == 'm' &&
+                data[cursor + 2] == 'p' &&
+                data[cursor + 3] == 'o' &&
+                data[cursor + 4] == 'r' &&
+                data[cursor + 5] == 't' &&
+                data[cursor + 6] == ' ';
     }
 
 
@@ -619,7 +910,7 @@ public final class STsonParser extends ByteStrBuilder{
     }
 
 
-    private TsonPrimitive readClassOrBool(byte[] data, int cursor){
+    private TsonObj readClassOrBool(byte[] data, int cursor){
         if(isTrue(data, cursor)){
             skipAb(data, cursor + 3);
             return TsonBool.TRUE;

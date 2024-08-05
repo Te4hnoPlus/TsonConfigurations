@@ -1,6 +1,8 @@
-package plus.tson.ext;
+package plus.tson.utl;
 
+import plus.tson.TsonFunc;
 import java.lang.invoke.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 
@@ -8,41 +10,41 @@ public class FuncCompiler {
     public static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     public static <R> Func0A<R> compile(Class<?> clazz, String method) {
-        return (Func0A<R>) compile0(Func0A.class, clazz, method);
+        return (Func0A<R>) compileRaw(Func0A.class, clazz, method);
     }
 
 
     public static <R> Func1A<R> compile(Class<?> clazz, String method, Class<?> arg) {
-        return (Func1A<R>) compile0(Func1A.class, clazz, method, arg);
+        return (Func1A<R>) compileRaw(Func1A.class, clazz, method, arg);
     }
 
 
     public static <R> Func2A<R> compile(Class<?> clazz, String method, Class<?> arg1, Class<?> arg2) {
-        return (Func2A<R>) compile0(Func2A.class, clazz, method, arg1, arg2);
+        return (Func2A<R>) compileRaw(Func2A.class, clazz, method, arg1, arg2);
     }
 
 
     public static <R> Func3A<R> compile(Class<?> clazz, String method, Class<?> arg1, Class<?> arg2, Class<?> arg3) {
-        return (Func3A<R>) compile0(Func3A.class, clazz, method, arg1, arg2, arg3);
+        return (Func3A<R>) compileRaw(Func3A.class, clazz, method, arg1, arg2, arg3);
     }
 
 
     public static <R> Func4A<R> compile(Class<?> clazz, String method, Class<?> arg1, Class<?> arg2, Class<?> arg3, Class<?> arg4) {
-        return (Func4A<R>) compile0(Func4A.class, clazz, method, arg1, arg2, arg3, arg4);
+        return (Func4A<R>) compileRaw(Func4A.class, clazz, method, arg1, arg2, arg3, arg4);
     }
 
 
     public static <R> Func5A<R> compile(Class<?> clazz, String method, Class<?> arg1, Class<?> arg2, Class<?> arg3, Class<?> arg4, Class<?> arg5) {
-        return (Func5A<R>) compile0(Func5A.class, clazz, method, arg1, arg2, arg3, arg4, arg5);
+        return (Func5A<R>) compileRaw(Func5A.class, clazz, method, arg1, arg2, arg3, arg4, arg5);
     }
 
 
     public static <R> Func6A<R> compile(Class<?> clazz, String method, Class<?> arg1, Class<?> arg2, Class<?> arg3, Class<?> arg4, Class<?> arg5, Class<?> arg6) {
-        return (Func6A<R>) compile0(Func6A.class, clazz, method, arg1, arg2, arg3, arg4, arg5, arg6);
+        return (Func6A<R>) compileRaw(Func6A.class, clazz, method, arg1, arg2, arg3, arg4, arg5, arg6);
     }
 
 
-    private static Object compile0(Class<?> src, Class<?> clazz, String method, Class<?>... args) {
+    public static Object compileRaw(Class<?> src, Class<?> clazz, String method, Class<?>... args) {
         try {
             Method mtd = clazz.getMethod(method, args);
             MethodHandle target = LOOKUP.unreflect(mtd);
@@ -63,9 +65,12 @@ public class FuncCompiler {
 
 
     public static Object compile(Method mtd) {
-        try {
-            Class<?> src = srcOfCount(mtd.getParameterCount());
+        return compile(mtd, srcOfCount(mtd.getParameterCount()));
+    }
 
+
+    public static Object compile(Method mtd, Class<?> src) {
+        try {
             MethodHandle target = LOOKUP.unreflect(mtd);
 
             MethodType func = target.type();
@@ -83,6 +88,29 @@ public class FuncCompiler {
     }
 
 
+    public static Func0A<?> compile(Field field){
+        try {
+            MethodHandle target = LOOKUP.unreflectGetter(field);
+
+            MethodType func = target.type();
+            CallSite site = LambdaMetafactory.metafactory(LOOKUP,
+                    "call",
+                    MethodType.methodType(Func0A.class),
+                    func.erase(), target, func
+            );
+
+            Object result = site.getTarget().invoke();
+            return (Func0A<?>) result;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public interface FuncS0A<R>{
+        R call();
+        default int args(){return 0;}
+    }
     public interface Func0A<R>{
         R call(Object inst);
         default int args(){return 0;}
@@ -161,6 +189,65 @@ public class FuncCompiler {
             case 5:return Func5A.class;
             case 6:return Func6A.class;
             default: throw new IllegalArgumentException("Too many arguments");
+        }
+    }
+
+
+    public static TsonFunc makeFunc(Object inst, Object func){
+        int args = countArgs(func);
+        switch (args){
+            case 0: return agrs -> ((Func0A)func).call(inst);
+            case 1: return agrs -> ((Func1A)func).call(inst, agrs[0]);
+            case 2: return agrs -> ((Func2A)func).call(inst, agrs[0], agrs[1]);
+            case 3: return agrs -> ((Func3A)func).call(inst, agrs[0], agrs[1], agrs[2]);
+            case 4: return agrs -> ((Func4A)func).call(inst, agrs[0], agrs[1], agrs[2], agrs[3]);
+            case 5: return agrs -> ((Func5A)func).call(inst, agrs[0], agrs[1], agrs[2], agrs[3], agrs[4]);
+            case 6: return agrs -> ((Func6A)func).call(inst, agrs[0], agrs[1], agrs[2], agrs[3], agrs[4], agrs[5]);
+            default: throw new IllegalArgumentException("Too many arguments");
+        }
+    }
+
+
+    public static class Compiler extends TsonFunc.Reflector{
+        @Override
+        public TsonFunc compile(Class<?> clazz, String name) {
+            Method mtd = null;
+            for (Method method:clazz.getDeclaredMethods()){
+                if(method.getName().equals(name)){
+                    if(mtd != null)
+                        return super.compile(clazz, name);
+                    mtd = method;
+                }
+            }
+            if(mtd != null){
+                return makeFunc(null, FuncCompiler.compile(mtd));
+            }
+            return super.compile(clazz, name);
+        }
+
+
+        @Override
+        public TsonFunc compile(Object inst, String name) {
+            Class<?> clazz = inst.getClass();
+            Method mtd = null;
+            for (Method method:clazz.getMethods()){
+                if(method.getName().equals(name)){
+                    if(mtd != null)
+                        return super.compile(clazz, name);
+                    mtd = method;
+                }
+            }
+            if(mtd != null){
+                Object func = FuncCompiler.compile(mtd);
+                return makeFunc(inst, func);
+            }
+            return super.compile(clazz, name);
+        }
+
+
+        @Override
+        public TsonFunc compile(TsonFunc.Frame frame) {
+            return super.compile(frame);
         }
     }
 }

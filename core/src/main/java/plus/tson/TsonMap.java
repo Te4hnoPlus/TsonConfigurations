@@ -402,6 +402,11 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    public <T> T getCustom(String key){
+        return (T) get(key).getField();
+    }
+
+
     @Override
     public String toString() {
         if(super.isEmpty())return "{}";
