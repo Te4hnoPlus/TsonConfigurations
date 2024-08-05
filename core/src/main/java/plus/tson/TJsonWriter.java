@@ -4,6 +4,9 @@ import plus.tson.utl.Te4HashMap;
 import java.util.Map;
 
 
+/**
+ * Json writer with indent
+ */
 public class TJsonWriter {
     private final StringBuilder builder = new StringBuilder();
     private Te4HashMap<TsonObj, Integer>[] sizeCache = null;

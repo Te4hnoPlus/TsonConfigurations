@@ -15,28 +15,43 @@ public class ByteStrBuilder {
     }
 
 
+    /**
+     * @return Current length
+     */
     public final int getLength() {
         return length;
     }
 
 
+    /**
+     * Append byte to the end
+     */
     public final void append(byte b){
         setLength(length);
         bytes[length++] = b;
     }
 
 
+    /**
+     * Append char to the end
+     */
     public final void append(char b) {
         setLength(length);
         bytes[length++] = (byte) b;
     }
 
 
+    /**
+     * Lazy clear the content
+     */
     public final void clear(){
         length = 0;
     }
 
 
+    /**
+     * Set length and ensure capacity
+     */
     public final void setLength(int length) {
         if(length >= bytes.length){
             byte[] newByte = new byte[length+16];

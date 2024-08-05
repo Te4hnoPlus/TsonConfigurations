@@ -1,6 +1,10 @@
 package plus.tson.exception;
 
 
+/**
+ * Exception for Tson syntax, called parsers if something is wrong
+ * Can be created with TsonSyntaxException.make(..)
+ */
 public class TsonSyntaxException extends RuntimeException {
     private TsonSyntaxException(String msg, int cursor, Object c) {
         super("Syntax exception: [" + c + "] in pos [" + cursor + "]:\n---ERROR START---\n" + msg + "\n----ERROR END----");
@@ -22,6 +26,9 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    /**
+     * Remove 2 last (local) elements from stack trace
+     */
     @Override
     public synchronized Throwable fillInStackTrace() {
         super.fillInStackTrace();
@@ -33,26 +40,47 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    /**
+     * @param cursor The assumed position of the error
+     * @param data Tson data
+     */
     public static TsonSyntaxException make(int cursor, byte[] data){
         return make0(cursor, data, data[cursor]);
     }
 
 
+    /**
+     * @param cursor The assumed position of the error
+     * @param data Tson data
+     * @param msg Error message
+     */
     public static TsonSyntaxException make(int cursor, char[] data, Object msg){
         return make0(cursor, data, msg);
     }
 
 
+    /**
+     * @param cursor The assumed position of the error
+     * @param data Tson data
+     */
     public static TsonSyntaxException make(int cursor, char[] data){
         return make0(cursor, data, data[cursor]);
     }
 
 
+    /**
+     * @param cursor The assumed position of the error
+     * @param data Tson data
+     * @param msg Error message
+     */
     public static TsonSyntaxException make(int cursor, byte[] data, Object msg){
         return make0(cursor, data, msg);
     }
 
 
+    /**
+     * Build TsonSyntaxException with detail error message
+     */
     private static TsonSyntaxException make0(int cursor, char[] data, Object msg){
         if(msg instanceof Character){
             msg = "bad char: " + msg;
@@ -64,6 +92,9 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    /**
+     * Build TsonSyntaxException with detail error message
+     */
     private static TsonSyntaxException make0(int cursor, byte[] data, Object msg){
         Throwable cause;
         if(msg instanceof Throwable){
@@ -88,6 +119,9 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    /**
+     * Gets the string that probably contains the error
+     */
     public static String getErrorString(int cursor, byte[] data) {
         int min = Math.max(0, cursor - 50);
         if(min != 0){
@@ -106,6 +140,9 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    /**
+     * Calculate count lines before error
+     */
     private static int countLinesIn(int cursor, byte[] data){
         int lines = 0;
         while (cursor > 0){
@@ -116,6 +153,9 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    /**
+     * Gets the string that probably contains the error
+     */
     public static String getErrorString(int cursor, char[] data) {
         int min = Math.max(0, cursor - 50);
         if(min != 0){
@@ -146,6 +186,9 @@ public class TsonSyntaxException extends RuntimeException {
     }
 
 
+    /**
+     * Calculate count lines before error
+     */
     private static int countLinesIn(int cursor, char[] data){
         int lines = 0;
         while (cursor > 0){

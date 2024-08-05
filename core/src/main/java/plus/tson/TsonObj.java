@@ -2,9 +2,6 @@ package plus.tson;
 
 import plus.tson.exception.WrongTypeException;
 
-import java.util.IdentityHashMap;
-import java.util.function.Function;
-
 
 /**
  * The main interface of TsonConfigurations
@@ -177,6 +174,13 @@ public interface TsonObj extends Cloneable{
     default boolean isCustom(){return false;}
 
 
+
+    /**
+     * @return Is the native value a function
+     */
+    default boolean isFunc(){return false;}
+
+
     /**
      * @return Is the native value a string
      */
@@ -267,7 +271,7 @@ public interface TsonObj extends Cloneable{
         FLOAT  , DOUBLE ,
         STRING , CLASS  ,
         LIST   , MAP    ,
-        CUSTOM;
+        CUSTOM , FUNCTION;
 
         static final Type[] types = Type.values();
 

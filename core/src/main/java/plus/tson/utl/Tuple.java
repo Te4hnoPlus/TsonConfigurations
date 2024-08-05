@@ -1,6 +1,9 @@
 package plus.tson.utl;
 
 
+/**
+ * Simple pair of 2 objects
+ */
 public class Tuple<A, B> {
     public final A A;
     public final B B;

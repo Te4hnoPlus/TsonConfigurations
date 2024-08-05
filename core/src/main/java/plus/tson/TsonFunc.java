@@ -9,22 +9,39 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
+/**
+ * Main Tson function interface
+ */
 public interface TsonFunc {
+    /**
+     * Default function compiler
+     */
     Compiler COMPILER = new FuncCompiler.Compiler();
 
 
+    /**
+     * Call this functions with arguments
+     * Default compiler don`t support more than 6 arguments
+     */
     Object call(Object... args);
 
 
+    /**
+     * Call this without arguments
+     */
     default Object call(){return call(ReflectField.EMPTY);}
 
 
+    /**
+     * Frame to store code for compilation on script engine
+     */
     class Frame{
         private static final String[] EMPTY = new String[0];
         private final byte[] buffer;
         private int from, to;
         private final String[] args;
         private final Object inst;
+        private String cachedStr;
 
         public Frame(Object inst, byte[] buffer, int from, int i, String... args) {
             this.inst = inst;
@@ -39,6 +56,9 @@ public interface TsonFunc {
         }
 
 
+        /**
+         * Trim self bounds if can, and return self
+         */
         public Frame trim(){
             byte[] data = this.buffer;
             int from = this.from, to = this.to;
@@ -48,6 +68,8 @@ public interface TsonFunc {
             while (from < to && isEmpty(data[to])){
                 --to;
             }
+            if(this.from == from && this.to == to)return this;
+            cachedStr = null;
             this.from = from;
             this.to = to;
             return this;
@@ -59,16 +81,24 @@ public interface TsonFunc {
         }
 
 
-        public String getCodeStr(){
-            return new String(buffer, from, to-from, StandardCharsets.UTF_8);
+        @Override
+        public String toString(){
+            if(cachedStr != null)return cachedStr;
+            return cachedStr = new String(buffer, from, to-from, StandardCharsets.UTF_8);
         }
 
 
+        /**
+         * @return Object instance
+         */
         public Object getInst(){
             return inst;
         }
 
 
+        /**
+         * @return true if function should use 'inst' argument as object instance
+         */
         public boolean hasInst(){
             if(inst == null)return false;
             for (String arg: args){
@@ -78,6 +108,9 @@ public interface TsonFunc {
         }
 
 
+        /**
+         * @return Array of names function arguments
+         */
         public String[] getArgs(){
             return args;
         }
@@ -85,23 +118,54 @@ public interface TsonFunc {
 
 
     interface Field extends TsonFunc{
+        /**
+         * Access to field should be called without arguments
+         */
         default Object call(Object... args){
             if(args.length != 0)throw new IllegalArgumentException();
             return call();
         }
+
+
         Object call();
     }
 
 
+    /**
+     * Base interface for function compiler
+     */
     interface Compiler{
+        /**
+         * Try to compile Object method to TsonFunc
+         */
         TsonFunc compile(Object inst, String name);
+
+        /**
+         * Try to compile static function to TsonFunc
+         */
         TsonFunc compile(Class<?> clazz, String name);
+
+        /**
+         * Try to compile field accessor as TsonFunc
+         */
         TsonFunc compileField(Object inst, String name);
+
+        /**
+         * Try to compile code frame using script engine as TsonFunc
+         */
         TsonFunc compile(Frame frame);
+
+        /**
+         * @return Copy of this compiler
+         */
         default Compiler fork(){throw new UnsupportedOperationException();}
     }
 
 
+    /**
+     * Base function 'compiler'
+     * This don`t compile any code, this use only reflections
+     */
     class Reflector implements Compiler {
         private ScriptEngine engine;
 
@@ -145,8 +209,14 @@ public interface TsonFunc {
         @Override
         public TsonFunc compileField(Object inst, String name){
             ReflectField field = new ReflectField(inst, name);
-            if(field.isFinal())return new ReflectConst(field.call());
+            //don`t compile final field, just return it
+            if(field.isFinal())return constField(field.call());
             return field;
+        }
+
+
+        protected TsonFunc constField(Object value){
+            return new ReflectConst(value);
         }
 
 
@@ -175,6 +245,9 @@ public interface TsonFunc {
 }
 
 
+/**
+ * Base class for Script Engine function
+ */
 abstract class ScriptFuncBase implements TsonFunc{
     final String[] args;
 
@@ -184,6 +257,9 @@ abstract class ScriptFuncBase implements TsonFunc{
     }
 
 
+    /**
+     * Create binding of these arguments
+     */
     public Bindings bind(Object[] args){
         if(args.length == 0)return EmptyBindings.INSTANCE;
         if(args.length == 1)return new SingleBindings(this.args[0], args[0]);
@@ -192,47 +268,9 @@ abstract class ScriptFuncBase implements TsonFunc{
 }
 
 
-class CompiledScriptFunc extends ScriptFuncBase {
-    private final CompiledScript func;
-
-    CompiledScriptFunc(ScriptEngine engine, Frame frame){
-        super(frame);
-        Compilable compilable = (Compilable) engine;
-        try {
-            func = compilable.compile(frame.getCodeStr());
-        } catch (ScriptException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @Override
-    public Object call(Object... args) {
-        try {
-            return func.eval(bind(args));
-        } catch (ScriptException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-
-
-class CompiledScriptMethod extends CompiledScriptFunc {
-    private final Object inst;
-
-    CompiledScriptMethod(ScriptEngine engine, Frame frame) {
-        super(engine, frame);
-        inst = frame.getInst();
-    }
-
-    @Override
-    public Bindings bind(Object[] args) {
-        if(args.length == 0)return new SingleBindings("inst", inst);
-        MapBindings bindings = new MapBindings(this.args, args);
-        bindings.fput("inst", inst);
-        return bindings;
-    }
-}
-
-
+/**
+ * Runtime-compile (from code) script function
+ */
 class ScriptFunc extends ScriptFuncBase {
     private final ScriptEngine engine;
     private final String code;
@@ -240,7 +278,7 @@ class ScriptFunc extends ScriptFuncBase {
     ScriptFunc(ScriptEngine engine, Frame frame) {
         super(frame);
         this.engine = engine;
-        this.code = frame.getCodeStr();
+        this.code = frame.toString();
     }
 
 
@@ -255,6 +293,37 @@ class ScriptFunc extends ScriptFuncBase {
 }
 
 
+/**
+ * Compiled script function, used this if script engine implements Compilable
+ */
+class CompiledScriptFunc extends ScriptFuncBase {
+    private final CompiledScript func;
+
+    CompiledScriptFunc(ScriptEngine engine, Frame frame){
+        super(frame);
+        Compilable compilable = (Compilable) engine;
+        try {
+            func = compilable.compile(frame.toString());
+        } catch (ScriptException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    @Override
+    public Object call(Object... args) {
+        try {
+            return func.eval(bind(args));
+        } catch (ScriptException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+
+/**
+ * Runtime-compile (from code) 'method' script function for object instance
+ */
 class ScriptMethod extends ScriptFunc {
     private final Object inst;
 
@@ -274,6 +343,33 @@ class ScriptMethod extends ScriptFunc {
 }
 
 
+/**
+ * Compiled 'method' script function, used this if script engine implements Compilable
+ */
+class CompiledScriptMethod extends CompiledScriptFunc {
+    private final Object inst;
+
+    CompiledScriptMethod(ScriptEngine engine, Frame frame) {
+        super(engine, frame);
+        inst = frame.getInst();
+    }
+
+    /**
+     * Add `object` instance to bindings
+     */
+    @Override
+    public Bindings bind(Object[] args) {
+        if(args.length == 0)return new SingleBindings("inst", inst);
+        MapBindings bindings = new MapBindings(this.args, args);
+        bindings.fput("inst", inst);
+        return bindings;
+    }
+}
+
+
+/**
+ * Bindings for more arguments based on {@link Te4HashMap}
+ */
 final class MapBindings extends Te4HashMap<String,Object> implements Bindings{
     public MapBindings(String[] names, Object[] args) {
         super(names.length);
@@ -285,61 +381,77 @@ final class MapBindings extends Te4HashMap<String,Object> implements Bindings{
 }
 
 
+/**
+ * Empty bindings, used if there are no arguments
+ */
 final class EmptyBindings implements Bindings{
     static final EmptyBindings INSTANCE = new EmptyBindings();
+
     private EmptyBindings(){}
+
     @Override
     public Object put(String name, Object value) {
         throw new UnsupportedOperationException();
     }
+
 
     @Override
     public void putAll(Map<? extends String, ?> toMerge) {
         throw new UnsupportedOperationException();
     }
 
+
     @Override
     public void clear() {}
+
 
     @Override
     public Set<String> keySet() {
         return Set.of();
     }
 
+
     @Override
     public Collection<Object> values() {
         return List.of();
     }
+
 
     @Override
     public Set<Entry<String, Object>> entrySet() {
         return Set.of();
     }
 
+
     @Override
     public int size() {
         return 0;
     }
+
 
     @Override
     public boolean isEmpty() {
         return true;
     }
 
+
     @Override
     public boolean containsKey(Object key) {
         return false;
     }
+
 
     @Override
     public boolean containsValue(Object value) {
         return false;
     }
 
+
     @Override
     public Object get(Object key) {
         return null;
     }
+
 
     @Override
     public Object remove(Object key) {
@@ -348,15 +460,20 @@ final class EmptyBindings implements Bindings{
 }
 
 
+/**
+ * Bindings for one pair `var` -> `value`
+ */
 final class SingleBindings implements Bindings, Map.Entry<String, Object> {
     private String key;
     private Object value;
 
     SingleBindings(){}
+
     SingleBindings(String key, Object value){
         this.key = key;
         this.value = value;
     }
+
 
     @Override
     public Object put(String name, Object value) {
@@ -386,15 +503,18 @@ final class SingleBindings implements Bindings, Map.Entry<String, Object> {
         return Set.of(key);
     }
 
+
     @Override
     public Collection<Object> values() {
         return List.of(value);
     }
 
+
     @Override
     public Set<Entry<String, Object>> entrySet() {
         return Set.of(this);
     }
+
 
     @Override
     public int size() {
@@ -402,20 +522,24 @@ final class SingleBindings implements Bindings, Map.Entry<String, Object> {
         return 1;
     }
 
+
     @Override
     public boolean isEmpty() {
         return value == null;
     }
+
 
     @Override
     public boolean containsKey(Object key) {
         return this.key.equals(key);
     }
 
+
     @Override
     public boolean containsValue(Object value) {
         return Objects.equals(this.value, value);
     }
+
 
     @Override
     public Object get(Object key) {
@@ -456,9 +580,13 @@ final class SingleBindings implements Bindings, Map.Entry<String, Object> {
 }
 
 
+/**
+ * Reflect `object` method
+ */
 class ReflectInstance implements TsonFunc{
     private final Object inst;
     private final String name;
+
     ReflectInstance(Object inst, String name) {
         this.inst = inst;
         this.name = name;
@@ -475,13 +603,18 @@ class ReflectInstance implements TsonFunc{
 }
 
 
+/**
+ * Static reflect function
+ */
 class ReflectStatic implements TsonFunc{
     private final Class<?> clazz;
     private final String name;
+
     ReflectStatic(Class<?> clazz, String name) {
         this.clazz = clazz;
         this.name = name;
     }
+
 
     @Override
     public Object call(Object... args) {
@@ -494,6 +627,9 @@ class ReflectStatic implements TsonFunc{
 }
 
 
+/**
+ * Reflect accessor to `object` field
+ */
 class ReflectField implements TsonFunc.Field{
     static final Object[] EMPTY = new Object[0];
     private final java.lang.reflect.Field field;
@@ -508,6 +644,9 @@ class ReflectField implements TsonFunc.Field{
         }
     }
 
+    /**
+     * @return `true` if field is final
+     */
     boolean isFinal(){
         return Modifier.isFinal(field.getModifiers());
     }
@@ -524,12 +663,16 @@ class ReflectField implements TsonFunc.Field{
 }
 
 
+/**
+ * Accessor for constant value
+ */
 class ReflectConst implements TsonFunc.Field{
     private final Object value;
 
     ReflectConst(Object value) {
         this.value = value;
     }
+
 
     @Override
     public Object call() {

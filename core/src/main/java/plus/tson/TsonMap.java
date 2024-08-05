@@ -3,7 +3,6 @@ package plus.tson;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.Te4HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -404,6 +403,11 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     public <T> T getCustom(String key){
         return (T) get(key).getField();
+    }
+
+
+    public TsonFunc getFunc(String key){
+        return (TsonFunc) get(key).getField();
     }
 
 

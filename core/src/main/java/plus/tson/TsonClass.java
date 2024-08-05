@@ -108,6 +108,9 @@ public final class TsonClass extends TsonPrimitive {
     }
 
 
+    /**
+     * Use `soft` constructor`s selection
+     */
     private static Constructor<?> tryFindConstructor(Class<?> clazz, Object... args){
         Constructor<?>[] constructors = clazz.getDeclaredConstructors();
         Class<?>[] classes = types(args);

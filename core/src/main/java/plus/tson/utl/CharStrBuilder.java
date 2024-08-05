@@ -13,28 +13,43 @@ public class CharStrBuilder {
     }
 
 
-    public final int length() {
+    /**
+     * @return Current length
+     */
+    public final int getLength() {
         return length;
     }
 
 
+    /**
+     * Append char to the end
+     */
     public final void append(char b) {
         setLength(length);
         chars[length++] = b;
     }
 
 
+    /**
+     * Append byte to the end
+     */
     public final void append(byte b){
         setLength(length);
         chars[length++] = (char) b;
     }
 
 
+    /**
+     * Lazy clear the content
+     */
     public final void clear(){
         length = 0;
     }
 
 
+    /**
+     * Set length and ensure capacity
+     */
     public final void setLength(int length) {
         if (length >= chars.length) {
             char[] newByte = new char[length+16];

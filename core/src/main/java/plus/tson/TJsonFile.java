@@ -4,6 +4,10 @@ import plus.tson.security.ClassManager;
 import java.io.File;
 
 
+/**
+ * Associated with the file Dictionary type String -> TsonObject
+ * Use Json syntax to read/write
+ */
 public class TJsonFile extends TsonFile{
     private int indent = 4, maxInline = 32;
     private final boolean objMode;

@@ -4,6 +4,9 @@ import java.util.IdentityHashMap;
 import java.util.function.Function;
 
 
+/**
+ * Wrapper for Tson objects
+ */
 public final class TsonWrapper extends IdentityHashMap<Class, Function<Object, TsonObj>> {
     private static final TsonWrapper INST = new TsonWrapper();
 
@@ -37,6 +40,9 @@ public final class TsonWrapper extends IdentityHashMap<Class, Function<Object, T
     }
 
 
+    /**
+     * Wrap Object to Tson if necessary
+     */
     public static TsonObj wrap(Object obj) {
         if(obj == null) return null;
         if(obj instanceof TsonObj) return (TsonObj) obj;

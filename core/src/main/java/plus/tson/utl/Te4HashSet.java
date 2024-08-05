@@ -7,6 +7,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 
+/**
+ * Fast and memory effective alternative of {@link java.util.HashSet}
+ */
 public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
     static final int MAXIMUM_CAPACITY = 1 << 30;

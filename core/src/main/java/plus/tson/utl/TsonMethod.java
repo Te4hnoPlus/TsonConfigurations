@@ -1,9 +1,10 @@
 package plus.tson.utl;
 
+import plus.tson.TsonFunc;
 import java.lang.reflect.Method;
 
 
-public class TsonMethod {
+public class TsonMethod implements TsonFunc {
     private final Method method;
     private final boolean isVoid;
 
@@ -15,6 +16,22 @@ public class TsonMethod {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    @Override
+    public Object call(Object... args) {
+        return invokeStatic(args);
+    }
+
+
+    public TsonFunc compile(){
+        return compile(null);
+    }
+
+
+    public TsonFunc compile(Object inst){
+        return FuncCompiler.makeFunc(null, FuncCompiler.compile(method));
     }
 
 

@@ -73,6 +73,21 @@ public final class TsonField<T> implements TsonObj{
 
 
     @Override
+    public boolean isFunc() {
+        return field instanceof TsonFunc;
+    }
+
+
+    /**
+     * Cast field to TsonFunc
+     * Check {@link TsonField#isFunc()} before call this
+     */
+    public TsonFunc getFunc(){
+        return (TsonFunc) field;
+    }
+
+
+    @Override
     public String getStr(){
         return field.toString();
     }

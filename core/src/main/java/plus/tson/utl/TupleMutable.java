@@ -1,5 +1,9 @@
 package plus.tson.utl;
 
+
+/**
+ * Mutable version of Tuple
+ */
 public class TupleMutable<A, B> {
     public A A;
     public B B;
