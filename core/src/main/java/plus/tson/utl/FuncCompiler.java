@@ -249,5 +249,13 @@ public class FuncCompiler {
         public TsonFunc compile(TsonFunc.Frame frame) {
             return super.compile(frame);
         }
+
+
+        @Override
+        public TsonFunc.Compiler fork() {
+            Compiler compiler = new Compiler();
+            compiler.setEngine(getEngine());
+            return compiler;
+        }
     }
 }

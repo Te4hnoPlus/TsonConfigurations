@@ -4,6 +4,7 @@ import plus.tson.exception.NoSearchException;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.ByteStrBuilder;
+import plus.tson.utl.FuncCompiler;
 import plus.tson.utl.Te4HashMap;
 import plus.tson.utl.Tuple;
 import java.lang.reflect.Field;
@@ -83,6 +84,7 @@ public class STsonParser extends ByteStrBuilder{
     public STsonParser readImports(){
         if(imports == null) imports = new Imports();
         byte[] data = this.data;
+        boolean hasEngine = false;
         for (int cursor = this.cursor;cursor < data.length; cursor++){
             byte chr = data[cursor];
             if(chr == '{')return this;
@@ -90,9 +92,41 @@ public class STsonParser extends ByteStrBuilder{
             if(isImport(data, cursor)){
                 readImport(data, this.cursor = cursor+7);
                 cursor = this.cursor-1;
+            } else {
+                if(!hasEngine) {
+                    if (isEngine(data, cursor)) {
+                        readEngine(data, this.cursor = cursor + 7);
+                        cursor = this.cursor - 1;
+                        hasEngine = true;
+                    }
+                }
             }
         }
         return this;
+    }
+
+
+    private void readEngine(final byte[] data, final int cursor){
+        final int length = data.length;
+        int cur = cursor+1;
+        for(byte c; cur < length; ++cur){
+            if((c = data[cur]) == '\n' || c == ';')break;
+        }
+        String name = new String(data, cursor, cur-cursor, StandardCharsets.UTF_8);
+        if(compiler != null){
+            TsonFunc.Compiler compiler;
+            try {
+                compiler = this.compiler.fork();
+            } catch (Exception e){
+                throw TsonSyntaxException.make(cursor, data, "Engine ["+this.compiler+"] cant be fork");
+            }
+            if(compiler instanceof TsonFunc.Reflector reflector){
+                reflector.tryInstallEngine(name);
+            }
+        } else {
+            FuncCompiler.Compiler compiler = new FuncCompiler.Compiler();
+            compiler.tryInstallEngine(name);
+        }
     }
 
 
@@ -844,6 +878,17 @@ public class STsonParser extends ByteStrBuilder{
                 data[cursor + 3] == 'o' &&
                 data[cursor + 4] == 'r' &&
                 data[cursor + 5] == 't' &&
+                data[cursor + 6] == ' ';
+    }
+
+
+    private static boolean isEngine(final byte[] data, final int cursor){
+        return  data[cursor] == 'e' &&
+                data[cursor + 1] == 'n' &&
+                data[cursor + 2] == 'g' &&
+                data[cursor + 3] == 'i' &&
+                data[cursor + 4] == 'n' &&
+                data[cursor + 5] == 'e' &&
                 data[cursor + 6] == ' ';
     }
 

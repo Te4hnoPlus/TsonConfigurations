@@ -98,6 +98,7 @@ public interface TsonFunc {
         TsonFunc compile(Class<?> clazz, String name);
         TsonFunc compileField(Object inst, String name);
         TsonFunc compile(Frame frame);
+        default Compiler fork(){throw new UnsupportedOperationException();}
     }
 
 
@@ -108,15 +109,38 @@ public interface TsonFunc {
             this.engine = engine;
         }
 
+        public ScriptEngine getEngine() {
+            return engine;
+        }
+
+
+        protected void tryInstallEngine(String name){
+            ScriptEngineManager factory = new ScriptEngineManager();
+            ScriptEngine engine = factory.getEngineByName(name);
+
+            if(engine == null){
+                List<ScriptEngineFactory> factories = factory.getEngineFactories();
+                if(factories.size() == 0){
+                    throw new RuntimeException("No engine found");
+                }
+                engine = factories.get(0).getScriptEngine();
+                System.out.println("Selected engine ["+name+"] not exists, used [" + engine.getFactory().getLanguageName()+"]");
+            }
+            this.engine = engine;
+        }
+
+
         @Override
         public TsonFunc compile(Object inst, String name) {
             return new ReflectInstance(inst, name);
         }
 
+
         @Override
         public TsonFunc compile(Class<?> clazz, String name) {
             return new ReflectStatic(clazz, name);
         }
+
 
         @Override
         public TsonFunc compileField(Object inst, String name){
@@ -125,20 +149,11 @@ public interface TsonFunc {
             return field;
         }
 
+
         @Override
         public TsonFunc compile(Frame frame) {
             if(engine == null){
-                ScriptEngineManager factory = new ScriptEngineManager();
-
-                engine = factory.getEngineByName("js");
-                if(engine == null){
-                    List<ScriptEngineFactory> factories = factory.getEngineFactories();
-                    if(factories.size() == 0){
-                        throw new RuntimeException("No engine found");
-                    }
-                    engine = factories.get(0).getScriptEngine();
-                    System.out.println("Selected engine: " + engine.getFactory().getLanguageName());
-                }
+                tryInstallEngine("js");
             }
             if(engine instanceof Compilable){
                 if(frame.hasInst())return new CompiledScriptMethod(engine, frame);
@@ -147,6 +162,14 @@ public interface TsonFunc {
                 if(frame.hasInst())return new ScriptMethod(engine, frame);
                 else return new ScriptFunc(engine, frame);
             }
+        }
+
+
+        @Override
+        public Compiler fork() {
+            Reflector copy = new Reflector();
+            copy.engine = engine;
+            return copy;
         }
     }
 }
