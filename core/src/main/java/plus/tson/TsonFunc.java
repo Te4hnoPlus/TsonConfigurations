@@ -69,7 +69,16 @@ public interface TsonFunc {
         }
 
 
-        public String[]  getArgs(){
+        public boolean hasInst(){
+            if(inst == null)return false;
+            for (String arg: args){
+                if(arg.equals("inst"))return true;
+            }
+            return false;
+        }
+
+
+        public String[] getArgs(){
             return args;
         }
     }
@@ -132,24 +141,42 @@ public interface TsonFunc {
                 }
             }
             if(engine instanceof Compilable){
-                return new CompiliableScriptEngineFunc(engine, frame);
+                if(frame.hasInst())return new CompiledScriptMethod(engine, frame);
+                else return new CompiledScriptFunc(engine, frame);
             } else {
-                return new ScriptEngineFunc(engine, frame);
+                if(frame.hasInst())return new ScriptMethod(engine, frame);
+                else return new ScriptFunc(engine, frame);
             }
         }
     }
 }
 
 
-class CompiliableScriptEngineFunc implements TsonFunc{
-    private final CompiledScript func;
-    private final String[] args;
+abstract class ScriptFuncBase implements TsonFunc{
+    final String[] args;
 
-    CompiliableScriptEngineFunc(ScriptEngine engine, Frame frame){
+    ScriptFuncBase(Frame frame){
+        this.args = frame.getArgs();
+        frame.trim();
+    }
+
+
+    public Bindings bind(Object[] args){
+        if(args.length == 0)return EmptyBindings.INSTANCE;
+        if(args.length == 1)return new SingleBindings(this.args[0], args[0]);
+        return new MapBindings(this.args, args);
+    }
+}
+
+
+class CompiledScriptFunc extends ScriptFuncBase {
+    private final CompiledScript func;
+
+    CompiledScriptFunc(ScriptEngine engine, Frame frame){
+        super(frame);
         Compilable compilable = (Compilable) engine;
         try {
-            func = compilable.compile(frame.trim().getCodeStr());
-            args = frame.getArgs();
+            func = compilable.compile(frame.getCodeStr());
         } catch (ScriptException e) {
             throw new RuntimeException(e);
         }
@@ -157,7 +184,7 @@ class CompiliableScriptEngineFunc implements TsonFunc{
     @Override
     public Object call(Object... args) {
         try {
-            return func.eval(new MapBindings(this.args, args));
+            return func.eval(bind(args));
         } catch (ScriptException e) {
             throw new RuntimeException(e);
         }
@@ -165,45 +192,243 @@ class CompiliableScriptEngineFunc implements TsonFunc{
 }
 
 
-class ScriptEngineFunc implements TsonFunc{
+class CompiledScriptMethod extends CompiledScriptFunc {
+    private final Object inst;
+
+    CompiledScriptMethod(ScriptEngine engine, Frame frame) {
+        super(engine, frame);
+        inst = frame.getInst();
+    }
+
+    @Override
+    public Bindings bind(Object[] args) {
+        if(args.length == 0)return new SingleBindings("inst", inst);
+        MapBindings bindings = new MapBindings(this.args, args);
+        bindings.fput("inst", inst);
+        return bindings;
+    }
+}
+
+
+class ScriptFunc extends ScriptFuncBase {
     private final ScriptEngine engine;
     private final String code;
-    private final String[] args;
 
-    ScriptEngineFunc(ScriptEngine engine, Frame frame) {
+    ScriptFunc(ScriptEngine engine, Frame frame) {
+        super(frame);
         this.engine = engine;
-        this.code = frame.trim().getCodeStr();
-        args = frame.getArgs();
+        this.code = frame.getCodeStr();
     }
 
 
     @Override
     public Object call(Object... args) {
-        if(args.length == 0){
-            if(args.length != 0)throw new IllegalArgumentException("Args length must be 0");
-            try {
-                return engine.eval(code);
-            } catch (ScriptException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                return engine.eval(code, new MapBindings(this.args, args));
-            } catch (ScriptException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            return engine.eval(code, bind(args));
+        } catch (ScriptException e) {
+            throw new RuntimeException(e);
         }
     }
 }
 
 
-class MapBindings extends Te4HashMap<String,Object> implements Bindings{
+class ScriptMethod extends ScriptFunc {
+    private final Object inst;
+
+    ScriptMethod(ScriptEngine engine, Frame frame) {
+        super(engine, frame);
+        inst = frame.getInst();
+    }
+
+
+    @Override
+    public Bindings bind(Object[] args) {
+        if(args.length == 0)return new SingleBindings("inst", inst);
+        MapBindings bindings = new MapBindings(this.args, args);
+        bindings.fput("inst", inst);
+        return bindings;
+    }
+}
+
+
+final class MapBindings extends Te4HashMap<String,Object> implements Bindings{
     public MapBindings(String[] names, Object[] args) {
         super(names.length);
         if(args.length != names.length)throw new IllegalArgumentException("Args length must be " + args.length + " "+ Arrays.toString(args));
         for (int i = 0; i < args.length; i++) {
             fput(names[i], args[i]);
         }
+    }
+}
+
+
+final class EmptyBindings implements Bindings{
+    static final EmptyBindings INSTANCE = new EmptyBindings();
+    private EmptyBindings(){}
+    @Override
+    public Object put(String name, Object value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ?> toMerge) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {}
+
+    @Override
+    public Set<String> keySet() {
+        return Set.of();
+    }
+
+    @Override
+    public Collection<Object> values() {
+        return List.of();
+    }
+
+    @Override
+    public Set<Entry<String, Object>> entrySet() {
+        return Set.of();
+    }
+
+    @Override
+    public int size() {
+        return 0;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return false;
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return false;
+    }
+
+    @Override
+    public Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    public Object remove(Object key) {
+        return null;
+    }
+}
+
+
+final class SingleBindings implements Bindings, Map.Entry<String, Object> {
+    private String key;
+    private Object value;
+
+    SingleBindings(){}
+    SingleBindings(String key, Object value){
+        this.key = key;
+        this.value = value;
+    }
+
+    @Override
+    public Object put(String name, Object value) {
+        if(name.equals(key)){
+            Object prev = this.value;
+            this.value = value;
+            return prev;
+        }
+        else throw new IllegalArgumentException("Can't set "+name+" to "+value+" because it's not "+key);
+    }
+
+
+    @Override
+    public void putAll(Map<? extends String, ?> toMerge) {
+        toMerge.forEach(this::put);
+    }
+
+
+    @Override
+    public void clear() {
+        value = null;
+    }
+
+
+    @Override
+    public Set<String> keySet() {
+        return Set.of(key);
+    }
+
+    @Override
+    public Collection<Object> values() {
+        return List.of(value);
+    }
+
+    @Override
+    public Set<Entry<String, Object>> entrySet() {
+        return Set.of(this);
+    }
+
+    @Override
+    public int size() {
+        if(value == null)return 0;
+        return 1;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return value == null;
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return this.key.equals(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return Objects.equals(this.value, value);
+    }
+
+    @Override
+    public Object get(Object key) {
+        if(key.equals(this.key))return this.value;
+        return null;
+    }
+
+
+    @Override
+    public Object remove(Object key) {
+        if(key.equals(this.key)){
+            Object prev = this.value;
+            this.value = null;
+            return prev;
+        }
+        return null;
+    }
+
+
+    @Override
+    public String getKey() {
+        return key;
+    }
+
+
+    @Override
+    public Object getValue() {
+        return value;
+    }
+
+
+    @Override
+    public Object setValue(Object value) {
+        Object prev = this.value;
+        this.value = value;
+        return prev;
     }
 }
 
