@@ -1,6 +1,5 @@
 package plus.tson;
 
-import plus.tson.exception.NoSearchException;
 import plus.tson.utl.Te4HashMap;
 import java.util.ArrayList;
 import java.util.Map;
@@ -22,7 +21,7 @@ public class TsonOptimizer {
             try {
                 preCache = (Map<Integer, ArrayList<Object>>)
                         new TsonClass("io.netty.util.collection.IntObjectHashMap").createInst();
-            } catch (NoSearchException e) {
+            } catch (IllegalArgumentException e) {
                 preCache = new Te4HashMap<>();
                 tryUseNetty = false;
             }

@@ -83,8 +83,8 @@ public class TsonNumUtils {
     /**
      * See {@link #calc(TsonMap, String, int)}
      */
-    static int calc(TsonObj res, int def){
-        if(res==null)return def;
+    public static int calc(TsonObj res, int def){
+        if(res == null)return def;
         if(res.isNumber())return res.getInt();
         if(res.isString())return calc(res.getStr(), def);
         throw new IllegalArgumentException();
@@ -106,8 +106,8 @@ public class TsonNumUtils {
     /**
      * See {@link #calc(TsonMap, String, long)}
      */
-    static long calc(TsonObj res, long def){
-        if(res==null)return def;
+    public static long calc(TsonObj res, long def){
+        if(res == null)return def;
         if(res.isNumber())return res.getLong();
         if(res.isString())return calc(res.getStr(), def);
         throw new IllegalArgumentException();
@@ -129,8 +129,8 @@ public class TsonNumUtils {
     /**
      * See {@link #calc(TsonMap, String, float)}
      */
-    static float calc(TsonObj res, float def){
-        if(res==null)return def;
+    public static float calc(TsonObj res, float def){
+        if(res == null)return def;
         if(res.isNumber())return res.getFloat();
         if(res.isString())return calc(res.getStr(), def);
         throw new IllegalArgumentException();
@@ -152,7 +152,7 @@ public class TsonNumUtils {
     /**
      * See {@link #calc(TsonMap, String, double)}
      */
-    static double calc(TsonObj res, double def){
+    public static double calc(TsonObj res, double def){
         if(res==null)return def;
         if(res.isNumber())return res.getFloat();
         if(res.isString())return calc(res.getStr(), def);

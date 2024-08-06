@@ -243,9 +243,8 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
 
     /**
-     * <br>
      * It is assumed that a value with this key will exist, and of type TsonBool
-     * @return boolean by key.
+     * @return boolean by key
      */
     public boolean getBool(String key){
         return super.get(key).getBool();
@@ -254,7 +253,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     /**
      * It is assumed that a numeric value with this key will exist
-     * @return double by key.
+     * @return double by key
      */
     public double getDouble(String key) {
         return super.get(key).getDouble();
@@ -263,7 +262,7 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     /**
      * It is assumed that a non-custom value with this key will exist
-     * @return string by key.
+     * @return string by key
      */
     public String getStr(String key){
         return super.get(key).getStr();

@@ -2,6 +2,7 @@ package plus.tson;
 
 import plus.tson.utl.FuncCompiler;
 import plus.tson.utl.Te4HashMap;
+import plus.tson.utl.Te4HashSet;
 import javax.script.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -16,7 +17,7 @@ public interface TsonFunc {
     /**
      * Default function compiler
      */
-    Compiler COMPILER = new FuncCompiler.Compiler();
+    FuncCompiler.Compiler COMPILER = new FuncCompiler.Compiler();
 
 
     /**
@@ -39,6 +40,18 @@ public interface TsonFunc {
 
 
     /**
+     * @return Array of names function arguments
+     */
+    default String[] args(){return Frame.EMPTY;}
+
+
+    /**
+     * @return True if this function hasn't 'inst' argument
+     */
+    default boolean isStatic(){return false;}
+
+
+    /**
      * Unwrap functions. If can`t unwrap, return this
      */
     default Object unwrap(){return this;}
@@ -52,7 +65,7 @@ public interface TsonFunc {
         private final byte[] buffer;
         private int from, to;
         private final String[] args;
-        private final Object inst;
+        private Object inst;
         private String cachedStr;
 
         public Frame(Object inst, byte[] buffer, int from, int i, String... args) {
@@ -109,10 +122,17 @@ public interface TsonFunc {
 
 
         /**
-         * @return true if function should use 'inst' argument as object instance
+         * Edit Object instance
+         */
+        public void setInst(Object inst) {
+            this.inst = inst;
+        }
+
+
+        /**
+         * @return true if function has 'inst' argument
          */
         public boolean hasInst(){
-            if(inst == null)return false;
             for (String arg: args){
                 if(arg.equals("inst"))return true;
             }
@@ -243,10 +263,10 @@ public interface TsonFunc {
                 tryInstallEngine("js");
             }
             if(engine instanceof Compilable){
-                if(frame.hasInst())return new CompiledScriptMethod(engine, frame);
+                if(frame.hasInst() && frame.getInst() != null)return new CompiledScriptMethod(engine, frame);
                 else return new CompiledScriptFunc(engine, frame);
             } else {
-                if(frame.hasInst())return new ScriptMethod(engine, frame);
+                if(frame.hasInst() && frame.getInst() != null)return new ScriptMethod(engine, frame);
                 else return new ScriptFunc(engine, frame);
             }
         }
@@ -287,6 +307,12 @@ abstract class ScriptFuncBase implements TsonFunc{
     @Override
     public int countArgs() {
         return args.length;
+    }
+
+
+    @Override
+    public String[] args() {
+        return args;
     }
 }
 
@@ -430,19 +456,19 @@ final class EmptyBindings implements Bindings{
 
     @Override
     public Set<String> keySet() {
-        return Set.of();
+        return Collections.emptySet();
     }
 
 
     @Override
     public Collection<Object> values() {
-        return List.of();
+        return Collections.emptyList();
     }
 
 
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        return Set.of();
+        return Collections.emptySet();
     }
 
 
@@ -523,19 +549,27 @@ final class SingleBindings implements Bindings, Map.Entry<String, Object> {
 
     @Override
     public Set<String> keySet() {
-        return Set.of(key);
+        if(value == null)return Collections.emptySet();
+        Te4HashSet<String> set = new Te4HashSet<>();
+        set.add(key);
+        return set;
     }
 
 
     @Override
     public Collection<Object> values() {
-        return List.of(value);
+        if(value == null)return Collections.emptyList();
+        ArrayList<Object> list = new ArrayList<>(1);
+        list.add(value);
+        return list;
     }
 
 
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        return Set.of(this);
+        Te4HashSet<Entry<String, Object>> set = new Te4HashSet<>();
+        set.add(this);
+        return set;
     }
 
 
@@ -700,5 +734,11 @@ class ReflectConst implements TsonFunc.Field{
     @Override
     public Object call() {
         return value;
+    }
+
+
+    @Override
+    public boolean isStatic() {
+        return true;
     }
 }

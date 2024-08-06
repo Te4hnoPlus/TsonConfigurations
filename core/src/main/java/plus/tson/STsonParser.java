@@ -119,12 +119,12 @@ public class STsonParser extends ByteStrBuilder{
             } catch (Exception e){
                 throw TsonSyntaxException.make(cursor, data, "Engine ["+this.compiler+"] cant be fork");
             }
-            if(compiler instanceof TsonFunc.Reflector reflector){
+            if(compiler instanceof TsonFunc.Reflector){
+                TsonFunc.Reflector reflector = (TsonFunc.Reflector) compiler;
                 reflector.tryInstallEngine(name);
             }
         } else {
-            FuncCompiler.Compiler compiler = new FuncCompiler.Compiler();
-            compiler.tryInstallEngine(name);
+            throw TsonSyntaxException.make(cursor, data, "Can`t fork null compiler");
         }
     }
 
@@ -263,7 +263,7 @@ public class STsonParser extends ByteStrBuilder{
             case '{' : return getMap(ctx, data, ++cursor);
             case '[' : return getList(ctx, data, ++cursor);
             case '-' : return getNum(data, ++cursor, true);
-            case '(' : return readClassOrBool(data, cursor);
+            case '(' : return readClassOrBool(data, ++cursor);
             default: {
                 if(chr >= '0' && chr <= '9')return getNum(data, cursor, false);
                 if(isTrue(data, cursor)){
@@ -494,6 +494,7 @@ public class STsonParser extends ByteStrBuilder{
             }
         }
         TsonFunc.Frame frame = new TsonFunc.Frame(ctx, data, from, to, args0);
+        if(compiler == null)return frame;
         try {
             return compiler.compile(frame);
         } catch (Exception e){
