@@ -1,8 +1,10 @@
 package plus.tson.ext;
 
+import plus.tson.TsonFunc;
 import plus.tson.TsonList;
 import plus.tson.TsonMap;
 import plus.tson.TsonObj;
+import plus.tson.utl.FuncCompiler;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -16,15 +18,15 @@ public class TsonFuncUtils {
     public static final Consumer  EMPTY_CONSUMER = msg -> {};
     public static final Function  EMPTY_FUNCTION = msg -> null;
 
-    public static <T> T tryCast(TsonObj obj){
-        if(!obj.isCustom())throw new RuntimeException("Only custom objects is supported!");
-        return (T) (obj.getField());
-    }
-
-
+    /**
+     * Build consumer from Tson
+     * @param obj Target object
+     * @param factory Consumer factory
+     * @param logFactory Predicate factory
+     */
     public static <T> Consumer<T> consumerOf(TsonObj obj, Function<TsonObj, Consumer<T>> factory, Function<TsonObj, Predicate<T>> logFactory) {
         if(obj != null) {
-            if (obj.isCustom()) return tryCast(obj);
+            if (obj.isCustom()) return consumerOf(obj);
             if (obj.isMap()) {
                 Consumer<T> result = consumerOfMap(obj.getMap(), factory, logFactory);
                 if(result != null) return result;
@@ -47,6 +49,32 @@ public class TsonFuncUtils {
     }
 
 
+    /**
+     * Try to adapt custom object to consumer
+     */
+    private static <T> Consumer<T> consumerOf(TsonObj obj){
+        if(!obj.isCustom())throw new IllegalArgumentException("Only custom objects is supported!");
+        Object raw = obj.getField();
+        if(raw instanceof Consumer<?>) return (Consumer<T>) raw;
+        if(raw instanceof TsonFunc){
+            TsonFunc func = (TsonFunc) raw;
+            int count = func.countArgs();
+            if(count == -1)return func::call;
+            if(count != 1)throw new IllegalArgumentException("Args should be = 1");
+
+            Object raw2 = func.unwrap();
+            if(!(raw2 instanceof FuncCompiler.Func1A))return func::call;
+
+            FuncCompiler.Func1A<T> rFunc = (FuncCompiler.Func1A<T>) raw2;
+            return t -> rFunc.call(null, t);
+        }
+        throw new IllegalArgumentException("Unsupported type: "+obj);
+    }
+
+
+    /**
+     * Build consumer from Tson Map, see {@link TsonFuncUtils#consumerOf(TsonObj, Function, Function)}
+     */
     private static <T> Consumer<T> consumerOfMap(TsonMap map, Function<TsonObj, Consumer<T>> factory, Function<TsonObj, Predicate<T>> logFactory) {
         String type = map.getStr("type");
         if(type == null){
@@ -72,9 +100,15 @@ public class TsonFuncUtils {
     }
 
 
+    /**
+     * Build function from Tson
+     * @param obj Target object
+     * @param factory Function factory
+     * @param logFactory Predicate factory
+     */
     public static <T,R> Function<T,R> functionOf(TsonObj obj, Function<TsonObj, Function<T,R>> factory, Function<TsonObj, Predicate<T>> logFactory) {
         if(obj != null) {
-            if (obj.isCustom()) return tryCast(obj);
+            if (obj.isCustom()) return functionOf(obj);
             if (obj.isMap()) {
                 Function<T,R> result = functionOfMap(obj.getMap(), factory, logFactory);
                 if(result != null) return result;
@@ -85,6 +119,32 @@ public class TsonFuncUtils {
     }
 
 
+    /**
+     * Try to adapt custom object to function
+     */
+    private static <T,R> Function<T,R> functionOf(TsonObj obj){
+        if(!obj.isCustom())throw new IllegalArgumentException("Only custom objects is supported!");
+        Object raw = obj.getField();
+        if(raw instanceof Function<?,?>) return (Function<T, R>) raw;
+        if(raw instanceof TsonFunc){
+            TsonFunc func = (TsonFunc) raw;
+            int count = func.countArgs();
+            if(count == -1)return t -> (R) func.call(t);
+            if(count != 1)throw new IllegalArgumentException("Args should be = 1");
+
+            Object raw2 = func.unwrap();
+            if(!(raw2 instanceof FuncCompiler.Func1A))return t -> (R) func.call(t);
+
+            FuncCompiler.Func1A<R> rFunc = (FuncCompiler.Func1A<R>) raw2;
+            return t -> rFunc.call(null, t);
+        }
+        throw new IllegalArgumentException("Unsupported type: "+obj);
+    }
+
+
+    /**
+     * Build consumer from Tson Map, see {@link TsonFuncUtils#functionOf(TsonObj, Function, Function)}
+     */
     private static <T,R> Function<T,R> functionOfMap(TsonMap map, Function<TsonObj, Function<T,R>> factory, Function<TsonObj, Predicate<T>> logFactory) {
         String type = map.getStr("type");
         if(type == null){
@@ -110,9 +170,14 @@ public class TsonFuncUtils {
     }
 
 
+    /**
+     * Build predicate from Tson
+     * @param obj Target object
+     * @param factory Predicate factory
+     */
     public static <T> Predicate<T> predicateOf(TsonObj obj, Function<TsonObj, Predicate<T>> factory) {
         if(obj != null) {
-            if (obj.isCustom()) return tryCast(obj);
+            if (obj.isCustom()) return predicateOf(obj);
             if (obj.isMap()) {
                 Predicate<T> result = predicateOfMap(obj.getMap(), factory);
                 if(result != null) return result;
@@ -123,6 +188,32 @@ public class TsonFuncUtils {
     }
 
 
+    /**
+     * Try to adapt custom object to predicate
+     */
+    private static <T> Predicate<T> predicateOf(TsonObj obj){
+        if(!obj.isCustom())throw new IllegalArgumentException("Only custom objects is supported!");
+        Object raw = obj.getField();
+        if(raw instanceof Predicate<?>) return (Predicate<T>) raw;
+        if(raw instanceof TsonFunc){
+            TsonFunc func = (TsonFunc) raw;
+            int count = func.countArgs();
+            if(count == -1)return t -> (boolean)func.call(t);
+            if(count != 1)throw new IllegalArgumentException("Args should be = 1");
+
+            Object raw2 = func.unwrap();
+            if(!(raw2 instanceof FuncCompiler.Func1A))return t -> (boolean)func.call(t);
+
+            FuncCompiler.Func1A<Boolean> rFunc = (FuncCompiler.Func1A<Boolean>) raw2;
+            return t -> rFunc.call(null, t);
+        }
+        throw new IllegalArgumentException("Unsupported type: "+obj);
+    }
+
+
+    /**
+     * Build predicate from List, see {@link TsonFuncUtils#predicateOf(TsonObj, Function)}
+     */
     private static <T> Predicate<T>[] predicatesOfList(TsonList list, Function<TsonObj, Predicate<T>> factory) {
         final Predicate<T>[] parents = new Predicate[list.size()];
         for(int i = 0; i < list.size(); i++) {
@@ -132,6 +223,9 @@ public class TsonFuncUtils {
     }
 
 
+    /**
+     * Build predicate from Tson Map, see {@link TsonFuncUtils#predicateOf(TsonObj, Function)}
+     */
     private static <T> Predicate<T> predicateOfMap(TsonMap map, Function<TsonObj, Predicate<T>> factory) {
         String type = map.getStr("type");
         if(type == null){

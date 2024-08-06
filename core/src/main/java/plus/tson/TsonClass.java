@@ -1,6 +1,5 @@
 package plus.tson;
 
-import plus.tson.exception.NoSearchException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.TsonMethod;
 import java.lang.reflect.Constructor;
@@ -80,8 +79,8 @@ public final class TsonClass extends TsonPrimitive {
             strings[i] = args[i].getClass().getName();
         }
         e.printStackTrace();
-        throw new NoSearchException(
-                String.format("constructor not exist! %s(%s)",
+        throw new IllegalArgumentException(
+                String.format("Constructor not exist! %s(%s)",
                         clazz.getName(), String.join(", ",strings))
         );
     }

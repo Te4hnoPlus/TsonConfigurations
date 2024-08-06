@@ -1,6 +1,5 @@
 package plus.tson;
 
-import plus.tson.exception.NoSearchException;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.ByteStrBuilder;
@@ -973,7 +972,7 @@ public class STsonParser extends ByteStrBuilder{
         this.cursor = cur;
         try {
             return new TsonClass(manager, cString());
-        } catch (NoSearchException e){
+        } catch (IllegalArgumentException e){
             throw TsonSyntaxException.make(cur, data, e.getMessage());
         }
     }

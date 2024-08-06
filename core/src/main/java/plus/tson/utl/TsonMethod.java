@@ -25,6 +25,12 @@ public class TsonMethod implements TsonFunc {
     }
 
 
+    @Override
+    public int countArgs() {
+        return method.getParameterCount();
+    }
+
+
     public TsonFunc compile(){
         return compile(null);
     }

@@ -203,6 +203,21 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * Performs an action if the subject key has a value of the TsonFunc type
+     * @return Has the task been completed
+     */
+    public boolean ifContainsFunc(String key, Consumer<TsonFunc> task){
+        TsonObj obj = get(key);
+        if(obj == null)return false;
+        if(obj.isFunc()){
+            task.accept((TsonFunc)obj.getField());
+            return true;
+        }
+        return false;
+    }
+
+
     protected <T> boolean ifContains0(String s, Consumer<T> c, Function<String, T> f){
         if(containsKey(s)){
             c.accept(f.apply(s));
@@ -212,6 +227,10 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * Performs an action if the subject key has value
+     * @return Has the task been completed
+     */
     public boolean ifContains(String s, Consumer<TsonObj> c){
         return ifContains0(s, c, this::get);
     }
@@ -396,16 +415,28 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
     }
 
 
+    /**
+     * It is assumed that value with this key will exist
+     * @return Raw object by key
+     */
     public Object getField(String key){
         return get(key).getField();
     }
 
 
+    /**
+     * It is assumed that value with this key will exist
+     * @return Custom object by key and automatically cast
+     */
     public <T> T getCustom(String key){
         return (T) get(key).getField();
     }
 
 
+    /**
+     * It is assumed that a TsonFunc with this key will exist
+     * @return TsonFunc by key and automatically cast
+     */
     public TsonFunc getFunc(String key){
         return (TsonFunc) get(key).getField();
     }

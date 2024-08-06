@@ -1,6 +1,8 @@
 package plus.tson;
 
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 
@@ -37,6 +39,9 @@ public final class TsonWrapper extends IdentityHashMap<Class, Function<Object, T
         put(Boolean.class, temp);
 
         put(String.class, o -> new TsonStr((String) o));
+
+        put(Map.class, other -> ofMap((Map) other));
+        put(List.class, other -> ofList((List) other));
     }
 
 
@@ -49,5 +54,27 @@ public final class TsonWrapper extends IdentityHashMap<Class, Function<Object, T
         Function<Object, TsonObj> res = INST.get(obj.getClass());
         if (res == null) return new TsonField<>(obj);
         return res.apply(obj);
+    }
+
+
+    /**
+     * Wrap Map to Tson recursively
+     */
+    private static TsonMap ofMap(Map<String,Object> map){
+        TsonMap res = new TsonMap();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            res.fput(entry.getKey(), wrap(entry.getValue()));
+        }
+        return res;
+    }
+
+
+    /**
+     * Wrap List to Tson recursively
+     */
+    private static TsonList ofList(List<Object> list){
+        TsonList res = new TsonList(list.size());
+        for (Object o : list) res.add(wrap(o));
+        return res;
     }
 }

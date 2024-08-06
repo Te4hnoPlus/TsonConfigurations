@@ -1,6 +1,5 @@
 package plus.tson;
 
-import plus.tson.exception.NoSearchException;
 import plus.tson.exception.TsonSyntaxException;
 import plus.tson.security.ClassManager;
 import plus.tson.utl.CharStrBuilder;
@@ -252,7 +251,7 @@ public final class TsonParser {
         cursor = cur;
         try {
             return new TsonClass(manager, b.toString());
-        } catch (NoSearchException e){
+        } catch (IllegalArgumentException e){
             throw TsonSyntaxException.make(cur, data, e.getMessage());
         }
     }
@@ -364,7 +363,7 @@ public final class TsonParser {
         cursor = cur;
 
         if(list.size() > 0) {
-            if(list.size() > 7)throw new NoSearchException("TsonField support no more than 6 arguments except for the class!");
+            if(list.size() > 7)throw TsonSyntaxException.make(cursor, data, "TsonField support no more than 6 arguments except for the class!");
             try {
                 return manager.newInstance(tsonClass, list.toArray());
             } catch (Exception e) {

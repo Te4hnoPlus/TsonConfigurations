@@ -1,6 +1,9 @@
 package plus.tson.utl;
 
 
+/**
+ * Simple three of 3 objects
+ */
 public class Triple<A,B,C> extends Tuple<A,B>{
     public final C C;
 

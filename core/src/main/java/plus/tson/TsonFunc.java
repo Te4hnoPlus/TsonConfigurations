@@ -33,6 +33,18 @@ public interface TsonFunc {
 
 
     /**
+     * @return Count of arguments or -1 if unknown
+     */
+    default int countArgs(){return -1;}
+
+
+    /**
+     * Unwrap functions. If can`t unwrap, return this
+     */
+    default Object unwrap(){return this;}
+
+
+    /**
      * Frame to store code for compilation on script engine
      */
     class Frame{
@@ -128,6 +140,11 @@ public interface TsonFunc {
 
 
         Object call();
+
+
+        default int countArgs() {
+            return 0;
+        }
     }
 
 
@@ -264,6 +281,12 @@ abstract class ScriptFuncBase implements TsonFunc{
         if(args.length == 0)return EmptyBindings.INSTANCE;
         if(args.length == 1)return new SingleBindings(this.args[0], args[0]);
         return new MapBindings(this.args, args);
+    }
+
+
+    @Override
+    public int countArgs() {
+        return args.length;
     }
 }
 

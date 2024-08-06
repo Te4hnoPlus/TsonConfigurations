@@ -260,18 +260,174 @@ public class FuncCompiler {
 
 
     /**
+     * Base wrapped FuncCompiler`s lambda functions
+     */
+    private static abstract class TFuncBase implements TsonFunc{
+        final Object inst;
+
+        private TFuncBase(Object inst) {
+            this.inst = inst;
+        }
+
+
+        @Override
+        public int countArgs() {
+            return 0;
+        }
+    }
+    /**
+     * Wrapped FuncCompiler`s lambda functions
+     */
+    private static final class TFunc0A extends TFuncBase{
+        private final Func0A<?> parent;
+        private TFunc0A(Object inst, Func0A<?> parent) {
+            super(inst);
+            this.parent = parent;
+        }
+        @Override
+        public Object call() {
+            return parent.call(inst);
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(inst);
+        }
+
+        @Override
+        public Object unwrap() {
+            return parent;
+        }
+    }
+    private static final class TFunc1A extends TFuncBase{
+        private final Func1A<?> parent;
+        private TFunc1A(Object inst, Func1A<?> parent) {
+            super(inst);
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(inst, args[0]);
+        }
+        @Override
+        public int countArgs() {
+            return 1;
+        }
+        @Override
+        public Object unwrap() {
+            return parent;
+        }
+    }
+    private static final class TFunc2A extends TFuncBase{
+        private final Func2A<?> parent;
+        private TFunc2A(Object inst, Func2A<?> parent) {
+            super(inst);
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(inst, args[0], args[1]);
+        }
+        @Override
+        public int countArgs() {
+            return 2;
+        }
+        @Override
+        public Object unwrap() {
+            return parent;
+        }
+    }
+    private static final class TFunc3A extends TFuncBase{
+        private final Func3A<?> parent;
+        private TFunc3A(Object inst, Func3A<?> parent) {
+            super(inst);
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(inst, args[0], args[1], args[2]);
+        }
+        @Override
+        public int countArgs() {
+            return 3;
+        }
+
+        @Override
+        public Object unwrap() {
+            return parent;
+        }
+    }
+    private static final class TFunc4A extends TFuncBase{
+        private final Func4A<?> parent;
+        private TFunc4A(Object inst, Func4A<?> parent) {
+            super(inst);
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(inst, args[0], args[1], args[2], args[3]);
+        }
+        @Override
+        public int countArgs() {
+            return 4;
+        }
+        @Override
+        public Object unwrap() {
+            return parent;
+        }
+    }
+    private static final class TFunc5A extends TFuncBase{
+        private final Func5A<?> parent;
+        private TFunc5A(Object inst, Func5A<?> parent) {
+            super(inst);
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(inst, args[0], args[1], args[2], args[3], args[4]);
+        }
+        @Override
+        public int countArgs() {
+            return 5;
+        }
+        @Override
+        public Object unwrap() {
+            return parent;
+        }
+    }
+    private static final class TFunc6A extends TFuncBase{
+        private final Func6A<?> parent;
+        private TFunc6A(Object inst, Func6A<?> parent) {
+            super(inst);
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(inst, args[0], args[1], args[2], args[3], args[4], args[5]);
+        }
+        @Override
+        public int countArgs() {
+            return 6;
+        }
+        @Override
+        public Object unwrap() {
+            return parent;
+        }
+    }
+
+
+    /**
      * Wrap raw FuncCompiler`s function to TsonFunc
      */
     public static TsonFunc makeFunc(Object inst, Object func){
         int count = countArgs(func);
         switch (count){
-            case 0: return args -> ((Func0A)func).call(inst);
-            case 1: return args -> ((Func1A)func).call(inst, args[0]);
-            case 2: return args -> ((Func2A)func).call(inst, args[0], args[1]);
-            case 3: return args -> ((Func3A)func).call(inst, args[0], args[1], args[2]);
-            case 4: return args -> ((Func4A)func).call(inst, args[0], args[1], args[2], args[3]);
-            case 5: return args -> ((Func5A)func).call(inst, args[0], args[1], args[2], args[3], args[4]);
-            case 6: return args -> ((Func6A)func).call(inst, args[0], args[1], args[2], args[3], args[4], args[5]);
+            case 0: return new TFunc0A(inst, (Func0A)func);
+            case 1: return new TFunc1A(inst, (Func1A)func);
+            case 2: return new TFunc2A(inst, (Func2A)func);
+            case 3: return new TFunc3A(inst, (Func3A)func);
+            case 4: return new TFunc4A(inst, (Func4A)func);
+            case 5: return new TFunc5A(inst, (Func5A)func);
+            case 6: return new TFunc6A(inst, (Func6A)func);
             default: throw new IllegalArgumentException("Too many arguments");
         }
     }
