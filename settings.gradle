@@ -1,3 +1,4 @@
 rootProject.name = 'TsonConfigurations'
 include 'extensions', 'core'
+include 'graalbind'
 

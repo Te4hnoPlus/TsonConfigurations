@@ -60,7 +60,7 @@ public interface TsonFunc {
     /**
      * Frame to store code for compilation on script engine
      */
-    class Frame{
+    class Frame implements CharSequence{
         private static final String[] EMPTY = new String[0];
         private final byte[] buffer;
         private int from, to;
@@ -103,6 +103,26 @@ public interface TsonFunc {
 
         private static boolean isEmpty(byte chr){
             return chr == ' '|| chr == '\n' || chr == '\t' || chr == '\r';
+        }
+
+
+        @Override
+        public int length() {
+            return to-from;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return (char) buffer[from+index];
+        }
+
+
+        @Override
+        public TsonFunc.Frame subSequence(int start, int end) {
+            Frame frame = new Frame(inst, buffer, from + start, from + end, args);
+            frame.cachedStr = cachedStr;
+            frame.inst      = inst;
+            return frame;
         }
 
 
@@ -215,7 +235,7 @@ public interface TsonFunc {
         }
 
 
-        protected void tryInstallEngine(String name){
+        public void tryInstallEngine(String name){
             ScriptEngineManager factory = new ScriptEngineManager();
             ScriptEngine engine = factory.getEngineByName(name);
 
@@ -226,6 +246,15 @@ public interface TsonFunc {
                 }
                 engine = factories.get(0).getScriptEngine();
                 System.out.println("Selected engine ["+name+"] not exists, used [" + engine.getFactory().getLanguageName()+"]");
+
+                if(factories.size() > 1) {
+                    String[] allNames = new String[factories.size()];
+
+                    for (int i = 0; i < factories.size(); i++) {
+                        allNames[i] = factories.get(i).getLanguageName();
+                    }
+                    System.out.println("Available engines: " + Arrays.toString(allNames));
+                }
             }
             this.engine = engine;
         }
@@ -298,8 +327,9 @@ abstract class ScriptFuncBase implements TsonFunc{
      * Create binding of these arguments
      */
     public Bindings bind(Object[] args){
-        if(args.length == 0)return EmptyBindings.INSTANCE;
-        if(args.length == 1)return new SingleBindings(this.args[0], args[0]);
+        if(args.length == 0)return new MapBindings();
+//        if(args.length == 0)return EmptyBindings.INSTANCE;
+//        if(args.length == 1)return new SingleBindings(this.args[0], args[0]);
         return new MapBindings(this.args, args);
     }
 
@@ -420,6 +450,8 @@ class CompiledScriptMethod extends CompiledScriptFunc {
  * Bindings for more arguments based on {@link Te4HashMap}
  */
 final class MapBindings extends Te4HashMap<String,Object> implements Bindings{
+    public MapBindings(){}
+
     public MapBindings(String[] names, Object[] args) {
         super(names.length);
         if(args.length != names.length)throw new IllegalArgumentException("Args length must be " + args.length + " "+ Arrays.toString(args));
