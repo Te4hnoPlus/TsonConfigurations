@@ -381,6 +381,22 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
     }
 
 
+    public void forEachIfCan(Consumer<? super K> action) {
+        Node<K>[] tab;
+        if (action == null)
+            throw new NullPointerException();
+        if (size > 0 && (tab = table) != null) {
+            int mc = modCount;
+            for (Node<K> e : tab) {
+                for (; e != null; e = e.next) {
+                    action.accept(e.key);
+                    if (modCount != mc)return;
+                }
+            }
+        }
+    }
+
+
     @Override
     @SuppressWarnings("unchecked")
     public Object clone() {
