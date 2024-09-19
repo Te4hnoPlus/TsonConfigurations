@@ -599,7 +599,7 @@ final class SingleBindings implements Bindings, Map.Entry<String, Object> {
 
     @Override
     public Set<Entry<String, Object>> entrySet() {
-        Te4HashSet<Entry<String, Object>> set = new Te4HashSet<>();
+        Te4HashSet<Entry<String, Object>> set = new Te4HashSet<>(3);
         set.add(this);
         return set;
     }
