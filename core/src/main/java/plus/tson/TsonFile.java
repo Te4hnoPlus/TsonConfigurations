@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 
 
 /**
@@ -116,6 +117,8 @@ public class TsonFile extends TsonMap {
 //            byte[] result = is.readAllBytes();
 //            is.close();
 //            return result;
+        } catch (NoSuchFileException e){
+            return new byte[0];
         } catch (Exception e){
             e.printStackTrace();
             return new byte[0];
