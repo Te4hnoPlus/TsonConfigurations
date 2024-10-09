@@ -5,12 +5,24 @@ plugins {
 group 'plus.tson.extensions'
 version '1.1'
 
+
+
 repositories {
     mavenCentral()
 }
 
 jar{
     archivesBaseName = 'TsonConfigurations-Ext'
+}
+
+compileJava {
+    options.compilerArgs.add("--add-exports")
+    options.compilerArgs.add("java.base/jdk.internal.misc=ALL-UNNAMED")
+}
+
+compileTestJava {
+    options.compilerArgs.add("--add-exports")
+    options.compilerArgs.add("java.base/jdk.internal.misc=ALL-UNNAMED")
 }
 
 dependencies {

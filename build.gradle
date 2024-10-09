@@ -8,6 +8,11 @@ version project(':core').version
 repositories {
     mavenCentral()
 }
+//
+//compileJava {
+//    options.compilerArgs.add("--add-exports java.base/jdk.internal.misc=ALL-UNNAMED")
+//    options.compilerArgs.add("-Xlint:deprecation")
+//}
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -25,8 +30,4 @@ sourceSets {
             srcDir project(':extensions').file('src/main/java')
         }
     }
-}
-
-test {
-    useJUnitPlatform()
 }
