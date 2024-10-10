@@ -5,24 +5,46 @@ import static plus.tson.utl.uns.UnsafeUtils.*;
 import static plus.tson.utl.uns.UnsafeUtils21.compareAndSwap;
 
 
+/**
+ * Non-blocking Allocator implementation
+ * <p>
+ * Uses a combination of {@code Linked List}, Concurrent {@code Linked Queue}
+ * and {@code Circular Queue} algorithms for the best performance and memory efficiency
+ */
 public class ConcurrentCasAllocator extends CasSegment implements Allocator{
     private static final long lastOffset = offset(ConcurrentCasAllocator.class, "last");
+    //last used segment
     CasSegment last = this;
     private final int maxLoop;
     private int loopSize;
 
-    public ConcurrentCasAllocator(int maxNodes, int maxLoop){
-        super(maxNodes);
+    /**
+     * @param size Size of nodes in loop
+     * @param maxLoop Max loop size
+     */
+    public ConcurrentCasAllocator(int size, int maxLoop){
+        super(size);
         this.maxLoop = maxLoop;
     }
 
 
+    /**
+     * Template to allocator for objects
+     * @param <T> type of object
+     */
     public static abstract class Alloc<T> extends ConcurrentCasAllocator {
-        public Alloc(int countNodes, int maxLoop) {
-            super(countNodes, maxLoop);
+        /**
+         * @param size Size of nodes in loop
+         * @param maxLoop Max loop size
+         */
+        public Alloc(int size, int maxLoop) {
+            super(size, maxLoop);
         }
 
 
+        /**
+         * @return Stored object or create new on fail
+         */
         public T alloc(){
             Object result = tryAllocRaw();
             if(result != null)return (T) result;
@@ -30,20 +52,34 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
         }
 
 
+        /**
+         * Try to allocate object
+         * @return allocated object or null on fail
+         */
         public T tryAlloc(){
             return (T) tryAllocRaw();
         }
 
 
+        /**
+         * Put object to allocator, if allocator is not full
+         * @param obj object to put
+         */
         public void free(T obj){
             freeObj(obj);
         }
 
 
+        /**
+         * @return new T object instance, called on fail get stored object
+         */
         public abstract T create();
     }
 
 
+    /**
+     * @return Probable sum of size of all segments
+     */
     @Override
     public final int size(){
         int curSize = this.size;
@@ -56,12 +92,19 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
     }
 
 
+    /**
+     * Empty always, then last is null
+     */
     @Override
     public final boolean isEmpty(){
         return last != null;
     }
 
 
+    /**
+     * @param obj Object to check
+     * @return true if object`s reference in allocator
+     */
     public final boolean containsRef(Object obj){
         if(obj == null)return true;
         CasSegment last;
@@ -78,6 +121,10 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
     }
 
 
+    /**
+     * @param obj Object to check
+     * @return true if object in allocator
+     */
     public final boolean containsObj(Object obj){
         if(obj == null)return true;
         CasSegment last;
@@ -97,6 +144,10 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
     }
 
 
+    /**
+     * Accept function for all objects in allocator
+     * @param consumer Function to accept
+     */
     public final void applyAll(Consumer<Object> consumer){
         CasSegment last;
         if((last = this.last) == null)return;
@@ -114,16 +165,26 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
     }
 
 
+    /**
+     * @return current loop size
+     */
     public final int getLoopSize(){
         return loopSize;
     }
 
 
+    /**
+     * @return max loop size, see {@link #ConcurrentCasAllocator(int, int)}
+     */
     public final int getMaxLoop(){
         return maxLoop;
     }
 
 
+    /**
+     * Try to allocate object
+     * @return allocated object or null on fail
+     */
     @Override
     public final Object tryAllocRaw(){
         CasSegment last;
@@ -135,11 +196,16 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
             if((result = next.tryAlloc0(this)) != null)return result;
             next = next.prev;
         }
+        //Atomic edit last used segment
         compareAndSwap(this, lastOffset, last, null);
         return null;
     }
 
 
+    /**
+     * Put object to allocator, if allocator is not full
+     * @param obj object to put
+     */
     @Override
     public final void freeObj(Object obj){
         CasSegment last;
@@ -151,6 +217,7 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
             next = next.next;
         }
         int maxLoop;
+        //Don`t put object if allocator is full
         if(loopSize >= (maxLoop = this.maxLoop))return;
         synchronized (this){
             if(loopSize >= maxLoop)return;
@@ -166,11 +233,17 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
 }
 
 
+/**
+ * One memory segment of {@link ConcurrentCasAllocator}
+ */
 class CasSegment{
     private static final long sizeOffset = offset(CasSegment.class, "size");
     CasSegment next = this, prev = this;
+    //data array
     final Object[] data;
+    //last used cursor
     private volatile int cursor;
+    //current segment size
     volatile int size = 0;
 
     CasSegment(int size){
@@ -178,6 +251,11 @@ class CasSegment{
     }
 
 
+    /**
+     * Try to allocate object from this segment
+     * Use CAS to atomic access to data array
+     * @return allocated object or null on fail
+     */
     final Object tryAlloc0(ConcurrentCasAllocator parent){
         final int curSize;
         if((curSize = size) > 0) {
@@ -186,6 +264,7 @@ class CasSegment{
             Object prev;
             for (int i = cur; i >= 0; i--) {
                 if ((prev = data[i]) != null &&
+                        //compare and swap `data[i]`
                         compareAndSwap(data, REF_SIZE_M2 + (REF_SIZE_D2 * i), prev, null)) {
                     if(i != 0)cursor = i-1;
                     else cursor = 0;
@@ -195,6 +274,7 @@ class CasSegment{
             }
             for (int i = cur; i < size; i++) {
                 if ((prev = data[i]) != null &&
+                        //compare and swap `data[i]`
                         compareAndSwap(data, REF_SIZE_M2 + (REF_SIZE_D2 * i), prev, null)) {
                     cursor = i;
                     onTake(parent.last = this, curSize);
@@ -206,12 +286,20 @@ class CasSegment{
     }
 
 
+    /**
+     * Update segment size on take object
+     */
     private static void onTake(final CasSegment inst, final int size){
         if(!compareAndSwap(inst, sizeOffset, size, size-1))
             onTake(inst, inst.size);
     }
 
 
+    /**
+     * Try to put object to this segment
+     * @param obj object to put
+     * @return true if success
+     */
     final boolean freeObj0(ConcurrentCasAllocator parent, Object obj){
         final Object[] data;
         final int size, curSize;
@@ -219,6 +307,7 @@ class CasSegment{
             final int cur = cursor;
             for (int i = cur; i < size; i++) {
                 if (data[i] == null &&
+                        //compare and swap `data[i]`
                         compareAndSwap(data, REF_SIZE_M2+(REF_SIZE_D2 * i), null, obj)) {
                     this.cursor = i;
                     onInsert(parent.last = this, curSize);
@@ -227,6 +316,7 @@ class CasSegment{
             }
             for (int i = cur; i >= 0; i--) {
                 if (data[i] == null &&
+                        //compare and swap `data[i]`
                         compareAndSwap(data, REF_SIZE_M2+(REF_SIZE_D2 * i), null, obj)) {
                     this.cursor = i;
                     onInsert(parent.last = this, curSize);
@@ -238,6 +328,9 @@ class CasSegment{
     }
 
 
+    /**
+     * Update segment size on insert object
+     */
     private static void onInsert(final CasSegment inst, final int size){
         if(!compareAndSwap(inst, sizeOffset, size, size+1))
             onInsert(inst, inst.size);
