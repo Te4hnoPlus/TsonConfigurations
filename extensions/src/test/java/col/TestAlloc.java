@@ -2,6 +2,7 @@ package col;
 import col.alloc.ConcurrentCASAllocatorLE;
 import plus.tson.utl.alloc.ConcurrentCasAllocator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,17 +12,17 @@ public class TestAlloc {
     private static AtomicInteger num2 = new AtomicInteger();
     private static AtomicInteger num3 = new AtomicInteger();
 
-    public static final ConcurrentCASAllocatorLE.Alloc<int[]> alloc = new ConcurrentCASAllocatorLE.Alloc<>(
-            20, 16) {
-        //18
-        @Override
-        public int[] create() {
-            return new int[]{num1.addAndGet(1)};
-        }
-    };
+//    public static final ConcurrentCASAllocatorLE.Alloc<int[]> alloc = new ConcurrentCASAllocatorLE.Alloc<>(
+//            64, 24) {
+//        //18
+//        @Override
+//        public int[] create() {
+//            return new int[]{num1.addAndGet(1)};
+//        }
+//    };
 
     public static final ConcurrentCasAllocator.Alloc<int[]> alloc2 = new ConcurrentCasAllocator.Alloc<>(
-            20, 16) {
+            32, 128) {
         //18
         @Override
         public int[] create() {
@@ -47,32 +48,8 @@ public class TestAlloc {
         testSpeed();
     }
 
-    public static void test1(){
-        int size = 70;
-        ArrayList<int[]> all = new ArrayList<>();
-        int summ = 0;
-        for (int i = 0; i < size; i++){
-            all.add(alloc.alloc());
-        }
-        //System.out.println(alloc.size());
-        for (int[] b:all){
-            summ += b[0];
-            alloc.free(b);
-        }
-        System.out.println("SIZE:"+alloc.size());
-
-        int[] bytes = alloc.tryAlloc();
-        int summ2 = 0;
-
-        while (bytes != null){
-            summ2 += bytes[0];
-            bytes = alloc.tryAlloc();
-        }
-
-        System.out.println("S1: "+summ+", S2:"+summ2);
-    }
     public static void test1V(){
-        int size = 70;
+        int size = 90;
         ArrayList<int[]> all = new ArrayList<>();
         int summ = 0;
         for (int i = 0; i < size; i++){
@@ -93,19 +70,20 @@ public class TestAlloc {
             bytes = alloc2.tryAlloc();
         }
 
-        System.out.println("S1: "+summ+", S2:"+summ2);
+        System.out.println("S1: "+summ+", R2:"+summ2);
     }
 
 
     public static void testSpeed(){
-        int count = 50_000;
+        int count = 10_000;
         Random random = new Random();
-        int[][] buf = new int[1000][];
+        int bufSize = 1000;
+        int[][] buf = new int[bufSize*2][];
         for (int i = 0; i < 10; i++){
 //            random.setSeed(0);
 //            testTime(() -> {
 //                int[][] buf0 = buf;
-//                int rNum = random.nextInt(500)+500;
+//                int rNum = random.nextInt(bufSize)+bufSize;
 //                for (int i1 = 0; i1 < rNum; i1++){
 //                    buf0[i1] = jalloc.alloc();
 //                }
@@ -118,7 +96,7 @@ public class TestAlloc {
             random.setSeed(0);
             testTime(() -> {
                 int[][] buf0 = buf;
-                int rNum = random.nextInt(500)+500;
+                int rNum = random.nextInt(bufSize)+bufSize;
                 for (int i1 = 0; i1 < rNum; i1++){
                     buf0[i1] = alloc2.alloc();
                 }

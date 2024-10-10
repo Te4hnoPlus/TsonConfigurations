@@ -1,12 +1,15 @@
 package plus.tson.utl.alloc;
 
+import java.util.function.Consumer;
 import static plus.tson.utl.uns.UnsafeUtils.*;
 import static plus.tson.utl.uns.UnsafeUtils21.compareAndSwap;
 
 
 public class ConcurrentCasAllocator extends CasSegment implements Allocator{
+    private static final long lastOffset = offset(ConcurrentCasAllocator.class, "last");
+    CasSegment last = this;
     private final int maxLoop;
-    private volatile int loopSize;
+    private int loopSize;
 
     public ConcurrentCasAllocator(int maxNodes, int maxLoop){
         super(maxNodes);
@@ -55,39 +58,93 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
 
     @Override
     public final boolean isEmpty(){
-        if(this.size != 0)return false;
-        CasSegment next = this.next;
-        while (next != this){
-            if(next.size != 0)return false;
-            next = next.next;
-        }
-        return true;
+        return last != null;
     }
 
 
-    public final int loopSize(){
+    public final boolean containsRef(Object obj){
+        if(obj == null)return true;
+        CasSegment last;
+        if((last = this.last) == null)return false;
+        if(last.size > 0)
+            for (Object check:last.data)if(check == obj)return true;
+        CasSegment next = last.next;
+        while (next != last){
+            if(last.size > 0)
+                for (Object check:last.data)if(check == obj)return true;
+            next = next.next;
+        }
+        return false;
+    }
+
+
+    public final boolean containsObj(Object obj){
+        if(obj == null)return true;
+        CasSegment last;
+        if((last = this.last) == null)return false;
+        if(last.size > 0)
+            for (Object check:last.data)
+                if(check != null && check.equals(obj))return true;
+
+        CasSegment next = last.next;
+        while (next != last){
+            if(last.size > 0)
+                for (Object check:last.data)
+                    if(check != null && check.equals(obj))return true;
+            next = next.next;
+        }
+        return false;
+    }
+
+
+    public final void applyAll(Consumer<Object> consumer){
+        CasSegment last;
+        if((last = this.last) == null)return;
+        if(last.size > 0)
+            for (Object check:last.data)
+                if(check != null)consumer.accept(check);
+
+        CasSegment next = last.next;
+        while (next != last){
+            if(last.size > 0)
+                for (Object check:last.data)
+                    if(check != null)consumer.accept(check);
+            next = next.next;
+        }
+    }
+
+
+    public final int getLoopSize(){
         return loopSize;
+    }
+
+
+    public final int getMaxLoop(){
+        return maxLoop;
     }
 
 
     @Override
     public final Object tryAllocRaw(){
-        Object result;
         CasSegment last;
-        if((result = (last = this.last).tryAlloc0(this)) != null)return result;
-        CasSegment next = this.next;
+        if((last = this.last) == null)return null;
+        Object result;
+        if((result = last.tryAlloc0(this)) != null)return result;
+        CasSegment next = last.prev;
         while (next != last){
             if((result = next.tryAlloc0(this)) != null)return result;
-            next = next.next;
+            next = next.prev;
         }
+        compareAndSwap(this, lastOffset, last, null);
         return null;
     }
 
 
     @Override
     public final void freeObj(Object obj){
-        final CasSegment last;
-        if((last = this.last).freeObj0(this, obj))return;
+        CasSegment last;
+        if((last = this.last) == null)last = this;
+        if(last.freeObj0(this, obj))return;
         CasSegment next = last.next;
         while (next != last){
             if(next.freeObj0(this, obj))return;
@@ -101,6 +158,8 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
             CasSegment newArr = new CasSegment(this.data.length);
             newArr.next = next.next;
             next.next = newArr;
+            newArr.prev = next;
+            this.prev = newArr;
         }
         if(!next.freeObj0(this, obj))freeObj(obj);
     }
@@ -109,23 +168,13 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
 
 class CasSegment{
     private static final long sizeOffset = offset(CasSegment.class, "size");
-    CasSegment next = this, last = this;
+    CasSegment next = this, prev = this;
     final Object[] data;
     private volatile int cursor;
     volatile int size = 0;
 
     CasSegment(int size){
         this.data = new Object[size];
-    }
-
-
-    private static void onInsert(final CasSegment inst, final int size){
-        if(!compareAndSwap(inst, sizeOffset, size, size+1))
-            onInsert(inst, inst.size);
-    }
-    private static void onTake(final CasSegment inst, final int size){
-        if(!compareAndSwap(inst, sizeOffset, size, size-1))
-            onTake(inst, inst.size);
     }
 
 
@@ -157,7 +206,13 @@ class CasSegment{
     }
 
 
-    final boolean freeObj0(CasSegment parent, Object obj){
+    private static void onTake(final CasSegment inst, final int size){
+        if(!compareAndSwap(inst, sizeOffset, size, size-1))
+            onTake(inst, inst.size);
+    }
+
+
+    final boolean freeObj0(ConcurrentCasAllocator parent, Object obj){
         final Object[] data;
         final int size, curSize;
         if((size = (data = this.data).length) > (curSize = this.size)) {
@@ -180,5 +235,11 @@ class CasSegment{
             }
         }
         return false;
+    }
+
+
+    private static void onInsert(final CasSegment inst, final int size){
+        if(!compareAndSwap(inst, sizeOffset, size, size+1))
+            onInsert(inst, inst.size);
     }
 }
