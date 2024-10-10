@@ -1,4 +1,3 @@
-import plus.tson.utl.Allocator;
 import plus.tson.utl.CharStrBuilder;
 
 public class TestAlloc {

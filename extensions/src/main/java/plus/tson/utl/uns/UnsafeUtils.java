@@ -1,4 +1,4 @@
-package col;
+package plus.tson.utl.uns;
 
 import sun.misc.Unsafe;
 import java.lang.reflect.Field;
@@ -9,7 +9,7 @@ public class UnsafeUtils {
     public static final int REF_SIZE_D2;
     public static final int REF_SIZE_M2;
     public static final Unsafe UNSAFE;
-    private static final long strOffset;
+    static final long strOffset;
 
     static {
         try {
@@ -27,6 +27,11 @@ public class UnsafeUtils {
 
     public static boolean compareAndSwap(Object ref, long offset, Object prev, Object cur){
         return UNSAFE.compareAndSwapObject(ref, offset, prev, cur);
+    }
+
+
+    public static boolean compareAndSwap(Object ref, long offset, int prev, int cur){
+        return UNSAFE.compareAndSwapInt(ref, offset, prev, cur);
     }
 
 

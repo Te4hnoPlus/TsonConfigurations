@@ -1,7 +1,7 @@
 package col.alloc;
 
-import static col.UnsafeUtils.UNSAFE;
-import static col.UnsafeUtils.*;
+import static plus.tson.utl.uns.UnsafeUtils.UNSAFE;
+import static plus.tson.utl.uns.UnsafeUtils.*;
 
 
 public class ConcurrentCASAllocatorLE {

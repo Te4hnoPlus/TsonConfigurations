@@ -1,29 +1,29 @@
-package col.alloc;
+package plus.tson.utl.alloc;
 
-import static col.UnsafeUtils.*;
-//import static col.Unsafe21.compareAndSwap;
+import static plus.tson.utl.uns.UnsafeUtils.*;
+import static plus.tson.utl.uns.UnsafeUtils21.compareAndSwap;
 
 
-public class ConcurrentCASAllocator {
-    private static final long sizeOffset = offset(ConcurrentCASAllocator.class, "size");
-    ConcurrentCASAllocator next = this, last = this;
+public class ConcurrentCasAllocator implements Allocator {
+    private static final long sizeOffset = offset(ConcurrentCasAllocator.class, "size");
+    ConcurrentCasAllocator next = this, last = this;
     private final Object[] data;
     private volatile int cursor;
     private volatile int size = 0;
     private final int maxLoop;
 
-    public ConcurrentCASAllocator(int maxNodes, int maxLoop){
+    public ConcurrentCasAllocator(int maxNodes, int maxLoop){
         this.data = new Object[maxNodes];
         this.maxLoop = maxLoop;
     }
 
-    ConcurrentCASAllocator(ConcurrentCASAllocator parent){
+    ConcurrentCasAllocator(ConcurrentCasAllocator parent){
         this.data = new Object[parent.data.length];
         this.maxLoop = parent.maxLoop;
     }
 
 
-    public static abstract class Alloc<T> extends ConcurrentCASAllocator {
+    public static abstract class Alloc<T> extends ConcurrentCasAllocator {
         public Alloc(int countNodes, int maxLoop) {
             super(countNodes, maxLoop);
         }
@@ -50,9 +50,10 @@ public class ConcurrentCASAllocator {
     }
 
 
+    @Override
     public final int size(){
         int curSize = this.size;
-        ConcurrentCASAllocator next = this.next;
+        ConcurrentCasAllocator next = this.next;
         while (next != this){
             curSize += next.size;
             next = next.next;
@@ -61,9 +62,10 @@ public class ConcurrentCASAllocator {
     }
 
 
+    @Override
     public final boolean isEmpty(){
         if(this.size != 0)return false;
-        ConcurrentCASAllocator next = this.next;
+        ConcurrentCasAllocator next = this.next;
         while (next != this){
             if(next.size != 0)return false;
             next = next.next;
@@ -74,7 +76,7 @@ public class ConcurrentCASAllocator {
 
     public final int loopSize(){
         int curSize = 1;
-        ConcurrentCASAllocator next = this.next;
+        ConcurrentCasAllocator next = this.next;
         while (next != this){
             ++curSize;
             next = next.next;
@@ -83,20 +85,21 @@ public class ConcurrentCASAllocator {
     }
 
 
-    private static void onInsert(final ConcurrentCASAllocator inst, final int size){
+    private static void onInsert(final ConcurrentCasAllocator inst, final int size){
         if(!compareAndSwap(inst, sizeOffset, size, size+1))
             onInsert(inst, inst.size);
     }
-    private static void onTake(final ConcurrentCASAllocator inst, final int size){
+    private static void onTake(final ConcurrentCasAllocator inst, final int size){
         if(!compareAndSwap(inst, sizeOffset, size, size-1))
             onTake(inst, inst.size);
     }
 
 
+    @Override
     public final Object tryAllocRaw(){
         Object result;
         if((result = tryAlloc0(this)) != null)return result;
-        ConcurrentCASAllocator next = this.next;
+        ConcurrentCasAllocator next = this.next;
         while (next != this){
             if((result = next.tryAlloc0(this)) != null)return result;
             next = next.next;
@@ -105,21 +108,22 @@ public class ConcurrentCASAllocator {
     }
 
 
-    private Object tryAlloc0(ConcurrentCASAllocator parent){
+    private Object tryAlloc0(ConcurrentCasAllocator parent){
         final int curSize;
         if((curSize = size) > 0) {
             final Object[] data;
             final int size = (data = this.data).length, cur = cursor;
             Object prev;
-            for (int i = cur; i < size; i++) {
+            for (int i = cur; i >= 0; i--) {
                 if ((prev = data[i]) != null &&
                         compareAndSwap(data, REF_SIZE_M2 + (REF_SIZE_D2 * i), prev, null)) {
-                    cursor = i + 1;
+                    if(i != 0)cursor = i-1;
+                    else cursor = 0;
                     onTake(parent.last = this, curSize);
                     return prev;
                 }
             }
-            for (int i = 0; i < cur; i++) {
+            for (int i = cur; i < size; i++) {
                 if ((prev = data[i]) != null &&
                         compareAndSwap(data, REF_SIZE_M2 + (REF_SIZE_D2 * i), prev, null)) {
                     cursor = i;
@@ -132,17 +136,18 @@ public class ConcurrentCASAllocator {
     }
 
 
+    @Override
     public final void freeObj(Object obj){
-        final ConcurrentCASAllocator last;
+        final ConcurrentCasAllocator last;
         if((last = this.last).freeObj0(this, obj))return;
-        ConcurrentCASAllocator next = last.next;
+        ConcurrentCasAllocator next = last.next;
         while (next != last){
             if(next.freeObj0(this, obj))return;
             next = next.next;
         }
         if(loopSize() >= maxLoop)return;
         synchronized (this){
-            ConcurrentCASAllocator newArr = new ConcurrentCASAllocator(this);
+            ConcurrentCasAllocator newArr = new ConcurrentCasAllocator(this);
             newArr.next = next.next;
             next.next = newArr;
         }
@@ -150,7 +155,7 @@ public class ConcurrentCASAllocator {
     }
 
 
-    private boolean freeObj0(ConcurrentCASAllocator parent, Object obj){
+    private boolean freeObj0(ConcurrentCasAllocator parent, Object obj){
         final Object[] data;
         final int size, curSize;
         if((size = (data = this.data).length) > (curSize = this.size)) {
@@ -163,7 +168,7 @@ public class ConcurrentCASAllocator {
                     return true;
                 }
             }
-            for (int i = 0; i < cur; i++) {
+            for (int i = cur; i >= 0; i--) {
                 if (data[i] == null &&
                         compareAndSwap(data, REF_SIZE_M2+(REF_SIZE_D2 * i), null, obj)) {
                     this.cursor = i;

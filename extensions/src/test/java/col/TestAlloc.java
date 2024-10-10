@@ -1,6 +1,6 @@
 package col;
 import col.alloc.ConcurrentCASAllocatorLE;
-import col.alloc.ConcurrentCASAllocator;
+import plus.tson.utl.alloc.ConcurrentCasAllocator;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,7 +20,7 @@ public class TestAlloc {
         }
     };
 
-    public static final ConcurrentCASAllocator.Alloc<int[]> alloc2 = new ConcurrentCASAllocator.Alloc<>(
+    public static final ConcurrentCasAllocator.Alloc<int[]> alloc2 = new ConcurrentCasAllocator.Alloc<>(
             20, 16) {
         //18
         @Override
@@ -101,19 +101,19 @@ public class TestAlloc {
         int count = 50_0000;
         Random random = new Random();
         int[][] buf = new int[100][];
-        for (int i = 0; i < 10; i++){
-            random.setSeed(0);
-            testTime(() -> {
-                int[][] buf0 = buf;
-                int rNum = random.nextInt(100);
-                for (int i1 = 0; i1 < rNum; i1++){
-                    buf0[i1] = jalloc.alloc();
-                }
-                rNum -= 4;
-                for (int i1 = 0; i1 < rNum; i1++){
-                    jalloc.free(buf0[i1]);
-                }
-            }, "J", count);
+        for (int i = 0; i < 5; i++){
+//            random.setSeed(0);
+//            testTime(() -> {
+//                int[][] buf0 = buf;
+//                int rNum = random.nextInt(100);
+//                for (int i1 = 0; i1 < rNum; i1++){
+//                    buf0[i1] = jalloc.alloc();
+//                }
+//                rNum -= 4;
+//                for (int i1 = 0; i1 < rNum; i1++){
+//                    jalloc.free(buf0[i1]);
+//                }
+//            }, "J", count);
 
             random.setSeed(0);
             testTime(() -> {
