@@ -98,14 +98,14 @@ public class TestAlloc {
 
 
     public static void testSpeed(){
-        int count = 50_0000;
+        int count = 50_000;
         Random random = new Random();
-        int[][] buf = new int[100][];
-        for (int i = 0; i < 5; i++){
+        int[][] buf = new int[1000][];
+        for (int i = 0; i < 10; i++){
 //            random.setSeed(0);
 //            testTime(() -> {
 //                int[][] buf0 = buf;
-//                int rNum = random.nextInt(100);
+//                int rNum = random.nextInt(500)+500;
 //                for (int i1 = 0; i1 < rNum; i1++){
 //                    buf0[i1] = jalloc.alloc();
 //                }
@@ -118,7 +118,7 @@ public class TestAlloc {
             random.setSeed(0);
             testTime(() -> {
                 int[][] buf0 = buf;
-                int rNum = random.nextInt(100);
+                int rNum = random.nextInt(500)+500;
                 for (int i1 = 0; i1 < rNum; i1++){
                     buf0[i1] = alloc2.alloc();
                 }
