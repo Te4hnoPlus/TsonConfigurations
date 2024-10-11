@@ -6,8 +6,6 @@ import java.lang.reflect.Field;
 
 /**
  * Legacy unsafe utils, used when jdk.internal.misc.Unsafe is not available
- * <p>
- * Prefer use {@link UnsafeUtils21}, because it works faster
  */
 public class UnsafeUtils {
     //object reference size

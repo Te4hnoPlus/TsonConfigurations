@@ -6,8 +6,6 @@ import static plus.tson.utl.uns.UnsafeUtils.strOffset;
 
 /**
  * Unsafe utils, used when jdk.internal.misc.Unsafe is available
- * <p>
- * Prefer use this, because it works faster than {@link UnsafeUtils}
  */
 public class UnsafeUtils21 {
     private static final Unsafe UNSAFE = Unsafe.getUnsafe();

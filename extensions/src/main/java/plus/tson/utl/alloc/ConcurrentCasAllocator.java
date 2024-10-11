@@ -2,7 +2,6 @@ package plus.tson.utl.alloc;
 
 import java.util.function.Consumer;
 import static plus.tson.utl.uns.UnsafeUtils.*;
-import static plus.tson.utl.uns.UnsafeUtils21.compareAndSwap;
 
 
 /**
@@ -14,7 +13,7 @@ import static plus.tson.utl.uns.UnsafeUtils21.compareAndSwap;
 public class ConcurrentCasAllocator extends CasSegment implements Allocator{
     private static final long lastOffset = offset(ConcurrentCasAllocator.class, "last");
     //last used segment
-    CasSegment last = this;
+    CasSegment last;
     private final int maxLoop;
     private int loopSize;
 
