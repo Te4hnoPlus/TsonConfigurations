@@ -141,6 +141,17 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
 
 
     /**
+     * Trim allocator to initial memory size
+     */
+    public final void trim(){
+        synchronized (this){
+            this.next = this.prev = this;
+            if(this.last != null)this.last = this;
+        }
+    }
+
+
+    /**
      * Empty always, then last is null
      */
     @Override
