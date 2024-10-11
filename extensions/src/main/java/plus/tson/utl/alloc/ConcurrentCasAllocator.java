@@ -92,6 +92,55 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
 
 
     /**
+     * Clear allocator
+     */
+    public final void clear(){
+        clear(0);
+    }
+
+
+    /**
+     * Reduce stored objects to {@code maxSize}
+     */
+    public final void clear(int maxSize){
+        if(isEmpty())return;
+        CasSegment next = this;
+        Object[] data = next.data;
+        Object prev;
+        int size = this.data.length;
+
+        if(next.size > 0) {
+            for (int i = 0; i < size; i++) {
+                if ((prev = data[i]) != null) {
+                    if (maxSize > 0) --maxSize;
+                    //compare and swap `data[i]`
+                    else if (compareAndSwap(data, REF_SIZE_M2 + (REF_SIZE_D2 * i), prev, null)) {
+                        onTake(next, next.size);
+                    }
+                }
+            }
+        }
+        next = this.next;
+
+        while (next != this){
+            if(next.size > 0) {
+                data = next.data;
+                for (int i = 0; i < size; i++) {
+                    if ((prev = data[i]) != null) {
+                        if (maxSize > 0) --maxSize;
+                        //compare and swap `data[i]`
+                        else if (compareAndSwap(data, REF_SIZE_M2 + (REF_SIZE_D2 * i), prev, null)) {
+                            onTake(next, next.size);
+                        }
+                    }
+                }
+            }
+            next = next.next;
+        }
+    }
+
+
+    /**
      * Empty always, then last is null
      */
     @Override
@@ -288,7 +337,7 @@ class CasSegment{
     /**
      * Update segment size on take object
      */
-    private static void onTake(final CasSegment inst, final int size){
+    static void onTake(final CasSegment inst, final int size){
         if(!compareAndSwap(inst, sizeOffset, size, size-1))
             onTake(inst, inst.size);
     }
@@ -330,7 +379,7 @@ class CasSegment{
     /**
      * Update segment size on insert object
      */
-    private static void onInsert(final CasSegment inst, final int size){
+    static void onInsert(final CasSegment inst, final int size){
         if(!compareAndSwap(inst, sizeOffset, size, size+1))
             onInsert(inst, inst.size);
     }
