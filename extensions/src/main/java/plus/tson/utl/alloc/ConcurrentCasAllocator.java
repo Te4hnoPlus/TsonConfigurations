@@ -11,6 +11,7 @@ import static plus.tson.utl.uns.UnsafeUtils.*;
  * and {@code Circular Queue} algorithms for the best performance and memory efficiency
  */
 public class ConcurrentCasAllocator extends CasSegment implements Allocator{
+    private static final ConcurrentCasAllocator VOID = new ConcurrentCasAllocator(0,0);
     private static final long lastOffset = offset(ConcurrentCasAllocator.class, "last");
     //last used segment
     CasSegment last;
@@ -148,6 +149,27 @@ public class ConcurrentCasAllocator extends CasSegment implements Allocator{
             this.next = this.prev = this;
             if(this.last != null)this.last = this;
         }
+    }
+
+
+    /**
+     * Optimize allocator memory
+     */
+    public final void optimize(){
+        CasSegment next = this.next;
+        synchronized (this){
+            this.next = this.prev = this;
+            if(this.last != null)this.last = this;
+        }
+        while (next != this){
+            Object obj = next.tryAlloc0(VOID);
+            while (obj != null){
+                freeObj(obj);
+                obj = next.tryAlloc0(VOID);
+            }
+            next = next.next;
+        }
+        VOID.last = null;
     }
 
 
