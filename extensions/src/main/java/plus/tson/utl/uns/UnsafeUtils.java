@@ -90,4 +90,20 @@ public class UnsafeUtils {
     public static byte[] getBytes(String str){
         return (byte[]) UNSAFE.getObject(str, strOffset);
     }
+
+
+    /**
+     * Unsafe get object field value
+     */
+    public static <T> T get(Object src, long offSet){
+        return (T) UNSAFE.getObject(src, offSet);
+    }
+
+
+    /**
+     * Unsafe set object field value
+     */
+    public static void set(Object src, long offSet, Object value){
+        UNSAFE.putObject(src, offSet, value);
+    }
 }
