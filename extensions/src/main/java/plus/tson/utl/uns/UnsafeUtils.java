@@ -106,4 +106,16 @@ public class UnsafeUtils {
     public static void set(Object src, long offSet, Object value){
         UNSAFE.putObject(src, offSet, value);
     }
+
+
+    /**
+     * Unsafe allocate instance
+     */
+    public static <T> T newObj(Class<T> clazz){
+        try {
+            return (T) UNSAFE.allocateInstance(clazz);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
