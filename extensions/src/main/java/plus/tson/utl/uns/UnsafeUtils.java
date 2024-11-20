@@ -2,6 +2,7 @@ package plus.tson.utl.uns;
 
 import sun.misc.Unsafe;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 
 /**
@@ -59,11 +60,26 @@ public class UnsafeUtils {
 
 
     /**
-     * @return Offset of field {@code name} in {@code clazz}
+     * @return Offset of object field {@code name} in {@code clazz}
      */
     public static long offset(Class<?> clazz, String name){
         try {
             return UNSAFE.objectFieldOffset(clazz.getDeclaredField(name));
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    /**
+     * @return Offset of object/static field {@code name} in {@code clazz}
+     */
+    public static long offsetS(Class<?> clazz, String name){
+        try {
+            Field field = clazz.getDeclaredField(name);
+            if(Modifier.isStatic(field.getModifiers()))
+                return UNSAFE.staticFieldOffset(field);
+            return UNSAFE.objectFieldOffset(field);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
