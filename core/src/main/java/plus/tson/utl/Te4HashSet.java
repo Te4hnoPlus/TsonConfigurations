@@ -122,7 +122,7 @@ public class Te4HashSet<K> extends AbstractSet<K> implements Set<K> {
 
 
     @Override
-    public final boolean isEmpty() {
+    public boolean isEmpty() {
         return size == 0;
     }
 
