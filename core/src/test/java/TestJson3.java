@@ -5,9 +5,7 @@ public class TestJson3 {
     public static void main(String[] args) {
 
         TsonMap map = new TJsonParser(
-"""
-{"root1": [1, [2, 2, [3, 3, 3]]], "root2": [1, [2, 2, [3, 3, 3]]]}
-""").getMap();
+"{\"root1\": [1, [2, 2, [3, 3, 3]]], \"root2\": [1, [2, 2, [3, 3, 3]]]}").getMap();
 
         System.out.println(map);
 

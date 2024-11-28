@@ -46,8 +46,8 @@ public class Main {
                     max = d;
                 }
             }
-            body = body + (ls.getKey()+": "+ (((int)(summ/count*10))/10f) +"\n");
-            body = body + "max-"+(ls.getKey()+": "+ (((int)(max*10))/10f) +"\n");
+            body = body + "    " + (ls.getKey() + ": "+ (((int)(summ/count*10))/10f) +"\n");
+            body = body + "max-" + (ls.getKey() + ": "+ (((int)(max*10))/10f) +"\n");
         }
         String nm2 = remBad(System.getProperty("java.vm.name"))
                 +"-"+remBad(System.getProperty("java.version"))+".txt";

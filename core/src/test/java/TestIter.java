@@ -6,9 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class TestIter {
     public static void main(String[] args) {
-        TsonMap map = new TsonMap("""
-                {k=(1), k2=(2), k3=(3), k4=(4), k5=(5), k6=(6), k7=(7), k8=(8)}
-                """);
+        TsonMap map = new TsonMap("{k=(1), k2=(2), k3=(3), k4=(4), k5=(5), k6=(6), k7=(7), k8=(8)}");
 
         System.out.println(new TJsonParser("{key: 10}", true).getMap());
         System.out.println(new TJsonParser("{\"key\": 10}", false /*по умолчанию*/).getMap());

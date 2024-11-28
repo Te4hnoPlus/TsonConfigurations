@@ -3,17 +3,16 @@ import plus.tson.STsonParser;
 
 public class TestV2 {
     public static void main(String[] args) {
-        int length = new STsonParser("""
-        {
-
-        obj = new TestV2('test1', 'test2', {'key test' = true}){
-            field1 = 'test3',
-            field2 = this.test2('test4'),
-            field3 = 'abc'.length(),
-            this.test3()
-        }.name().length()
-
-        }"""
+        int length = new STsonParser("{\n" +
+                "\n" +
+                "        obj = new TestV2('test1', 'test2', {'key test' = true}){\n" +
+                "            field1 = 'test3',\n" +
+                "            field2 = this.test2('test4'),\n" +
+                "            field3 = 'abc'.length(),\n" +
+                "            this.test3()\n" +
+                "        }.name().length()\n" +
+                "\n" +
+                "        }"
         ).getMap().getInt("obj");
 
         System.out.println(length);
