@@ -473,33 +473,13 @@ public class TsonMap extends Te4HashMap<String, TsonObj> implements TsonObj {
 
     @Override
     public void codeJsonObj(StringBuilder builder) {
-        if(super.size()==0){
-            builder.append("{}");
-        } else {
-            builder.append('{');
-            for (Map.Entry<String, TsonObj> node : super.entrySet()) {
-                builder.append(node.getKey()).append(':');
-                node.getValue().codeJsonObj(builder);
-                builder.append(',');
-            }
-            builder.setCharAt(builder.length() - 1, '}');
-        }
+        TJsonWriter.codeJsonObj(this, builder, ':');
     }
 
 
     @Override
     public void codeJson(StringBuilder builder){
-        if(super.size()==0){
-            builder.append("{}");
-        } else {
-            builder.append('{');
-            for (Map.Entry<String, TsonObj> node : super.entrySet()) {
-                builder.append('"').append(node.getKey()).append("\":");
-                node.getValue().codeJson(builder);
-                builder.append(',');
-            }
-            builder.setCharAt(builder.length() - 1, '}');
-        }
+        TJsonWriter.codeJson(this, builder, ':');
     }
 
 

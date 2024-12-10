@@ -112,17 +112,25 @@ public class TJsonWriter {
     }
 
 
+    protected char keyChar(){
+        return ':';
+    }
+
+
     private void codeMap(TsonMap map){
         StringBuilder builder = this.builder;
         if(map.isEmpty()){
             builder.append("{}");
             return;
         }
+
+        char kc = keyChar();
+
         if(maxInline > 0){
             int size = sizeOf(map);
             if(size <= maxInline){
-                if(objMode)map.codeJsonObj(builder);
-                else map.codeJson(builder);
+                if(objMode)codeJsonObj(map, builder, kc);
+                else codeJson(map, builder, kc);
                 return;
             }
         }
@@ -134,13 +142,13 @@ public class TJsonWriter {
 
         if(objMode) {
             for (Map.Entry<String, TsonObj> node : map.entrySet()) {
-                builder.append(node.getKey()).append(": ");
+                builder.append(node.getKey()).append(kc).append(' ');
                 code(node.getValue());
                 builder.append(',').append('\n').append(empty);
             }
         } else {
             for (Map.Entry<String, TsonObj> node : map.entrySet()) {
-                builder.append('"').append(node.getKey()).append("\": ");
+                builder.append('"').append(node.getKey()).append('"').append(kc).append(' ');
                 code(node.getValue());
                 builder.append(',').append('\n').append(empty);
             }
@@ -181,6 +189,36 @@ public class TJsonWriter {
 
             builder.setLength(builder.length() - empty.length - 2);
             builder.append('\n').append(empty, 0, empty.length-indent).append(']');
+        }
+    }
+
+
+    protected static void codeJson(TsonMap map, StringBuilder builder, char kc){
+        if(map.isEmpty()){
+            builder.append("{}");
+        } else {
+            builder.append('{');
+            for (Map.Entry<String, TsonObj> node : map.entrySet()) {
+                builder.append('"').append(node.getKey()).append('"').append(kc);
+                node.getValue().codeJson(builder);
+                builder.append(',');
+            }
+            builder.setCharAt(builder.length() - 1, '}');
+        }
+    }
+
+
+    protected static void codeJsonObj(TsonMap map, StringBuilder builder, char kc) {
+        if(map.isEmpty()){
+            builder.append("{}");
+        } else {
+            builder.append('{');
+            for (Map.Entry<String, TsonObj> node : map.entrySet()) {
+                builder.append(node.getKey()).append(kc);
+                node.getValue().codeJsonObj(builder);
+                builder.append(',');
+            }
+            builder.setCharAt(builder.length() - 1, '}');
         }
     }
 
