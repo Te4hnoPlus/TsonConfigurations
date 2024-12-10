@@ -101,7 +101,11 @@ public class FuncCompiler {
      * @param mtd Target method
      */
     public static Object compile(Method mtd) {
-        return compile(mtd, srcOfCount(mtd.getParameterCount()));
+        int count = mtd.getParameterCount();
+        if(Modifier.isStatic(mtd.getModifiers())){
+            count -= 1;
+        }
+        return compile(mtd, srcOfCount(count));
     }
 
 
@@ -247,6 +251,7 @@ public class FuncCompiler {
      */
     public static Class<?> srcOfCount(int count){
         switch (count){
+            case -1:return FuncS0A.class;
             case 0:return Func0A.class;
             case 1:return Func1A.class;
             case 2:return Func2A.class;
@@ -416,9 +421,128 @@ public class FuncCompiler {
 
 
     /**
+     * Base wrapped FuncCompiler`s static lambda functions
+     */
+    private interface SFuncBase extends TsonFunc{
+        @Override
+        default boolean isStatic() {
+            return true;
+        }
+    }
+
+
+    /**
+     * Wrapped FuncCompiler`s static lambda functions
+     */
+    private static final class SFunc0A implements SFuncBase{
+        private final FuncS0A<?> parent;
+        private SFunc0A(FuncS0A<?> parent) {
+            this.parent = parent;
+        }
+        @Override
+        public Object call() {
+            return parent.call();
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call();
+        }
+        @Override
+        public int countArgs() {
+            return 0;
+        }
+    }
+    private static final class SFunc1A implements SFuncBase{
+        private final Func0A<?> parent;
+        private SFunc1A(Func0A<?> parent) {
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(args[0]);
+        }
+        @Override
+        public int countArgs() {
+            return 1;
+        }
+    }
+    private static final class SFunc2A implements SFuncBase{
+        private final Func1A<?> parent;
+        private SFunc2A(Func1A<?> parent) {
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(args[0], args[1]);
+        }
+        @Override
+        public int countArgs() {
+            return 2;
+        }
+    }
+    private static final class SFunc3A implements SFuncBase{
+        private final Func2A<?> parent;
+        private SFunc3A(Func2A<?> parent) {
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(args[0], args[1], args[2]);
+        }
+        @Override
+        public int countArgs() {
+            return 3;
+        }
+    }
+    private static final class SFunc4A implements SFuncBase{
+        private final Func3A<?> parent;
+        private SFunc4A(Func3A<?> parent) {
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(args[0], args[1], args[2], args[3]);
+        }
+        @Override
+        public int countArgs() {
+            return 4;
+        }
+    }
+    private static final class SFunc5A implements SFuncBase{
+        private final Func4A<?> parent;
+        private SFunc5A(Func4A<?> parent) {
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(args[0], args[1], args[2], args[3], args[4]);
+        }
+        @Override
+        public int countArgs() {
+            return 5;
+        }
+    }
+    private static final class SFunc6A implements SFuncBase{
+        private final Func5A<?> parent;
+        private SFunc6A(Func5A<?> parent) {
+            this.parent = parent;
+        }
+        @Override
+        public Object call(Object... args) {
+            return parent.call(args[0], args[1], args[2], args[3], args[4], args[5]);
+        }
+        @Override
+        public int countArgs() {
+            return 5;
+        }
+    }
+
+
+    /**
      * Wrap raw FuncCompiler`s function to TsonFunc
      */
     public static TsonFunc makeFunc(Object inst, Object func){
+        if(inst == null)return makeFunc(func);
         int count = countArgs(func);
         switch (count){
             case 0: return new TFunc0A(inst, (Func0A)func);
@@ -430,6 +554,21 @@ public class FuncCompiler {
             case 6: return new TFunc6A(inst, (Func6A)func);
             default: throw new IllegalArgumentException("Too many arguments");
         }
+    }
+
+
+    public static TsonFunc makeFunc(Object func){
+        int count = countArgs(func);
+        switch (count) {
+            case 0: return new SFunc0A((FuncS0A<?>) func);
+            case 1: return new SFunc1A((Func0A<?>) func);
+            case 2: return new SFunc2A((Func1A<?>) func);
+            case 3: return new SFunc3A((Func2A<?>) func);
+            case 4: return new SFunc4A((Func3A<?>) func);
+            case 5: return new SFunc5A((Func4A<?>) func);
+            case 6: return new SFunc6A((Func5A<?>) func);
+        }
+        throw new IllegalArgumentException("Too many arguments");
     }
 
 
@@ -448,7 +587,7 @@ public class FuncCompiler {
                 }
             }
             if(mtd != null){
-                return makeFunc(null, FuncCompiler.compile(mtd));
+                return makeFunc(FuncCompiler.compile(mtd));
             }
             return super.compile(clazz, name);
         }
