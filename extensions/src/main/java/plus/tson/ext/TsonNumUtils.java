@@ -87,6 +87,7 @@ public class TsonNumUtils {
         if(res == null)return def;
         if(res.isNumber())return res.getInt();
         if(res.isString())return calc(res.getStr(), def);
+        if(res.isBool())return res.getInt();
         throw new IllegalArgumentException();
     }
 
@@ -225,5 +226,23 @@ public class TsonNumUtils {
             case '/': return def / Double.parseDouble(s.substring(1));
             default : return Double.parseDouble(s);
         }
+    }
+
+
+    public static int[] intArr(TsonList list){
+        int[] arr = new int[list.size()];
+        for (int i = 0; i < arr.length; i++){
+            arr[i] = calc(list.get(i), 0);
+        }
+        return arr;
+    }
+
+
+    public static double[] doubleArr(TsonList list){
+        double[] arr = new double[list.size()];
+        for (int i = 0; i < arr.length; i++){
+            arr[i] = calc(list.get(i), 0);
+        }
+        return arr;
     }
 }

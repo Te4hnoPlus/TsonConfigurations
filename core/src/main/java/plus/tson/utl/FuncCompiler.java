@@ -294,10 +294,13 @@ public class FuncCompiler {
             return parent.call(inst);
         }
         @Override
+        public Object call(Object arg) {
+            return parent.call(inst);
+        }
+        @Override
         public Object call(Object... args) {
             return parent.call(inst);
         }
-
         @Override
         public Object unwrap() {
             return parent;
@@ -312,6 +315,10 @@ public class FuncCompiler {
         @Override
         public Object call(Object... args) {
             return parent.call(inst, args[0]);
+        }
+        @Override
+        public Object call(Object arg) {
+            return parent.call(inst, arg);
         }
         @Override
         public int countArgs() {
@@ -444,6 +451,10 @@ public class FuncCompiler {
             return parent.call();
         }
         @Override
+        public Object call(Object arg) {
+            return parent.call();
+        }
+        @Override
         public Object call(Object... args) {
             return parent.call();
         }
@@ -460,6 +471,10 @@ public class FuncCompiler {
         @Override
         public Object call(Object... args) {
             return parent.call(args[0]);
+        }
+        @Override
+        public Object call(Object arg) {
+            return parent.call(arg);
         }
         @Override
         public int countArgs() {

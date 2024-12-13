@@ -26,6 +26,7 @@ public class TsonBoolUtils {
         if(res==null)return def;
         if(res.isNumber())return res.getInt() > 0;
         if(res.isString())return bool(res.getStr(), def);
+        if(res.isBool())return res.getBool();
         throw new IllegalArgumentException();
     }
 

@@ -28,6 +28,14 @@ public interface TsonFunc {
 
 
     /**
+     * Call this functions with 1 argument
+     */
+    default Object call(Object arg){
+        return call(new Object[]{arg});
+    }
+
+
+    /**
      * Call this without arguments
      */
     default Object call(){return call(ReflectField.EMPTY);}
@@ -307,6 +315,16 @@ public interface TsonFunc {
             copy.engine = engine;
             return copy;
         }
+    }
+
+
+    /**
+     * Try merge functions to one
+     */
+    static TsonFunc merge(TsonFunc... funcs){
+        if(funcs.length == 0)throw new IllegalArgumentException();
+        if(funcs.length == 1)return funcs[0];
+        return new MergedFunc(funcs);
     }
 }
 
@@ -772,5 +790,38 @@ class ReflectConst implements TsonFunc.Field{
     @Override
     public boolean isStatic() {
         return true;
+    }
+}
+
+
+class MergedFunc implements TsonFunc{
+    private final TsonFunc[] funcs;
+
+    MergedFunc(TsonFunc[] funcs) {
+        this.funcs = funcs;
+    }
+
+
+    @Override
+    public Object call(Object arg) {
+        Object last = null;
+        for (TsonFunc func:funcs) last = func.call(arg);
+        return last;
+    }
+
+
+    @Override
+    public Object call() {
+        Object last = null;
+        for (TsonFunc func:funcs) last = func.call();
+        return last;
+    }
+
+
+    @Override
+    public Object call(Object... args) {
+        Object last = null;
+        for (TsonFunc func:funcs) last = func.call();
+        return last;
     }
 }
