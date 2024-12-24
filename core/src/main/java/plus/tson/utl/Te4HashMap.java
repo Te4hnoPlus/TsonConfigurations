@@ -19,7 +19,7 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
 
     public static class Node<K,V> implements Map.Entry<K,V> {
         final int hash;
-        final K key;
+        K key;
         V value;
         Node<K,V> next;
 
@@ -1782,6 +1782,28 @@ public class Te4HashMap<K,V> implements Map<K,V>, Cloneable, Serializable {
                     }
                 }
             }
+        }
+    }
+
+
+    public void trim(Map<K,K> keyCache, Consumer<Map.Entry<K,V>> valueFunc){
+        Node<K,V>[] tab;
+        if (size > 0 && (tab = table) != null) {
+            int mc = modCount;
+            for (Node<K,V> e : tab) {
+                for (; e != null; e = e.next){
+                    valueFunc.accept(e);
+                    K key, prev = keyCache.get(key = e.key);
+                    if(prev == null) keyCache.put(prev = key, key);
+                    e.key   = prev;
+//
+//                    V keyV, prevV = valueCache.get(keyV = e.value);
+//                    if(prevV == null) valueCache.put(prevV = keyV, keyV);
+//                    e.value = prevV;
+                }
+            }
+            if (modCount != mc)
+                throw new ConcurrentModificationException();
         }
     }
 }
